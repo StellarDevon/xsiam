@@ -1,0 +1,45 @@
+# ── Large external source trees (not part of this project's code) ─────────────
+/agents/
+/gateway/
+/third_party/
+
+# ── Large mock data files (generated; use initdb scripts to regenerate) ───────
+/initdb/mock/data/
+
+# ── Node dependencies & locks ─────────────────────────────────────────────────
+node_modules/
+/web/node_modules/
+
+# ── Frontend build output (rebuilt from web/src via pnpm build) ───────────────
+/web/dist/
+/xsiam/dist/
+
+# ── Go build artifacts ────────────────────────────────────────────────────────
+*.exe
+*.exe~
+/xsiam/*.exe
+/xsiam/*.exe~
+
+# ── etcd data ─────────────────────────────────────────────────────────────────
+/xsiam/default.etcd/
+default.etcd/
+
+# ── Runtime logs & temp ───────────────────────────────────────────────────────
+*.log
+*.log~
+xsiam_err.log
+xsiam_err.txt
+xsiam_out.txt
+/xsiam/agent-sim.log
+/xsiam/agent-sim.err
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
