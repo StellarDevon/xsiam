@@ -1,0 +1,12 @@
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/CMakeFiles/dbsync.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/CMakeFiles/rebuild_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/example/CMakeFiles/dbsync_example.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/example/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/example/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/example/CMakeFiles/rebuild_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/testtool/CMakeFiles/dbsync_test_tool.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/testtool/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/testtool/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/dbsync/build/testtool/CMakeFiles/rebuild_cache.dir

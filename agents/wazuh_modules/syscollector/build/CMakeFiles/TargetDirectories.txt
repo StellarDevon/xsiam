@@ -1,0 +1,8 @@
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/CMakeFiles/syscollector.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/CMakeFiles/rebuild_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/testtool/CMakeFiles/syscollector_test_tool.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/testtool/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/testtool/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/wazuh_modules/syscollector/build/testtool/CMakeFiles/rebuild_cache.dir

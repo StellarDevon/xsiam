@@ -1,7 +1,10 @@
-# ── Large external source trees (not part of this project's code) ─────────────
-/agents/
-/gateway/
+# ── External runtime dependencies (binaries only, not source) ────────────────
 /third_party/
+
+# ── Build artifacts inside agents / gateway ───────────────────────────────────
+/agents/data_provider/build/
+/gateway/build/
+/gateway/build-wsl/
 
 # ── Large mock data files (generated; use initdb scripts to regenerate) ───────
 /initdb/mock/data/

@@ -1,0 +1,8 @@
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/CMakeFiles/rsync.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/CMakeFiles/rebuild_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/testtool/CMakeFiles/rsync_test_tool.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/testtool/CMakeFiles/test.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/testtool/CMakeFiles/edit_cache.dir
+/mnt/d/src/xsiam/agents/wazuh-agent/src/shared_modules/rsync/build/testtool/CMakeFiles/rebuild_cache.dir
