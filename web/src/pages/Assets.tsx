@@ -1020,9 +1020,14 @@ export default function Assets() {
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.department || '-'}</td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDate(a.last_seen)}</td>
                     <td onClick={e => e.stopPropagation()}>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px' }} onClick={() => openEdit(a)}>编辑</button>
-                        <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: 'var(--critical)' }} onClick={() => confirmDelete(a)}>删</button>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => openEdit(a)}>编辑</button>
+                        <button
+                          style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', transition: 'all .15s', background: 'none', border: '1px solid rgba(0,0,0,.15)', color: '#888' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,67,54,.08)'; e.currentTarget.style.border = '1px solid #f44336'; e.currentTarget.style.color = '#f44336' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.border = '1px solid rgba(0,0,0,.15)'; e.currentTarget.style.color = '#888' }}
+                          onClick={() => confirmDelete(a)}
+                        >删除</button>
                       </div>
                     </td>
                   </tr>

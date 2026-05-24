@@ -484,55 +484,48 @@ export default function TopBar() {
 
       {/* ── TopBar ── */}
       <div style={{
-        height: 28,
+        height: 48,
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '0 16px',
+        padding: '0 20px',
         background: 'linear-gradient(90deg,#001e3c 0%,#00132a 100%)',
         borderBottom: '1px solid #0a2a4a',
         flexShrink: 0, zIndex: 100,
         position: 'relative',
       }}>
-        {/* Pulse dot */}
-        <span style={{
-          width: 6, height: 6, borderRadius: '50%',
-          background: '#0078d4', boxShadow: '0 0 5px #0078d4',
-          display: 'inline-block', animation: 'pulse-dot 2s ease-in-out infinite',
-          flexShrink: 0,
-        }} />
-
-        {/* Label */}
-        <span style={{
-          fontSize: 10.5, fontWeight: 700, letterSpacing: 1.6,
-          color: '#4fa3e0', textTransform: 'uppercase', userSelect: 'none',
-        }}>
-          XSIAM Agentic Assistant
-        </span>
-
-        <span style={{ marginLeft: 8, fontSize: 10, color: '#2b88d8', letterSpacing: 0 }}>
-          Active · 3 automated responses running
-        </span>
-
-        {/* Ctrl+K search trigger */}
+        {/* ── Search box (left side) ── */}
         <div
-          title="按 Ctrl+K 打开全局搜索"
           onClick={() => setShowSearch(true)}
           style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '2px 8px', borderRadius: 4,
-            border: '1px solid rgba(79,163,224,.22)',
-            background: 'rgba(0,120,212,.08)',
-            cursor: 'pointer', userSelect: 'none',
-            marginLeft: 12,
+            display: 'flex', alignItems: 'center', gap: 8,
+            width: 280, height: 32,
+            background: 'rgba(255,255,255,.08)',
+            border: '1px solid rgba(79,163,224,.25)',
+            borderRadius: 6,
+            padding: '0 10px',
+            cursor: 'text',
+            marginLeft: 16,
+            flexShrink: 0,
           }}
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(79,163,224,.75)" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(79,163,224,.70)" strokeWidth="2" style={{ flexShrink: 0 }}>
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <span style={{ fontSize: 10, color: 'rgba(79,163,224,.75)', letterSpacing: .3 }}>搜索</span>
+          <input
+            readOnly
+            onFocus={() => setShowSearch(true)}
+            placeholder="搜索告警、事件、资产…"
+            style={{
+              flex: 1, background: 'none', border: 'none', outline: 'none',
+              fontSize: 12, color: 'rgba(255,255,255,.75)',
+              cursor: 'text',
+              pointerEvents: 'none',
+            }}
+          />
           <span style={{
             fontSize: 9, fontFamily: 'monospace', color: 'rgba(79,163,224,.55)',
-            background: 'rgba(0,0,0,.25)', padding: '0 4px', borderRadius: 3,
-            border: '1px solid rgba(79,163,224,.18)',
+            background: 'rgba(0,0,0,.25)', padding: '1px 5px', borderRadius: 3,
+            border: '1px solid rgba(79,163,224,.20)',
+            flexShrink: 0, userSelect: 'none',
           }}>
             Ctrl+K
           </span>
@@ -540,6 +533,25 @@ export default function TopBar() {
 
         {/* ── Right-side controls ── */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+
+          {/* Pulse dot + XSIAM Agentic Assistant status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 4 }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#0078d4', boxShadow: '0 0 5px #0078d4',
+              display: 'inline-block', animation: 'pulse-dot 2s ease-in-out infinite',
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontSize: 10.5, fontWeight: 700, letterSpacing: 1.6,
+              color: '#4fa3e0', textTransform: 'uppercase', userSelect: 'none',
+            }}>
+              XSIAM Agentic Assistant
+            </span>
+            <span style={{ fontSize: 10, color: '#2b88d8', letterSpacing: 0 }}>
+              Active · 3 automated responses running
+            </span>
+          </div>
 
           {/* Session expiry indicator */}
           {showIndicator && (

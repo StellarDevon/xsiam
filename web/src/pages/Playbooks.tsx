@@ -2154,7 +2154,7 @@ export default function Playbooks() {
               {loading && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>}
               {!loading && items.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>暂无剧本</td></tr>}
               {items.map(pb => {
-                const successRate = pb.run_count > 0 ? Math.round((pb.success_count / pb.run_count) * 100) : null
+                const successRate = (!pb.run_count || pb.run_count === 0) ? null : Math.round((pb.success_count / pb.run_count) * 100)
                 const dotColor = statusColor[pb.status] ?? 'var(--text-muted)'
                 return (
                   <tr key={pb._key} onClick={() => selectPlaybook(pb)} className={selected?._key === pb._key ? 'selected' : ''}>
@@ -2186,7 +2186,7 @@ export default function Playbooks() {
                     <td>
                       {successRate !== null
                         ? <span style={{ fontSize: 11.5, fontWeight: 600, color: successRate >= 80 ? 'var(--accent-green)' : successRate >= 50 ? 'var(--medium)' : 'var(--critical)' }}>{successRate}%</span>
-                        : <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>...</span>}
+                        : <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDate(pb.last_run)}</td>
                     <td onClick={e => e.stopPropagation()}>

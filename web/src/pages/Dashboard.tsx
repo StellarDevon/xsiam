@@ -224,45 +224,45 @@ function GeoThreatMap({ iocCount }: { iocCount: number | null }) {
           </defs>
 
           {/* Background */}
-          <rect width="460" height="230" fill="rgba(6,10,20,0.6)" rx="4"/>
+          <rect width="460" height="230" fill="#0a1929" rx="4"/>
 
           {/* Simplified world continent outlines */}
           {/* North America */}
           <path d="M 30 60 L 55 50 L 80 52 L 100 60 L 115 75 L 120 95 L 110 120 L 100 140
                    L 90 160 L 80 155 L 70 145 L 65 130 L 60 115 L 45 105 L 35 90 Z"
-            fill="rgba(40,55,80,0.6)" stroke="rgba(80,110,150,0.4)" strokeWidth="0.7"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.5)" strokeWidth="0.7"/>
           {/* Central America / Caribbean stub */}
           <path d="M 100 140 L 110 148 L 108 155 L 102 153 Z"
-            fill="rgba(40,55,80,0.5)" stroke="rgba(80,110,150,0.3)" strokeWidth="0.6"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.4)" strokeWidth="0.6"/>
           {/* South America */}
           <path d="M 105 160 L 125 155 L 150 158 L 165 175 L 160 200 L 145 215 L 125 220
                    L 110 210 L 100 195 L 98 175 Z"
-            fill="rgba(40,55,80,0.6)" stroke="rgba(80,110,150,0.4)" strokeWidth="0.7"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.5)" strokeWidth="0.7"/>
           {/* Europe */}
           <path d="M 195 55 L 220 48 L 240 50 L 255 60 L 250 75 L 235 80 L 220 82 L 200 78 L 192 68 Z"
-            fill="rgba(40,55,80,0.6)" stroke="rgba(80,110,150,0.4)" strokeWidth="0.7"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.5)" strokeWidth="0.7"/>
           {/* Scandinavia stub */}
           <path d="M 215 45 L 225 35 L 232 42 L 225 48 Z"
-            fill="rgba(40,55,80,0.5)" stroke="rgba(80,110,150,0.3)" strokeWidth="0.6"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.4)" strokeWidth="0.6"/>
           {/* Africa */}
           <path d="M 200 88 L 240 82 L 260 95 L 265 120 L 260 150 L 245 175 L 225 185
                    L 205 175 L 192 155 L 190 130 L 195 105 Z"
-            fill="rgba(40,55,80,0.6)" stroke="rgba(80,110,150,0.4)" strokeWidth="0.7"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.5)" strokeWidth="0.7"/>
           {/* Russia / North Asia */}
           <path d="M 255 35 L 310 28 L 380 30 L 410 42 L 390 55 L 360 60 L 320 58 L 285 55 L 258 48 Z"
-            fill="rgba(40,55,80,0.6)" stroke="rgba(80,110,150,0.4)" strokeWidth="0.7"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.5)" strokeWidth="0.7"/>
           {/* Middle East */}
           <path d="M 258 78 L 280 72 L 300 80 L 295 98 L 275 100 L 260 92 Z"
-            fill="rgba(40,55,80,0.5)" stroke="rgba(80,110,150,0.3)" strokeWidth="0.6"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.4)" strokeWidth="0.6"/>
           {/* South Asia */}
           <path d="M 300 85 L 330 80 L 345 90 L 340 115 L 320 118 L 305 108 Z"
-            fill="rgba(40,55,80,0.5)" stroke="rgba(80,110,150,0.3)" strokeWidth="0.6"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.4)" strokeWidth="0.6"/>
           {/* East Asia / China */}
           <path d="M 340 58 L 385 55 L 400 65 L 395 90 L 375 100 L 350 98 L 332 85 L 338 70 Z"
-            fill="rgba(40,55,80,0.6)" stroke="rgba(80,110,150,0.4)" strokeWidth="0.7"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.5)" strokeWidth="0.7"/>
           {/* Southeast Asia */}
           <path d="M 368 100 L 390 98 L 400 110 L 395 125 L 380 128 L 368 115 Z"
-            fill="rgba(40,55,80,0.5)" stroke="rgba(80,110,150,0.3)" strokeWidth="0.6"/>
+            fill="#1e3a5f" stroke="rgba(80,130,180,0.4)" strokeWidth="0.6"/>
           {/* Australia */}
           <path d="M 370 155 L 410 148 L 430 160 L 430 185 L 415 195 L 390 198 L 368 185 L 362 168 Z"
             fill="rgba(40,55,80,0.5)" stroke="rgba(80,110,150,0.3)" strokeWidth="0.7"/>
@@ -291,8 +291,8 @@ function GeoThreatMap({ iocCount }: { iocCount: number | null }) {
                   stroke={color} strokeWidth="0.8" opacity={isHov ? 0.6 : 0.25}
                   style={{ transition: 'opacity .2s' }}/>
                 {/* Dot */}
-                <circle cx={c.svgX} cy={c.svgY} r={r} fill={color}
-                  opacity={isHov ? 1 : 0.85}
+                <circle cx={c.svgX} cy={c.svgY} r={r + 1} fill={color}
+                  opacity={1}
                   filter="url(#dotGlow)"
                   style={{ transition: 'opacity .2s' }}/>
                 {/* Label */}
@@ -959,7 +959,7 @@ export default function Dashboard() {
         background: 'var(--bg-secondary)',
       }}>
         {/* KPI cards row */}
-        <div style={{ display: 'flex', alignItems: 'stretch', height: 80 }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 80 }}>
 
           {/* KPI: Security Score */}
           <div style={{ display: 'flex', alignItems: 'center', padding: '4px 16px', minWidth: 100, flexShrink: 0, justifyContent: 'center' }}>
@@ -982,7 +982,7 @@ export default function Dashboard() {
             >
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>活跃事件</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-blue)', lineHeight: 1 }}>{stats?.open_incidents ?? '—'}</span>
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--accent-blue)', lineHeight: 1 }}>{stats?.open_incidents ?? '—'}</span>
                 <span style={{ fontSize: 10, color: 'var(--accent-blue)', opacity: 0.7 }}>↗</span>
               </div>
             </div>
@@ -994,7 +994,7 @@ export default function Dashboard() {
             <div style={{ padding: '8px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, minWidth: 140 }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>未处置告警</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{stats?.open_alerts ?? '—'}</span>
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{stats?.open_alerts ?? '—'}</span>
               </div>
             </div>
           </div>
@@ -1005,10 +1005,10 @@ export default function Dashboard() {
             <div style={{ padding: '8px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, minWidth: 160 }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>MTTR</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
-                  {stats?.mttr_hours != null ? stats.mttr_hours.toFixed(1) + 'h' : '—'}
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+                  {stats?.mttr_hours != null && !isNaN(stats.mttr_hours) && stats.mttr_hours >= 0 ? stats.mttr_hours.toFixed(1) + 'h' : '—'}
                 </span>
-                {stats?.mttr_hours != null && (() => {
+                {stats?.mttr_hours != null && !isNaN(stats.mttr_hours) && stats.mttr_hours > 0 && (() => {
                   const h = stats.mttr_hours
                   if (h < 2) return <span style={{ fontSize: 11, fontWeight: 600, color: '#2a9060' }}>↓ 优秀</span>
                   if (h < 8) return <span style={{ fontSize: 11, fontWeight: 600, color: '#f9a825' }}>→ 正常</span>
@@ -1024,7 +1024,7 @@ export default function Dashboard() {
             <div style={{ padding: '8px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, minWidth: 140 }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>严重漏洞</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#e53935', lineHeight: 1 }}>{stats?.critical_vulns ?? '—'}</span>
+                <span style={{ fontSize: 28, fontWeight: 700, color: '#e53935', lineHeight: 1 }}>{stats?.critical_vulns ?? '—'}</span>
               </div>
             </div>
           </div>
@@ -1036,13 +1036,13 @@ export default function Dashboard() {
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>自动化剧本</div>
               {playbookStats ? (
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{playbookStats.total}</span>
+                  <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{playbookStats.total}</span>
                   <span style={{ fontSize: 10, color: '#2a9060', fontWeight: 600 }}>
                     活跃 {playbookStats.active}
                   </span>
                 </div>
               ) : (
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>—</span>
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>—</span>
               )}
               {playbookStats && (
                 <div style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>
@@ -1058,7 +1058,7 @@ export default function Dashboard() {
             <div style={{ padding: '8px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, minWidth: 150 }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>威胁情报</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
                   {iocCount != null ? iocCount.toLocaleString() : '—'}
                 </span>
                 <span style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>IOC</span>
@@ -1147,7 +1147,7 @@ export default function Dashboard() {
                   margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
                 >
                   <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="tactic" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} width={90} tickLine={false} axisLine={false}/>
+                  <YAxis type="category" dataKey="tactic" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} width={90} tickLine={false} axisLine={false}/>
                   <Tooltip
                     contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', fontSize: 11, padding: '4px 8px' }}
                     itemStyle={{ color: 'var(--text-primary)' }}
@@ -1195,8 +1195,12 @@ export default function Dashboard() {
           <div style={{ flex: 1, padding: '8px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, minWidth: 130, borderRight: '1px solid var(--border)' }}>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>MTTR</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{mttrValue.toFixed(1)}h</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#2a9060' }}>↓8%</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {mttrValue >= 0 && !isNaN(mttrValue) ? mttrValue.toFixed(1) + 'h' : '—'}
+              </span>
+              {mttrValue > 0 && !isNaN(mttrValue) && (
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#2a9060' }}>↓8%</span>
+              )}
             </div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>Mean time to Respond</div>
           </div>
@@ -1298,12 +1302,12 @@ export default function Dashboard() {
             >
               <XAxis
                 dataKey="day"
-                tick={{ fontSize: 9, fill: 'var(--text-muted)' }}
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 8, fill: 'var(--text-muted)' }}
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                 tickLine={false}
                 axisLine={false}
                 width={28}

@@ -77,7 +77,7 @@ function fmtDate(iso: string | undefined) {
     const d = new Date(iso)
     if (isNaN(d.getTime())) return '-'
     const p = (n: number) => n.toString().padStart(2, '0')
-    return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
   } catch { return '-' }
 }
 
@@ -1885,8 +1885,9 @@ export default function Incidents() {
       )}
 
       {/* ── Table ───────────────────────────────────────────── */}
+      <style>{`.incidents-table td { padding: 6px 16px !important; }`}</style>
       <div className="data-table-wrap">
-        <table className="data-table">
+        <table className="data-table incidents-table">
           <thead>
             <tr>
               <th style={{ width: 36 }}>
@@ -1958,7 +1959,7 @@ export default function Incidents() {
                   inc.severity === 'critical' ? 'row-critical' : '',
                 ].filter(Boolean).join(' ')}
                 onClick={() => setSelected(inc)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', height: 44 }}
               >
                 <td onClick={e => e.stopPropagation()}>
                   <input type="checkbox" checked={checked.has(inc._key)} onChange={() => toggleCheck(inc._key)} />
@@ -2050,7 +2051,7 @@ export default function Incidents() {
       </div>
 
       {/* ── Pagination ──────────────────────────────────────── */}
-      <div className="pagination">
+      <div className="pagination" style={{ justifyContent: 'center' }}>
         <span style={{ marginRight: 8 }}>
           {meta.total > 0
             ? `第 ${(page-1)*meta.page_size + 1}–${Math.min(page*meta.page_size, meta.total)} 条，共 ${meta.total} 条`

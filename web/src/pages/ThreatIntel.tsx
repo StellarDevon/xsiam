@@ -380,6 +380,7 @@ const BLANK_REPORT = { name: '', template_type: 'weekly', description: '' }
 export default function ThreatIntel() {
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('indicators')
+  const [showMoreTabs, setShowMoreTabs] = useState(false)
 
   // IOC state
   const [iocs, setIocs] = useState<IOC[]>([])
@@ -822,34 +823,65 @@ export default function ThreatIntel() {
       </div>
 
       {/* Tabs */}
-      <div className="tab-bar">
+      <div className="tab-bar" style={{ position: 'relative' }}>
         <button className={`tab ${tab === 'indicators' ? 'active' : ''}`} onClick={() => setTab('indicators')}>
           指标 <span className="tab-count">{iocMeta.total}</span>
         </button>
         <button className={`tab ${tab === 'feeds' ? 'active' : ''}`} onClick={() => setTab('feeds')}>
           订阅源 <span className="tab-count">{feedMeta.total}</span>
         </button>
-        <button className={`tab ${tab === 'rules' ? 'active' : ''}`} onClick={() => setTab('rules')}>
-          Indicator Rules <span className="tab-count">{rules.length}</span>
-        </button>
         <button className={`tab ${tab === 'samples' ? 'active' : ''}`} onClick={() => setTab('samples')}>
-          样本 Analysis <span className="tab-count">{samples.length}</span>
+          样本分析 <span className="tab-count">{samples.length}</span>
         </button>
         <button className={`tab ${tab === 'sessions' ? 'active' : ''}`} onClick={() => setTab('sessions')}>
           身份会话 <span className="tab-count">{identityRisks.length}</span>
         </button>
         <button className={`tab ${tab === 'reports' ? 'active' : ''}`} onClick={() => setTab('reports')}>
-          TIM 报告 <span className="tab-count">{reports.length}</span>
+          TIM报告 <span className="tab-count">{reports.length}</span>
         </button>
-        <button className={`tab ${tab === 'trc' ? 'active' : ''}`} onClick={() => setTab('trc')}>
-          威胁响应中心 <span className="tab-count">{trcIncidents.length || undefined}</span>
-        </button>
-        <button className={`tab ${tab === 'actors' ? 'active' : ''}`} onClick={() => setTab('actors')}>
-          威胁行为者 <span className="tab-count">{THREAT_ACTORS.length}</span>
-        </button>
-        <button className={`tab ${tab === 'graph' ? 'active' : ''}`} onClick={() => setTab('graph')}>
-          情报图谱
-        </button>
+        {/* "更多" dropdown for low-frequency tabs */}
+        <div style={{ position: 'relative', display: 'inline-flex' }}>
+          <button
+            className={`tab ${['rules', 'trc', 'actors', 'graph'].includes(tab) ? 'active' : ''}`}
+            onClick={() => setShowMoreTabs(p => !p)}
+            onBlur={() => setTimeout(() => setShowMoreTabs(false), 150)}
+          >
+            更多 ▾
+          </button>
+          {showMoreTabs && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, zIndex: 300,
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: 6, boxShadow: '0 4px 16px rgba(0,0,0,.4)',
+              minWidth: 160, overflow: 'hidden',
+            }}>
+              {([
+                ['rules',  'Indicator Rules', rules.length],
+                ['trc',    '威胁响应中心',     trcIncidents.length || 0],
+                ['actors', '威胁行为者',       THREAT_ACTORS.length],
+                ['graph',  '情报图谱',         0],
+              ] as [Tab, string, number][]).map(([t, label, count]) => (
+                <div
+                  key={t}
+                  onClick={() => { setTab(t); setShowMoreTabs(false) }}
+                  style={{
+                    padding: '9px 14px', fontSize: 12, cursor: 'pointer',
+                    color: tab === t ? 'var(--accent-orange)' : 'var(--text-secondary)',
+                    background: tab === t ? 'rgba(250,88,45,.08)' : 'none',
+                    borderBottom: '1px solid rgba(255,255,255,.04)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                    transition: 'background .1s',
+                  }}
+                  onMouseEnter={e => { if (tab !== t) e.currentTarget.style.background = 'rgba(255,255,255,.04)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = tab === t ? 'rgba(250,88,45,.08)' : 'none' }}
+                >
+                  <span>{label}</span>
+                  {count > 0 && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: 'rgba(250,88,45,.15)', color: 'var(--accent-orange)' }}>{count}</span>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 判定结论 summary pills — indicators tab only */}

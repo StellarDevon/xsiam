@@ -26,7 +26,7 @@ function sidebarHoverColor(isDark: boolean) {
 interface NavItem {
   to: string
   label: string
-  icon: React.ReactNode
+  icon: React.ReactNode | null
   badge?: { count: number; color: 'red' | 'orange' }
 }
 
@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
     label: '查询中心',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
   },
-  { to: '__divider1', label: '', icon: null },
+  { to: '__group_response', label: '响应', icon: null },
   {
     to: '/actions',
     label: '动作中心',
@@ -67,7 +67,7 @@ const navItems: NavItem[] = [
     label: '剧本',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
   },
-  { to: '__divider2', label: '', icon: null },
+  { to: '__group_assets', label: '资产与风险', icon: null },
   {
     to: '/assets',
     label: '资产',
@@ -88,7 +88,7 @@ const navItems: NavItem[] = [
     label: '暴露面管理',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
   },
-  { to: '__divider3', label: '', icon: null },
+  { to: '__group_threat', label: '威胁情报', icon: null },
   {
     to: '/threat-intel',
     label: '威胁情报',
@@ -99,7 +99,7 @@ const navItems: NavItem[] = [
     label: 'IOC 管理',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>,
   },
-  { to: '__divider4', label: '', icon: null },
+  { to: '__group_aiops', label: 'AI & 案例', icon: null },
   {
     to: '/agentix',
     label: 'Agentix',
@@ -110,7 +110,7 @@ const navItems: NavItem[] = [
     label: 'XSIAM 案例',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
   },
-  { to: '__divider4b', label: '', icon: null },
+  { to: '__group_infra', label: '基础设施', icon: null },
   {
     to: '/devices',
     label: '设备',
@@ -131,7 +131,7 @@ const navItems: NavItem[] = [
     label: 'ETL 流水线',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v4H4z"/><path d="M4 10h10v4H4z"/><path d="M4 16h6v4H4z"/><polyline points="18 14 22 18 18 22"/><line x1="14" y1="18" x2="22" y2="18"/></svg>,
   },
-  { to: '__divider5', label: '', icon: null },
+  { to: '__group_platform', label: '平台管理', icon: null },
   {
     to: '/network-security',
     label: '网络安全',
@@ -257,8 +257,29 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
       {/* Nav items */}
       <div style={{ flex: 1, width: 200, display: 'flex', flexDirection: 'column', gap: 0, padding: '8px 4px', overflowY: 'auto', overflowX: 'hidden' }}>
         {navItems.map((item, i) => {
-          if (item.to.startsWith('__divider')) {
-            return <div key={i} className="sidebar-divider" style={{ width: 'calc(100% - 8px)', height: 1, background: isDark ? 'var(--border)' : 'rgba(255,255,255,.12)', margin: '4px 4px' }} />
+          if (item.to.startsWith('__group_')) {
+            if (open) {
+              return (
+                <div key={i} style={{
+                  fontSize: 9, fontWeight: 700, letterSpacing: 1.2,
+                  textTransform: 'uppercase' as const,
+                  color: 'rgba(79,163,224,.45)',
+                  padding: '12px 12px 4px',
+                  marginTop: 4,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {item.label}
+                </div>
+              )
+            } else {
+              return (
+                <div key={i} style={{
+                  height: 1,
+                  background: 'rgba(255,255,255,.08)',
+                  margin: '8px 4px',
+                }} />
+              )
+            }
           }
           return (
             <NavLink
@@ -271,7 +292,9 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
                 display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
                 padding: '0 10px 0 8px', gap: 10, borderRadius: 8, textDecoration: 'none',
                 color: sidebarNavColor(isActive, isDark),
-                background: isActive ? 'var(--nav-active-bg)' : 'none',
+                background: isActive
+                  ? (!open ? 'rgba(0,120,212,.30)' : 'var(--nav-active-bg)')
+                  : 'none',
                 borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
                 transition: 'background .15s, color .15s, border-color .15s',
                 whiteSpace: 'nowrap', overflow: 'hidden',

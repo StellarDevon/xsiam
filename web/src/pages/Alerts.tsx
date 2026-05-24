@@ -104,7 +104,7 @@ const SEV_LABELS: Record<string, string> = {
   critical: '严重', high: '高危', medium: '中危', low: '低危', info: '信息',
 }
 const SEV_COLORS: Record<string, string> = {
-  critical: '#e53935', high: '#ff6f00', medium: '#f9a825', low: '#2fb07a', info: '#546e7a',
+  critical: '#f44336', high: '#ff6d00', medium: '#ffc107', low: '#4caf50', info: '#546e7a',
 }
 const SOURCE_LABELS: Record<string, string> = {
   endpoint: '终端', network: '网络', cloud: '云', identity: '身份',
@@ -151,7 +151,7 @@ function fmtDate(iso: string | undefined) {
     const d = new Date(iso)
     if (isNaN(d.getTime())) return '—'
     const p = (n: number) => n.toString().padStart(2, '0')
-    return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
   } catch { return '—' }
 }
 
@@ -1658,6 +1658,9 @@ export default function Alerts() {
   const [sortBy, setSortBy] = useState('triggered_at')
   const [sortDesc, setSortDesc] = useState(true)
   const [hovered, setHovered] = useState<string | null>(null)
+  // Column visibility — secondary cols hidden by default
+  const [showSecondaryColumns, setShowSecondaryColumns] = useState(false)
+
   // Bulk investigate inline form
   const [bulkIncMode, setBulkIncMode] = useState(false)
   const [bulkIncTitle, setBulkIncTitle] = useState('')
@@ -1949,7 +1952,7 @@ export default function Alerts() {
     ? <span style={{ marginLeft: 3, fontSize: 9, opacity: 0.7 }}>{sortDesc ? '▼' : '▲'}</span>
     : null
 
-  const colCount = selected ? 9 : 11
+  const colCount = selected ? 9 : (showSecondaryColumns ? 11 : 9)
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -2017,7 +2020,7 @@ export default function Alerts() {
       <div className="filter-bar">
         <input
           className="filter-input"
-          style={{ width: 210 }}
+          style={{ width: 320, minWidth: 320 }}
           placeholder="搜索告警名称、主机、用户..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -2072,6 +2075,16 @@ export default function Alerts() {
             setTimeFilter(''); setIncidentFilter(''); setMitreFilter(''); setSearch('')
           }}>✕ 清除</button>
         )}
+        {/* Column toggle */}
+        <button
+          className="btn-secondary"
+          style={{ fontSize: 11, color: showSecondaryColumns ? 'var(--accent-blue)' : undefined }}
+          onClick={() => setShowSecondaryColumns(v => !v)}
+          title={showSecondaryColumns ? '隐藏次要列' : '显示次要列（MITRE、规则等）'}
+        >
+          {showSecondaryColumns ? '列 ▲' : '列 ▼'}
+        </button>
+
         {/* Auto-refresh toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
           <button
@@ -2260,8 +2273,8 @@ export default function Alerts() {
                   <th style={{ width: 60 }}>来源</th>
                   <th style={{ width: 128 }}>主机 / 用户</th>
                   <th style={{ width: 88 }}>关联事件</th>
-                  {!selected && <th style={{ width: 106 }}>MITRE 战术</th>}
-                  {!selected && <th style={{ width: 108 }}>检测规则</th>}
+                  {showSecondaryColumns && !selected && <th style={{ width: 106 }}>MITRE 战术</th>}
+                  {showSecondaryColumns && !selected && <th style={{ width: 108 }}>检测规则</th>}
                   <th style={{ width: 72 }}>状态</th>
                   <th style={{ width: 80, cursor: 'pointer', userSelect: 'none' }} onClick={() => doSort('triggered_at')}>
                     时间{sortArrow('triggered_at')}
@@ -2346,7 +2359,7 @@ export default function Alerts() {
                           <span style={{ color: '#ff6f00', fontSize: 10, fontWeight: 600 }}>未关联</span>
                         )}
                       </td>
-                      {!selected && (
+                      {showSecondaryColumns && !selected && (
                         <td>
                           {alert.mitre_tactic ? (
                             <span
@@ -2379,7 +2392,7 @@ export default function Alerts() {
                           )}
                         </td>
                       )}
-                      {!selected && (
+                      {showSecondaryColumns && !selected && (
                         <td style={{ fontSize: 10.5, color: 'var(--text-muted)', maxWidth: 108, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {alert.detection_rule || '—'}
                         </td>
@@ -2442,7 +2455,7 @@ export default function Alerts() {
           </div>
 
           {/* ── Pagination ────────────────────────────── */}
-          <div className="pagination">
+          <div className="pagination" style={{ justifyContent: 'center' }}>
             <span style={{ marginRight: 8 }}>
               {meta.total > 0
                 ? `第 ${(page-1)*meta.page_size+1}–${Math.min(page*meta.page_size, meta.total)} 条，共 ${meta.total} 条`

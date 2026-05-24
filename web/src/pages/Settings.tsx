@@ -899,45 +899,45 @@ export default function Settings() {
                 { label: '用户名', value: user?.username ?? '-' },
                 { label: '邮箱', value: user?.email ?? '-' },
                 { label: '角色', value: user?.role ?? '-' },
-                { label: 'Tenant', value: user?.tenant_id ?? '-' },
+                { label: '租户', value: user?.tenant_id ?? '-' },
               ].map(row => (
-                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,.04)', fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>{row.label}</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{row.value}</span>
+                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border, rgba(0,0,0,.06))' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted, #888)', fontWeight: 400 }}>{row.label}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-primary, #1a1a1a)', fontWeight: 500 }}>{row.value}</span>
                 </div>
               ))}
             </div>
 
             <div className="card">
-              <div className="card-title">Appearance</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 12 }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Theme</span>
-                <span style={{ fontSize: 11, padding: '3px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border-light)', borderRadius: 3 }}>Dark (XSIAM)</span>
+              <div className="card-title">外观</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border, rgba(0,0,0,.06))' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted, #888)', fontWeight: 400 }}>主题</span>
+                <span style={{ fontSize: 13, color: 'var(--text-primary, #1a1a1a)', fontWeight: 500, padding: '3px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border-light)', borderRadius: 3 }}>深色 (XSIAM)</span>
               </div>
             </div>
 
             <div className="card">
-              <div className="card-title">Platform</div>
+              <div className="card-title">平台</div>
               {[
-                { label: 'Product', value: 'XSIAM Console' },
+                { label: '产品', value: 'XSIAM Console' },
                 { label: 'API 版本', value: 'v1' },
                 { label: '后端', value: 'Go · ArangoDB' },
               ].map(row => (
-                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,.04)', fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>{row.label}</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{row.value}</span>
+                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border, rgba(0,0,0,.06))' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted, #888)', fontWeight: 400 }}>{row.label}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-primary, #1a1a1a)', fontWeight: 500 }}>{row.value}</span>
                 </div>
               ))}
             </div>
 
             <div className="card" style={{ borderColor: 'rgba(229,57,53,.2)' }}>
-              <div className="card-title" style={{ color: 'var(--critical)' }}>Session</div>
+              <div className="card-title" style={{ color: 'var(--critical)' }}>会话</div>
               <button
                 className="btn-secondary"
                 style={{ color: 'var(--critical)', borderColor: 'rgba(229,57,53,.3)' }}
                 onClick={() => { clearAuth(); navigate('/login') }}
               >
-                Sign Out
+                退出登录
               </button>
             </div>
           </>

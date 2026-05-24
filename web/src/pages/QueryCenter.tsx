@@ -400,6 +400,8 @@ export default function QueryCenter() {
   const [results, setResults] = useState<Record<string, unknown>[]>([])
   const [columns, setColumns] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
+  const [showRef, setShowRef] = useState(false)
   const [error, setError] = useState('')
   const [elapsed, setElapsed] = useState<number | null>(null)
   const [expandedDatasets, setExpandedDatasets] = useState<Set<string>>(new Set(['xdr_data']))
@@ -636,6 +638,7 @@ export default function QueryCenter() {
   async function runQuery() {
     if (!currentTab) return
     setLoading(true)
+    setIsRunning(true)
     setError('')
     setResults([])
     setExpandedRows(new Set())
@@ -661,6 +664,7 @@ export default function QueryCenter() {
       setError(err.response?.data?.error?.message ?? err.message ?? 'Query failed')
     } finally {
       setLoading(false)
+      setIsRunning(false)
     }
   }
 
@@ -1212,9 +1216,9 @@ export default function QueryCenter() {
       {/* 3-column body */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* LEFT: sidebar (240px) */}
+        {/* LEFT: sidebar (180px) */}
         <div style={{
-          width: 240, flexShrink: 0, borderRight: '1px solid var(--border)',
+          width: 180, flexShrink: 0, borderRight: '1px solid var(--border)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           background: 'var(--bg-sidebar)',
         }}>
@@ -1924,23 +1928,32 @@ export default function QueryCenter() {
             {/* Run button with Ctrl+Enter hint */}
             <button
               className="btn-primary"
-              style={{ padding: '4px 18px', fontSize: 12 }}
+              style={{ padding: '4px 18px', fontSize: 12, opacity: isRunning ? 0.7 : 1 }}
               onClick={runQuery}
-              disabled={loading}
+              disabled={isRunning}
               title="运行查询 (Ctrl+Enter)"
             >
-              {loading ? '⟳' : '▶'} {loading ? 'Running…' : 'Run'}
+              {isRunning ? '⏳ 执行中…' : '▶ Run'}
             </button>
             <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 2 }} title="键盘快捷键">Ctrl+Enter 运行</span>
+            {/* 参考面板切换按钮 */}
+            <button
+              className="btn-secondary"
+              style={{ fontSize: 11, padding: '4px 10px', marginLeft: 4 }}
+              onClick={() => setShowRef(p => !p)}
+              title="切换 XQL 参考面板"
+            >
+              {showRef ? '参考 ◂' : '参考 ▸'}
+            </button>
           </div>
 
           {/* XQL Editor with line numbers */}
-          <div style={{ position: 'relative', flexShrink: 0, background: 'var(--bg-primary)' }}>
+          <div style={{ position: 'relative', flexShrink: 0, background: '#0d1117' }}>
             <pre style={{
               position: 'absolute', top: 0, left: 0,
               width: 40, height: '100%',
-              background: 'var(--bg-secondary)', borderRight: '1px solid var(--border)',
-              color: 'var(--text-muted)', fontSize: 12, lineHeight: '1.7em',
+              background: '#0d1117', borderRight: '1px solid rgba(79,163,224,.15)',
+              color: 'rgba(230,237,243,.35)', fontSize: 12, lineHeight: '1.7em',
               fontFamily: 'Consolas,"JetBrains Mono",monospace',
               padding: '12px 0', textAlign: 'right', paddingRight: 8,
               userSelect: 'none', pointerEvents: 'none',
@@ -1958,10 +1971,11 @@ export default function QueryCenter() {
               style={{
                 width: '100%', minHeight: 140, maxHeight: 260,
                 resize: 'vertical', paddingLeft: 52, paddingTop: 12, paddingBottom: 12, paddingRight: 16,
-                background: 'var(--bg-primary)', color: '#7ec8e3',
-                border: 'none', outline: 'none',
+                background: '#0d1117', color: '#e6edf3',
+                border: '1px solid rgba(79,163,224,.15)', outline: 'none',
                 fontFamily: 'Consolas,"JetBrains Mono",monospace',
                 fontSize: 12.5, lineHeight: '1.7em',
+                caretColor: '#4fa3e0',
               }}
               spellCheck={false}
             />
@@ -2170,10 +2184,11 @@ export default function QueryCenter() {
           </div>
         </div>
 
-        {/* RIGHT: XQL Reference (280px) */}
+        {/* RIGHT: XQL Reference (280px, hidden by default) */}
         <div style={{
-          width: 280, flexShrink: 0, borderLeft: '1px solid var(--border)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          width: showRef ? 280 : 0, flexShrink: 0,
+          borderLeft: showRef ? '1px solid var(--border)' : 'none',
+          display: showRef ? 'flex' : 'none', flexDirection: 'column', overflow: 'hidden',
           background: 'var(--bg-sidebar)',
         }}>
           <div style={{ padding: '10px 14px 6px', fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, flexShrink: 0 }}>
