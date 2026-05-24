@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom'
-import { useTheme } from '@/lib/theme'
 import { useT } from '@/lib/i18n'
 
 // On the dark-navy sidebar (light mode), nav items need white-family colours.
@@ -11,16 +10,14 @@ import { useT } from '@/lib/i18n'
 //
 // Since dark mode sidebar == dark bg too, we can just always use the sidebar vars.
 // But the dark theme doesn't define --sidebar-text, so we fall back:
-function sidebarNavColor(isActive: boolean, isDark: boolean) {
-  if (isDark) {
-    return isActive ? 'var(--accent-blue)' : 'rgba(160,185,215,.75)'
-  }
-  // light: sidebar is navy, text must be white-family
+// Sidebar is always dark (navy) in both light and dark themes.
+// Use CSS vars defined in both theme files.
+function sidebarNavColor(isActive: boolean) {
   return isActive ? 'var(--sidebar-text-active)' : 'var(--sidebar-text)'
 }
 
-function sidebarHoverColor(isDark: boolean) {
-  return isDark ? 'rgba(200,220,245,.90)' : 'rgba(255,255,255,.90)'
+function sidebarHoverColor() {
+  return 'rgba(255,255,255,.90)'
 }
 
 interface NavItem {
@@ -67,9 +64,7 @@ function buildNavItems(t: (k: string) => string): NavItem[] {
 interface SidebarProps { open: boolean; onToggle: () => void }
 
 export default function Sidebar({ open, onToggle }: SidebarProps) {
-  const { theme } = useTheme()
   const t = useT()
-  const isDark = theme === 'dark'
   const navItems = buildNavItems(t)
 
   return (
@@ -90,7 +85,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
       <div style={{
         width: '100%', height: 48, display: 'flex', alignItems: 'center',
         padding: '0 4px',
-        borderBottom: `1px solid ${isDark ? 'var(--border)' : 'rgba(255,255,255,.12)'}`,
+        borderBottom: '1px solid rgba(255,255,255,.10)',
         flexShrink: 0, gap: 0,
       }}>
         <button
@@ -100,7 +95,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
             flexShrink: 0, borderRadius: 8, cursor: 'pointer',
             background: 'none', border: 'none', transition: 'background .15s',
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = isDark ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.10)')}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.08)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'none')}
         >
           {/* Hexagon + scan beam logo */}
@@ -200,7 +195,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
                 position: 'relative', width: 192, height: 36,
                 display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
                 padding: '0 10px 0 8px', gap: 10, borderRadius: 8, textDecoration: 'none',
-                color: sidebarNavColor(isActive, isDark),
+                color: sidebarNavColor(isActive),
                 background: isActive
                   ? (!open ? 'rgba(0,120,212,.30)' : 'var(--nav-active-bg)')
                   : 'none',
@@ -213,14 +208,14 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
                 const el = e.currentTarget
                 if (!el.classList.contains('active')) {
                   el.style.background = 'var(--nav-hover-bg)'
-                  el.style.color = sidebarHoverColor(isDark)
+                  el.style.color = sidebarHoverColor()
                 }
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget
                 if (!el.classList.contains('active')) {
                   el.style.background = 'none'
-                  el.style.color = isDark ? 'rgba(160,185,215,.75)' : 'var(--sidebar-text)'
+                  el.style.color = 'var(--sidebar-text)'
                 }
               }}
             >
@@ -255,7 +250,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
       <div style={{
         width: 200, display: 'flex', flexDirection: 'column',
         padding: '8px 4px 12px', gap: 4,
-        borderTop: `1px solid ${isDark ? 'var(--border)' : 'rgba(255,255,255,.12)'}`,
+        borderTop: '1px solid rgba(255,255,255,.10)',
         flexShrink: 0,
       }}>
         {/* Settings nav item */}
@@ -266,7 +261,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
             position: 'relative', width: 192, height: 36,
             display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
             padding: '0 10px 0 8px', gap: 10, borderRadius: 8, textDecoration: 'none',
-            color: sidebarNavColor(isActive, isDark),
+            color: sidebarNavColor(isActive),
             background: isActive ? 'var(--nav-active-bg)' : 'none',
             borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
             transition: 'background .15s, color .15s, border-color .15s',
@@ -276,14 +271,14 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
             const el = e.currentTarget
             if (!el.classList.contains('active')) {
               el.style.background = 'var(--nav-hover-bg)'
-              el.style.color = sidebarHoverColor(isDark)
+              el.style.color = sidebarHoverColor()
             }
           }}
           onMouseLeave={e => {
             const el = e.currentTarget
             if (!el.classList.contains('active')) {
               el.style.background = 'none'
-              el.style.color = isDark ? 'rgba(160,185,215,.75)' : 'var(--sidebar-text)'
+              el.style.color = 'var(--sidebar-text)'
             }
           }}
         >
@@ -312,17 +307,17 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
             width: 192, height: 32,
             padding: '0 10px 0 8px', borderRadius: 8,
             background: 'none', border: 'none', cursor: 'pointer',
-            color: isDark ? 'rgba(120,145,175,.55)' : 'rgba(255,255,255,.45)',
+            color: 'rgba(255,255,255,.40)',
             transition: 'background .15s, color .15s',
             flexShrink: 0,
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = isDark ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.10)'
-            e.currentTarget.style.color = isDark ? 'rgba(200,220,245,.90)' : 'rgba(255,255,255,.80)'
+            e.currentTarget.style.background = 'rgba(255,255,255,.08)'
+            e.currentTarget.style.color = 'rgba(255,255,255,.80)'
           }}
           onMouseLeave={e => {
             e.currentTarget.style.background = 'none'
-            e.currentTarget.style.color = isDark ? 'rgba(120,145,175,.55)' : 'rgba(255,255,255,.45)'
+            e.currentTarget.style.color = 'rgba(255,255,255,.40)'
           }}
         >
           <svg

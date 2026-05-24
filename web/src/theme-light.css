@@ -42,8 +42,10 @@ html.light {
   --low:           #0a6b35;
 
   /* ── Nav ── */
-  --nav-active-bg: rgba(255,255,255,.15);
-  --nav-hover-bg:  rgba(255,255,255,.08);
+  --nav-active-bg:      rgba(255,255,255,.15);
+  --nav-hover-bg:       rgba(255,255,255,.08);
+  --sidebar-text:       rgba(200,220,245,.80);
+  --sidebar-text-active:#ffffff;
 }
 
 /* ── Base ── */

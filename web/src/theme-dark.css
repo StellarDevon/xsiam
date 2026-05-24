@@ -58,8 +58,10 @@
   --header-h:      48px;
 
   /* ── Nav ── */
-  --nav-active-bg: rgba(63,160,224,.16);
-  --nav-hover-bg:  rgba(255,255,255,.05);
+  --nav-active-bg:      rgba(63,160,224,.16);
+  --nav-hover-bg:       rgba(255,255,255,.05);
+  --sidebar-text:       rgba(160,185,215,.80);
+  --sidebar-text-active:#ffffff;
 }
 
 /* ════════════════════════════════
