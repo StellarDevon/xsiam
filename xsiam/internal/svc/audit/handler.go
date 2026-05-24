@@ -63,3 +63,33 @@ func (h *Handler) List(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data, "meta": meta})
 }
+
+// WebList is the public-API variant of List. It enforces tenant isolation by
+// reading tenant_id from the JWT context (set by middleware.JWTAuth) rather
+// than from a query parameter, so callers cannot query another tenant's logs.
+func (h *Handler) WebList(c *gin.Context) {
+	tenantID := c.GetString("tenant_id")
+	operatorID := c.Query("operator_id")
+	f := repository.AuditLogListFilter{
+		TenantID:   tenantID,
+		OperatorID: operatorID,
+	}
+	if from := c.Query("from"); from != "" {
+		t, err := time.Parse(time.RFC3339, from)
+		if err == nil {
+			f.From = &t
+		}
+	}
+	if to := c.Query("to"); to != "" {
+		t, err := time.Parse(time.RFC3339, to)
+		if err == nil {
+			f.To = &t
+		}
+	}
+	data, meta, err := h.svc.List(c.Request.Context(), f)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": data, "meta": meta})
+}

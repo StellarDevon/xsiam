@@ -8,7 +8,7 @@ import (
 
 // Notification represents a message to be sent.
 type Notification struct {
-	Channel  string   `json:"channel"` // email | dingtalk | slack | sms
+	Channel  string   `json:"channel"` // email | dingtalk | slack | webhook
 	To       []string `json:"to"`
 	Subject  string   `json:"subject"`
 	Body     string   `json:"body"`
@@ -35,6 +35,9 @@ func New(cfg config.NotifyConfig) *Service {
 	}
 	if cfg.Slack.Enabled {
 		s.adapters["slack"] = NewSlackSender(cfg.Slack)
+	}
+	if cfg.Webhook.Enabled {
+		s.adapters["webhook"] = NewWebhookSender(cfg.Webhook)
 	}
 	return s
 }

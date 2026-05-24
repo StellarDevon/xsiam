@@ -93,3 +93,28 @@ func (h *FeedHandler) Sync(c *gin.Context) {
 	}
 	response.OK(c, gin.H{"job_id": jobID})
 }
+
+// BulkSync triggers sync for multiple intel feeds.
+// POST /api/intel_feeds/bulk_sync
+func (h *FeedHandler) BulkSync(c *gin.Context) {
+	var body struct {
+		Keys []string `json:"keys"`
+		IDs  []string `json:"ids"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	keys := body.Keys
+	if len(keys) == 0 {
+		keys = body.IDs
+	}
+	operatorID := c.GetString(middleware.CtxUserID)
+	synced := 0
+	for _, k := range keys {
+		if _, err := h.svc.Sync(c.Request.Context(), k, operatorID); err == nil {
+			synced++
+		}
+	}
+	c.JSON(200, gin.H{"synced": synced})
+}

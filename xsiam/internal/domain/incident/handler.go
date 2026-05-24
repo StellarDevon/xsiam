@@ -1,7 +1,11 @@
 package incident
 
 import (
+	"encoding/csv"
+	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 	"xsiam/internal/middleware"
 	"xsiam/internal/model"
 	"xsiam/internal/repository"
@@ -27,9 +31,12 @@ func (h *Handler) List(c *gin.Context) {
 		TenantID:    tenantID,
 		Severity:    c.Query("severity"),
 		Status:      c.Query("status"),
-		AssigneeID:  firstOf(c.Query("assignee_id"), c.Query("assigned_to")),
+		Priority:    c.Query("priority"),
+		AssigneeID:  c.Query("assignee_id"),
+		AssignedTo:  firstOf(c.Query("assigned_to"), c.Query("assignee_id")),
 		Unassigned:  c.Query("unassigned") == "true",
 		Keyword:     firstOf(c.Query("q"), c.Query("keyword")),
+		MitreTactic: c.Query("mitre_tactic"),
 		HoursAgo:    hoursAgo,
 		Page:        page,
 		PageSize:    pageSize,
@@ -212,6 +219,98 @@ func (h *Handler) Bulk(c *gin.Context) {
 		return
 	}
 	response.OK(c, gin.H{"updated": len(body.Keys)})
+}
+
+func (h *Handler) SLAStats(c *gin.Context) {
+	tenantID := c.GetString(middleware.CtxTenantID)
+	stats, err := h.svc.GetSLAStats(c.Request.Context(), tenantID)
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	response.OK(c, stats)
+}
+
+// Summary generates an AI summary for an incident.
+// GET /api/incidents/:id/summary
+func (h *Handler) Summary(c *gin.Context) {
+	key := c.Param("id")
+	inc, err := h.svc.Get(c.Request.Context(), key)
+	if err != nil {
+		response.NotFound(c, "incident")
+		return
+	}
+	summary := fmt.Sprintf(
+		"Incident '%s' (severity: %s, status: %s) was created at %s with SmartScore %.1f. Total alerts: %d.",
+		inc.Title, inc.Severity, inc.Status, inc.CreatedAt.Format(time.RFC3339), inc.SmartScore, inc.AlertCount,
+	)
+	c.JSON(http.StatusOK, gin.H{
+		"summary":      summary,
+		"incident_key": key,
+		"ai_enhanced":  false,
+	})
+}
+
+// Export returns all incidents for this tenant as CSV.
+// GET /api/incidents/export
+func (h *Handler) Export(c *gin.Context) {
+	tenantID := c.GetString(middleware.CtxTenantID)
+	incs, _, err := h.svc.List(c.Request.Context(), repository.IncidentListFilter{
+		TenantID: tenantID, PageSize: 10000, Page: 1,
+	})
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	c.Header("Content-Disposition", `attachment; filename="incidents.csv"`)
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	w := csv.NewWriter(c.Writer)
+	_ = w.Write([]string{"_key", "title", "severity", "status", "smart_score", "alert_count", "created_at"})
+	for _, inc := range incs {
+		_ = w.Write([]string{
+			inc.Key,
+			inc.Title,
+			string(inc.Severity),
+			string(inc.Status),
+			fmt.Sprintf("%.1f", inc.SmartScore),
+			fmt.Sprintf("%d", inc.AlertCount),
+			inc.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	w.Flush()
+}
+
+// SLARecalc recomputes SLA status for a specific incident.
+// POST /api/incidents/:id/sla_recalc
+func (h *Handler) SLARecalc(c *gin.Context) {
+	key := c.Param("id")
+	inc, err := h.svc.Get(c.Request.Context(), key)
+	if err != nil {
+		response.NotFound(c, "incident")
+		return
+	}
+	slaLimits := map[string]float64{
+		"critical": 4, "high": 8, "medium": 24, "low": 72,
+	}
+	limit := slaLimits[string(inc.Severity)]
+	if limit == 0 {
+		limit = 72
+	}
+	elapsed := time.Since(inc.CreatedAt).Hours()
+	remaining := limit - elapsed
+	breached := elapsed > limit
+	pctUsed := (elapsed / limit) * 100.0
+	if pctUsed > 100 {
+		pctUsed = 100
+	}
+	response.OK(c, gin.H{
+		"incident_key":    key,
+		"breached":        breached,
+		"elapsed_hours":   elapsed,
+		"limit_hours":     limit,
+		"remaining_hours": remaining,
+		"pct_used":        pctUsed,
+	})
 }
 
 func firstOf(vals ...string) string {

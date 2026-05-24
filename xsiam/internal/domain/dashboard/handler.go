@@ -24,3 +24,13 @@ func (h *Handler) Stats(c *gin.Context) {
 	}
 	response.OK(c, stats)
 }
+
+func (h *Handler) ExtendedStats(c *gin.Context) {
+	tenantID := c.GetString(middleware.CtxTenantID)
+	stats, err := h.svc.GetExtendedStats(c.Request.Context(), tenantID)
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	response.OK(c, stats)
+}

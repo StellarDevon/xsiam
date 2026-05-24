@@ -36,6 +36,14 @@ func (r *Repo) List(ctx context.Context, f repository.DeviceListFilter) ([]model
 		filters = append(filters, "CONTAINS(LOWER(doc.hostname), LOWER(@kw))")
 		bindVars["kw"] = f.Keyword
 	}
+	if f.OS != "" {
+		filters = append(filters, "LOWER(doc.os) LIKE LOWER(CONCAT('%', @os, '%'))")
+		bindVars["os"] = f.OS
+	}
+	if f.Hostname != "" {
+		filters = append(filters, "LOWER(doc.hostname) LIKE LOWER(CONCAT('%', @hostname, '%'))")
+		bindVars["hostname"] = f.Hostname
+	}
 
 	var data []model.Device
 	meta, err := repository.FindPaged(ctx, r.db, repository.ListOptions{
@@ -112,4 +120,49 @@ func (r *Repo) UpdateStatusByKey(ctx context.Context, key string, status model.A
 	col, _ := r.db.Collection(ctx, colDevices)
 	_, err := col.UpdateDocument(ctx, key, patch)
 	return err
+}
+
+// BulkOfflineByAgentKeys sets status=offline for all devices whose agent_id is in agentKeys
+// and belong to tenantID. Implements presence.DeviceStatusUpdater.
+func (r *Repo) BulkOfflineByAgentKeys(ctx context.Context, tenantID string, agentKeys []string) error {
+	if len(agentKeys) == 0 {
+		return nil
+	}
+	now := time.Now()
+	aql := `
+FOR doc IN devices
+  FILTER doc.tenant_id == @tenantID
+  FILTER doc.agent_id IN @agentKeys
+  FILTER doc.agent_status == 'online'
+  UPDATE doc WITH {
+    agent_status: 'offline',
+    updated_at:   @now
+  } IN devices
+`
+	_, err := r.db.Query(ctx, aql, &arangodb.QueryOptions{
+		BindVars: map[string]any{
+			"tenantID":  tenantID,
+			"agentKeys": agentKeys,
+			"now":       now,
+		},
+	})
+	return err
+}
+
+// TenantForAgentKey returns the tenant_id for the device whose agent_id matches key.
+// Returns ("", nil) when not found. Implements presence.DeviceStatusUpdater.
+func (r *Repo) TenantForAgentKey(ctx context.Context, agentKey string) (string, error) {
+	aql := `FOR doc IN devices FILTER doc.agent_id == @key LIMIT 1 RETURN doc.tenant_id`
+	cursor, err := r.db.Query(ctx, aql, &arangodb.QueryOptions{
+		BindVars: map[string]any{"key": agentKey},
+	})
+	if err != nil {
+		return "", err
+	}
+	defer cursor.Close()
+	var tenantID string
+	if _, err := cursor.ReadDocument(ctx, &tenantID); err != nil {
+		return "", nil // not found
+	}
+	return tenantID, nil
 }

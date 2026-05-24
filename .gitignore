@@ -46,3 +46,12 @@ desktop.ini
 .vscode/
 *.swp
 *.swo
+
+# ── Playwright runtime artifacts ──────────────────────────────────────────────
+/web/playwright-report/
+/web/test-results/
+/web/tests/playwright/auth-state.json
+
+# ── xsiam runtime output logs ─────────────────────────────────────────────────
+/xsiam/xsiam-out.txt
+/xsiam/xsiam-err.txt

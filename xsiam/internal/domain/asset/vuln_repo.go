@@ -36,6 +36,10 @@ func (r *VulnRepo) List(ctx context.Context, f repository.VulnerabilityListFilte
 		filters = append(filters, "doc.fix_status == @fixStatus")
 		bindVars["fixStatus"] = f.FixStatus
 	}
+	if f.AssetID != "" {
+		filters = append(filters, "@asset_id IN doc.affected_assets")
+		bindVars["asset_id"] = f.AssetID
+	}
 	if f.Keyword != "" {
 		filters = append(filters, "(CONTAINS(LOWER(doc.title), LOWER(@kw)) OR CONTAINS(LOWER(doc.cve_id), LOWER(@kw)))")
 		bindVars["kw"] = f.Keyword

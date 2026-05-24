@@ -25,6 +25,7 @@ func NewPlaybookRepo(db arangodb.Database) *PlaybookRepo {
 type PlaybookListFilter struct {
 	TenantID    string
 	Keyword     string
+	Name        string
 	TriggerType string
 	Status      string
 	Page        int
@@ -38,6 +39,10 @@ func (r *PlaybookRepo) List(ctx context.Context, f PlaybookListFilter) ([]model.
 	if f.Keyword != "" {
 		filters = append(filters, "CONTAINS(LOWER(doc.name), LOWER(@kw))")
 		bindVars["kw"] = f.Keyword
+	}
+	if f.Name != "" {
+		filters = append(filters, "CONTAINS(LOWER(doc.name), LOWER(@name))")
+		bindVars["name"] = f.Name
 	}
 	if f.TriggerType != "" {
 		filters = append(filters, "doc.trigger.type == @triggerType")

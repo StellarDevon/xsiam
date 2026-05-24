@@ -51,6 +51,29 @@ func (r *stubAssetRepo) List(ctx context.Context, f repository.AssetListFilter) 
 	return out, model.PageMeta{Total: int64(len(out)), Page: 1, PageSize: 20, Pages: 1}, nil
 }
 
+func (r *stubAssetRepo) Stats(ctx context.Context, tenantID string) (*asset.AssetStats, error) {
+	stats := &asset.AssetStats{
+		ByType:   make(map[string]int64),
+		ByStatus: make(map[string]int64),
+	}
+	for _, a := range r.assets {
+		if tenantID != "" && a.TenantID != tenantID {
+			continue
+		}
+		stats.Total++
+		if a.Type != "" {
+			stats.ByType[string(a.Type)]++
+		}
+		if a.Status != "" {
+			stats.ByStatus[a.Status]++
+		}
+		if a.RiskLevel == "high" || a.RiskLevel == "critical" {
+			stats.HighRiskCount++
+		}
+	}
+	return stats, nil
+}
+
 // stub audit logger
 type stubAudit struct{ calls int }
 

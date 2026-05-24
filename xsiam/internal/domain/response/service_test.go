@@ -195,7 +195,7 @@ func TestPlaybookService_Execute_CallsExecutor(t *testing.T) {
 	pb := &model.Playbook{TenantID: "t-1", Name: "run-me"}
 	_ = svc.Create(context.Background(), pb, "op")
 
-	if err := svc.Execute(context.Background(), pb.Key, "op"); err != nil {
+	if _, err := svc.Execute(context.Background(), pb.Key, "op"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if exec.called != 1 {

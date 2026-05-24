@@ -22,11 +22,13 @@ type PrivilegeRestriction struct {
 	TenantID      string     `json:"tenant_id"`
 	UserID        string     `json:"user_id"`
 	Level         int        `json:"level"`
-	TriggerSignal string     `json:"trigger_signal"`
-	TriggerScore  float64    `json:"trigger_score"`
+	Reason        string     `json:"reason,omitempty"`
+	Restrictions  []string   `json:"restrictions,omitempty"`
+	TriggerSignal string     `json:"trigger_signal,omitempty"`
+	TriggerScore  float64    `json:"trigger_score,omitempty"`
 	AppliedAt     time.Time  `json:"applied_at"`
-	ExpiresAt     *time.Time `json:"expires_at"`
-	ReleasedAt    *time.Time `json:"released_at"`
-	ReleasedBy    *string    `json:"released_by"`
+	ExpiresAt     *time.Time `json:"expires_at,omitempty"`
+	ReleasedAt    *time.Time `json:"released_at,omitempty"`
+	ReleasedBy    *string    `json:"released_by,omitempty"`
 	IsActive      bool       `json:"is_active"`
 }

@@ -2,6 +2,7 @@ package threat
 
 import (
 	"strconv"
+	"strings"
 	"xsiam/internal/middleware"
 	"xsiam/internal/model"
 	"xsiam/internal/repository"
@@ -48,12 +49,16 @@ func (h *IocHandler) Get(c *gin.Context) {
 
 func (h *IocHandler) Search(c *gin.Context) {
 	tenantID := c.GetString(middleware.CtxTenantID)
-	value := c.Query("value")
-	if value == "" {
-		response.BadRequest(c, "value is required")
+	q := c.Query("q")
+	if q == "" {
+		response.BadRequest(c, "q is required")
 		return
 	}
-	results, err := h.svc.Search(c.Request.Context(), tenantID, value)
+	limit := 20
+	if n, err2 := strconv.Atoi(c.DefaultQuery("limit", "20")); err2 == nil && n > 0 {
+		limit = n
+	}
+	results, err := h.svc.Search(c.Request.Context(), tenantID, q, limit)
 	if err != nil {
 		response.InternalError(c, err)
 		return
@@ -117,4 +122,25 @@ func (h *IocHandler) Delete(c *gin.Context) {
 		return
 	}
 	c.Status(204)
+}
+
+// Hunt looks up IOC records by one or more indicator values (IPs, hashes, domains, etc.).
+// GET /api/iocs/hunt?values=ip1,ip2,hash1
+func (h *IocHandler) Hunt(c *gin.Context) {
+	tenantID := c.GetString(middleware.CtxTenantID)
+	rawValues := c.Query("values")
+	if rawValues == "" {
+		response.BadRequest(c, "values query parameter is required")
+		return
+	}
+	values := strings.Split(rawValues, ",")
+	results, err := h.svc.Hunt(c.Request.Context(), tenantID, values)
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	if results == nil {
+		results = []model.IOC{}
+	}
+	response.OK(c, results)
 }

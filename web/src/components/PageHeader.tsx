@@ -4,7 +4,7 @@ interface Props {
   /** 页面主标题 */
   title: string
   /** 右侧小字说明，如计数、状态 */
-  subtitle?: string
+  subtitle?: React.ReactNode
   /** 右侧操作按钮区 */
   actions?: React.ReactNode
 }

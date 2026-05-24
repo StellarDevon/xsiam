@@ -32,6 +32,13 @@ func (s *VulnService) Create(ctx context.Context, v *model.Vulnerability, operat
 }
 
 func (s *VulnService) Update(ctx context.Context, key string, patch map[string]any, operatorID string) error {
+	// Normalise: frontend may send "status" (alias field); sync to "fix_status"
+	// so AQL filters on fix_status remain accurate.
+	if status, ok := patch["status"].(string); ok && status != "" {
+		if _, hasFix := patch["fix_status"]; !hasFix {
+			patch["fix_status"] = status
+		}
+	}
 	return s.vulnRepo.Update(ctx, key, patch)
 }
 

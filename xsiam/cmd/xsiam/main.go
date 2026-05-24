@@ -26,14 +26,19 @@ import (
 	alertdomain "xsiam/internal/domain/alert"
 	assetdomain "xsiam/internal/domain/asset"
 	authdomain "xsiam/internal/domain/auth"
+	copilotdomain "xsiam/internal/domain/copilot"
 	"xsiam/internal/domain/dashboard"
 	devicedomain "xsiam/internal/domain/device"
 	identitydomain "xsiam/internal/domain/identity"
 	incidentdomain "xsiam/internal/domain/incident"
+	etldomain "xsiam/internal/domain/etl"
 	querydomain "xsiam/internal/domain/query"
 	reportdomain "xsiam/internal/domain/report"
 	responsedomain "xsiam/internal/domain/response"
 	threatdomain "xsiam/internal/domain/threat"
+	"xsiam/internal/etl"
+	"xsiam/internal/ingest"
+	"xsiam/internal/presence"
 	"xsiam/internal/repository"
 	"xsiam/internal/router"
 	"xsiam/internal/svc/audit"
@@ -43,6 +48,7 @@ import (
 	"xsiam/pkg/localclient"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -138,6 +144,8 @@ func main() {
 
 	alertSvc := alertdomain.NewService(alertRepo, incidentRepo, auditRepo, pool)
 	incidentSvc := incidentdomain.NewService(incidentRepo, alertRepo, auditRepo)
+	webhookDispatcher := incidentdomain.NewWebhookDispatcher(cfg.Webhook.Endpoints, cfg.Webhook.Secret, log)
+	incidentdomain.InjectDispatcher(incidentSvc, webhookDispatcher)
 	assetSvc := assetdomain.NewService(assetRepo, auditRepo)
 	vulnSvc := assetdomain.NewVulnService(vulnRepo, auditRepo)
 	iocSvc := threatdomain.NewIocService(iocRepo, auditRepo)
@@ -146,13 +154,33 @@ func main() {
 	actionSvc := responsedomain.NewActionService(actionRepo, execClient, auditRepo)
 	pbSvc := responsedomain.NewPlaybookService(pbRepo, execClient, auditRepo)
 	devSvc := devicedomain.NewService(devRepo, policyRepo, dsRepo, agentCtrl, auditRepo)
-	liveness := devicedomain.NewLivenessRegistry("") // uses default fluent-bit URL; overridable via FLUENTBIT_MONITOR_URL
+
+	// ── Presence registry (Redis-backed distributed online state) ─────────
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddr,
+		Password: cfg.RedisPassword,
+		DB:       0,
+	})
+	presenceReg := presence.New(rdb)
+	if err := presenceReg.Ping(bgCtx); err != nil {
+		log.Warn("redis not available — presence registry degraded", zap.Error(err))
+		// Non-fatal: liveness queries will return empty; GC won't run
+	} else {
+		log.Info("redis connected", zap.String("addr", cfg.RedisAddr))
+		// Start presence GC sweep every 15 seconds
+		presenceGC := presence.NewGC(presenceReg, devRepo, log)
+		presenceGC.StartLoop(bgCtx, 15*time.Second)
+	}
+
 	dashSvc := dashboard.NewService(
 		repository.NewAlertRepo(arangoDB),
 		repository.NewIncidentRepo(arangoDB),
 		repository.NewAssetRepo(arangoDB),
 		repository.NewVulnerabilityRepo(arangoDB),
 		ruleRepoShared,
+		repository.NewIocRepo(arangoDB),
+		identityRiskRepo,
+		reportRepo,
 	)
 	reportSvc := reportdomain.NewService(reportRepo, dashSvc)
 	authConsoleSvc := authdomain.NewAuthService(caller, userRepo)
@@ -166,16 +194,38 @@ func main() {
 		repository.NewVulnerabilityRepo(arangoDB),
 		repository.NewAssetRepo(arangoDB),
 	)
-	logSvc := querydomain.NewService(lakeClient)
+	logSvc := querydomain.NewServiceWithRepo(lakeClient, arangoDB)
 
 	_ = identityRiskSvc.Restore(bgCtx)
 	identityRiskSvc.StartFlusher(bgCtx)
 
 	// ── Cron ──────────────────────────────────────────────────────────────
 	mgr := cron.New(bgCtx, log)
-	registerCronTasks(mgr, log, alertRepo, ruleSvc, causalitySvc, smartScoreSvc, exposureSvc)
+	registerCronTasks(mgr, log, alertRepo, ruleSvc, causalitySvc, smartScoreSvc, exposureSvc, reportSvc)
 	mgr.Start()
 	log.Info("cron started")
+
+	// ── ETL pipeline ─────────────────────────────────────────────────────────
+	// The pipeline hot-reloads rules from ArangoDB every 60s.
+	// When cfg.Stub.ETL is true the pipeline starts empty (no rules loaded).
+	// Either way the Pipeline object is always non-nil so ingest can call Process().
+	var etlPipeline *etl.Pipeline
+	{
+		etlRuleRepo := repository.NewETLRuleRepo(arangoDB)
+		etlExecutor := etl.NewActionExecutor(
+			repository.NewAssetRepo(arangoDB),
+			repository.NewIocRepo(arangoDB),
+			log,
+		)
+		etlPipeline = etl.NewPipeline(etlExecutor)
+		if !cfg.Stub.ETL {
+			engine := etl.NewRuleEngine(etlRuleRepo, etlPipeline, "t-super", log)
+			if err := engine.LoadRules(bgCtx); err != nil {
+				log.Warn("etl rule initial load failed (empty rule set active)", zap.Error(err))
+			}
+			engine.StartHotReload(bgCtx)
+		}
+	}
 
 	// ── Graceful shutdown ─────────────────────────────────────────────────
 	quit := make(chan os.Signal, 1)
@@ -196,7 +246,7 @@ func main() {
 		DetectionRule: threatdomain.NewRuleHandler(ruleSvc),
 		Action:        responsedomain.NewActionHandler(actionSvc),
 		Playbook:      responsedomain.NewPlaybookHandler(pbSvc),
-		Device:        devicedomain.NewHandler(devSvc, liveness),
+		Device:        devicedomain.NewHandler(devSvc, presenceReg),
 		Policy:        devicedomain.NewPolicyHandler(devSvc),
 		DataSource:    devicedomain.NewDataSourceHandler(devSvc),
 		IdentityRisk:  identitydomain.NewRiskHandler(identityRiskSvc),
@@ -207,6 +257,12 @@ func main() {
 		Tenant:        authdomain.NewTenantHandler(tenantSvc),
 		RBAC:          authdomain.NewRBACHandler(rbacConsoleSvc),
 		LogEntry:      querydomain.NewHandler(logSvc),
+		ETLRule:       etldomain.NewHandler(etldomain.NewService(repository.NewETLRuleRepo(arangoDB), etlPipeline)),
+		ThreatIntel:   threatdomain.NewThreatIntelHandler(domainRuleRepo, iocRepo, reportRepo),
+		Copilot:       copilotdomain.NewHandler(copilotdomain.NewService(cfg.CopilotAPIKey, alertRepo, incidentRepo, iocRepo)),
+		Privilege:     identitydomain.NewPrivilegeHandler(privRepo),
+		Audit:         audit.NewHandler(auditSvc),
+		Notify:        notify.NewPublicHandler(notifySvc),
 	}
 	webEngine := router.NewWebEngine(webHandlers, caller, cfg.Auth.JWTSecret, log, xsiamroot.StaticFiles)
 	webSrv := &http.Server{Addr: ":" + cfg.WebPort, Handler: webEngine}
@@ -226,10 +282,30 @@ func main() {
 		_ = webSrv.Shutdown(ctx)
 	}()
 
+	// ── Ingest handler (XLOG binary frames from fluent-bit / agents) ──────
+	// Data flow per event:
+	//   1. raw event  → ngx HEC  index "raw_<tag>"          (if lakeWriter != nil)
+	//   2. etl.Pipeline.Process() → transformed entry
+	//   3. ETL entry  → ngx HEC  index <rule.Output.NgxIndex> (if lakeWriter != nil)
+	//   4. ETL entry  → ArangoDB log_entries                  (if rule.Output.WriteArango)
+	// When no rule matches: raw event → ngx + ArangoDB (default).
+	var ingestHandler *ingest.Handler
+	{
+		logEntryRepo := repository.NewLogEntryRepo(arangoDB)
+		// Pass lakeWriter as the ngx client (nil when DataLake is disabled —
+		// all events fall back to ArangoDB-only in that case).
+		h, err := ingest.NewHandler(etlPipeline, lakeWriter, logEntryRepo, "t-super", log)
+		if err != nil {
+			log.Fatal("failed to create ingest handler", zap.Error(err))
+		}
+		ingestHandler = h
+	}
+
 	// ── Internal server :18090 ────────────────────────────────────────────
 	internalHandlers := router.InternalHandlers{
 		AlertWebhook: authdomain.NewInternalHandler(alertSvc),
-		AgentEvent:   devicedomain.NewAgentEventInternalHandler(devSvc, liveness, log),
+		AgentEvent:   devicedomain.NewAgentEventInternalHandler(devSvc, presenceReg, log),
+		AgentLog:     ingestHandler,
 		Auth:         auth.NewHandler(authSvc),
 		RBAC:         rbac.NewHandler(rbacSvc),
 		Notify:       notify.NewHandler(notifySvc),
@@ -272,6 +348,7 @@ func registerCronTasks(
 	causalitySvc *incidentdomain.CausalityService,
 	smartScoreSvc *incidentdomain.SmartScoreService,
 	exposureSvc *identitydomain.ExposureService,
+	reportSvc *reportdomain.Service,
 ) {
 	_ = mgr.RegisterCron("0 */5 * * * *", cron.Task{
 		Name: "alert_correlation_sweep",
@@ -318,6 +395,20 @@ func registerCronTasks(
 			for _, rule := range rules {
 				log.Debug("rule sync check", zap.String("rule", rule.Name))
 			}
+		},
+	})
+
+	_ = mgr.RegisterCron("0 */10 * * * *", cron.Task{
+		Name: "report_process_pending",
+		Fn: func(ctx context.Context) {
+			_ = reportSvc.ProcessPending(ctx, "")
+		},
+	})
+
+	_ = mgr.RegisterCron("0 30 1 * * *", cron.Task{
+		Name: "smart_score_recalc_nightly",
+		Fn: func(ctx context.Context) {
+			_ = smartScoreSvc.RecalcForTenant(ctx, "t-super")
 		},
 	})
 }

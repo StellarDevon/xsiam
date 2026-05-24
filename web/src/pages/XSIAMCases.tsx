@@ -1,7 +1,28 @@
 import { useState, useRef, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import type { PageMeta } from '@/lib/api'
+import api from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
+
+// ── Backend Incident type ─────────────────────────────────────────────────────
+
+interface Incident {
+  _key: string
+  incident_id: string
+  name: string
+  description: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  status: string
+  smart_score: number
+  alert_count: number
+  mitre_tactics: string[]
+  asset_names: string[]
+  assignee?: string
+  assigned_to?: string
+  priority?: string
+  created_at: string
+  updated_at: string
+}
 
 // ── Type Definitions ──────────────────────────────────────────────────────────
 
@@ -10,6 +31,7 @@ interface CaseItem {
   displayId: string
   severity: 'C' | 'H' | 'M' | 'L'
   score: number
+  smartScore?: number
   badge?: string
   name: string
   description: string
@@ -18,6 +40,8 @@ interface CaseItem {
   sources: string[]
   extraMeta?: string[]
   status: string
+  assignedTo?: string
+  priority?: string
 }
 
 interface ArtifactRow {
@@ -321,6 +345,279 @@ function getActionDotColor(action: string): string {
   return '#4fa3e0'
 }
 
+function getSmartScoreStyle(score: number): { background: string; color: string } | null {
+  if (score <= 0) return null
+  if (score >= 80) return { background: 'rgba(229,57,53,0.15)', color: '#ef5350' }
+  if (score >= 60) return { background: 'rgba(255,111,0,0.15)', color: '#ffa726' }
+  if (score >= 40) return { background: 'rgba(249,168,37,0.15)', color: '#f9a825' }
+  return null
+}
+
+// ── SLA helpers ───────────────────────────────────────────────────────────────
+
+interface SLAInfo {
+  totalMs: number
+  elapsedMs: number
+  remainingMs: number
+  breached: boolean
+  deadlineStr: string
+  pct: number          // elapsed / total, 0-1
+}
+
+const SLA_HOURS: Record<string, number> = {
+  P1: 4,
+  P2: 8,
+  P3: 24,
+  P4: 72,
+  critical: 4,
+  high: 8,
+  medium: 24,
+  low: 72,
+}
+
+function computeSLA(createdAt: string, priority?: string, severity?: string): SLAInfo | null {
+  const key = priority ?? severity ?? ''
+  const hours = SLA_HOURS[key.toLowerCase()] ?? SLA_HOURS[key] ?? null
+  if (!hours) return null
+  const totalMs = hours * 3600 * 1000
+  const created = new Date(createdAt).getTime()
+  if (isNaN(created)) return null
+  const now = Date.now()
+  const elapsedMs = now - created
+  const remainingMs = totalMs - elapsedMs
+  const deadline = new Date(created + totalMs)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const deadlineStr = `${deadline.getFullYear()}-${pad(deadline.getMonth() + 1)}-${pad(deadline.getDate())} ${pad(deadline.getHours())}:${pad(deadline.getMinutes())}`
+  return {
+    totalMs,
+    elapsedMs,
+    remainingMs,
+    breached: remainingMs < 0,
+    deadlineStr,
+    pct: Math.min(1, elapsedMs / totalMs),
+  }
+}
+
+interface SLAStats {
+  p1_breach: number
+  p2_at_risk: number
+  compliance_rate: number
+}
+
+// ── SLABadge component ────────────────────────────────────────────────────────
+
+function SLABadge({ createdAt, priority, severity }: { createdAt: string; priority?: string; severity?: string }) {
+  const sla = computeSLA(createdAt, priority, severity)
+  if (!sla) return null
+
+  const barColor = sla.breached ? '#e53935' : sla.pct > 0.5 ? '#ffa726' : '#00c896'
+  const labelColor = sla.breached ? '#e53935' : sla.pct > 0.5 ? '#ffa726' : '#00c896'
+
+  const absRemaining = Math.abs(sla.remainingMs)
+  const remHours = Math.floor(absRemaining / 3600000)
+  const remMins = Math.floor((absRemaining % 3600000) / 60000)
+  const remainLabel = sla.breached
+    ? `已超时 ${remHours}小时${remMins > 0 ? remMins + '分' : ''}`
+    : `剩余: ${remHours}小时${remMins > 0 ? remMins + '分' : ''}`
+
+  return (
+    <div style={{
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 6, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6,
+    }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.6px', color: 'var(--text-muted)' }}>
+        SLA 跟踪
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+        SLA 截止: <span style={{ color: labelColor, fontFamily: 'monospace' }}>{sla.deadlineStr}</span>
+      </div>
+      {/* progress bar */}
+      <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{
+          width: `${Math.min(100, sla.pct * 100)}%`, height: '100%',
+          background: barColor, borderRadius: 3,
+          transition: 'width .3s',
+        }} />
+      </div>
+      <div style={{ fontSize: 11, color: sla.breached ? '#e53935' : 'var(--text-muted)' }}>
+        {remainLabel}
+      </div>
+    </div>
+  )
+}
+
+// ── WorkflowBar component ─────────────────────────────────────────────────────
+
+const WORKFLOW_STATES = [
+  { key: 'new', label: '新建' },
+  { key: 'analyzing', label: '分析中' },
+  { key: 'handling', label: '处置中' },
+  { key: 'closed', label: '已关闭' },
+]
+
+const STATUS_TO_WORKFLOW: Record<string, string> = {
+  '新建': 'new',
+  'new': 'new',
+  'open': 'new',
+  '分析中': 'analyzing',
+  'analyzing': 'analyzing',
+  '处理中': 'handling',
+  'handling': 'handling',
+  'resolved': 'closed',
+  'closed': 'closed',
+  '已关闭': 'closed',
+}
+
+function WorkflowBar({ incidentKey, currentStatus, onStatusChange }: {
+  incidentKey: string
+  currentStatus: string
+  onStatusChange: (newStatus: string) => void
+}) {
+  const [loadingState, setLoadingState] = useState<string | null>(null)
+  const currentWf = STATUS_TO_WORKFLOW[currentStatus] ?? 'new'
+  const currentIdx = WORKFLOW_STATES.findIndex(s => s.key === currentWf)
+
+  async function handleClick(stateKey: string, idx: number) {
+    if (idx <= currentIdx) return   // can't go backwards
+    setLoadingState(stateKey)
+    try {
+      await api.patch(`/incidents/${incidentKey}`, { status: stateKey })
+      onStatusChange(stateKey)
+    } catch {
+      // silently ignore — UI still shows attempted state
+    } finally {
+      setLoadingState(null)
+    }
+  }
+
+  return (
+    <div style={{
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 6, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8,
+    }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.6px', color: 'var(--text-muted)' }}>
+        工作流状态
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+        {WORKFLOW_STATES.map((state, idx) => {
+          const isPast = idx < currentIdx
+          const isCurrent = idx === currentIdx
+          const isFuture = idx > currentIdx
+          const isLoading = loadingState === state.key
+
+          const bg = isCurrent ? 'var(--accent-orange)' : isPast ? 'rgba(0,200,150,.15)' : 'var(--bg-card2)'
+          const color = isCurrent ? 'white' : isPast ? 'var(--accent-green)' : 'var(--text-muted)'
+          const border = isCurrent ? 'var(--accent-orange)' : isPast ? '#00c89644' : 'var(--border-light)'
+
+          return (
+            <div key={state.key} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <button
+                onClick={() => handleClick(state.key, idx)}
+                disabled={!isFuture || isLoading}
+                style={{
+                  flex: 1, padding: '5px 8px', fontSize: 11, fontWeight: isCurrent ? 700 : 500,
+                  background: bg, color, border: `1px solid ${border}`, borderRadius: 4,
+                  cursor: isFuture ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  transition: 'all .15s',
+                  opacity: isFuture && !isLoading ? 0.85 : 1,
+                }}
+              >
+                {isLoading ? (
+                  <span style={{ fontSize: 10 }}>⟳</span>
+                ) : isPast ? (
+                  <span style={{ fontSize: 10 }}>✓</span>
+                ) : null}
+                {state.label}
+              </button>
+              {idx < WORKFLOW_STATES.length - 1 && (
+                <div style={{
+                  width: 16, height: 2,
+                  background: isPast || isCurrent ? 'var(--accent-orange)' : 'var(--border)',
+                  flexShrink: 0,
+                }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── SLA Stats card ────────────────────────────────────────────────────────────
+
+function SLAStatsCard({ stats, loading }: { stats: SLAStats | null; loading: boolean }) {
+  return (
+    <div style={{
+      margin: '8px 10px 0',
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 6, padding: '8px 12px',
+      display: 'flex', alignItems: 'center', gap: 16,
+      flexShrink: 0,
+    }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+        SLA 统计
+      </div>
+      {loading ? (
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>加载中…</div>
+      ) : stats ? (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>P1违约</span>
+            <span style={{
+              fontSize: 13, fontWeight: 700, color: stats.p1_breach > 0 ? '#e53935' : 'var(--text-muted)',
+              background: stats.p1_breach > 0 ? 'rgba(229,57,53,.12)' : 'transparent',
+              padding: '1px 6px', borderRadius: 3,
+            }}>{stats.p1_breach}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>P2预警</span>
+            <span style={{
+              fontSize: 13, fontWeight: 700, color: stats.p2_at_risk > 0 ? '#ffa726' : 'var(--text-muted)',
+              background: stats.p2_at_risk > 0 ? 'rgba(255,167,38,.12)' : 'transparent',
+              padding: '1px 6px', borderRadius: 3,
+            }}>{stats.p2_at_risk}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>合规率</span>
+            <span style={{
+              fontSize: 13, fontWeight: 700,
+              color: stats.compliance_rate >= 80 ? '#00c896' : stats.compliance_rate >= 60 ? '#ffa726' : '#e53935',
+              padding: '1px 6px', borderRadius: 3,
+            }}>{stats.compliance_rate.toFixed(0)}%</span>
+          </div>
+        </>
+      ) : (
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>暂无数据</div>
+      )}
+    </div>
+  )
+}
+
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+
+function CaseListSkeleton() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} style={{
+          padding: '10px 14px', borderBottom: '1px solid var(--border)',
+          display: 'flex', flexDirection: 'column', gap: 6,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <div style={{ width: 14, height: 14, borderRadius: 2, background: 'var(--border)', animation: 'xsiam-pulse 1.4s ease-in-out infinite' }} />
+            <div style={{ width: 20, height: 14, borderRadius: 2, background: 'var(--border)', animation: 'xsiam-pulse 1.4s ease-in-out infinite' }} />
+            <div style={{ flex: 1, height: 13, borderRadius: 2, background: 'var(--border)', animation: 'xsiam-pulse 1.4s ease-in-out infinite', maxWidth: 200 }} />
+          </div>
+          <div style={{ height: 11, borderRadius: 2, background: 'var(--border)', animation: 'xsiam-pulse 1.4s ease-in-out infinite', width: '80%' }} />
+          <div style={{ height: 10, borderRadius: 2, background: 'var(--border)', animation: 'xsiam-pulse 1.4s ease-in-out infinite', width: '50%' }} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Agentix Step type ─────────────────────────────────────────────────────────
 
 type AgentixStep =
@@ -331,6 +628,271 @@ type AgentixStep =
   | { type: 'approval'; hash: string }
   | { type: 'approved'; hash: string }
   | { type: 'declined' }
+
+// ── Priority Queue helpers ────────────────────────────────────────────────────
+
+interface QueueTierDef {
+  key: 'p1' | 'p2' | 'p3' | 'p4'
+  label: string
+  headerColor: string
+  headerBg: string
+  borderColor: string
+}
+
+const QUEUE_TIERS: QueueTierDef[] = [
+  { key: 'p1', label: 'P1 — 严重级别 + SLA已超时', headerColor: '#ef5350', headerBg: 'rgba(229,57,53,0.10)', borderColor: 'rgba(229,57,53,0.35)' },
+  { key: 'p2', label: 'P2 — 高危 + SLA接近超时', headerColor: '#ffa726', headerBg: 'rgba(255,111,0,0.10)', borderColor: 'rgba(255,111,0,0.35)' },
+  { key: 'p3', label: 'P3 — 中危', headerColor: '#f9a825', headerBg: 'rgba(249,168,37,0.10)', borderColor: 'rgba(249,168,37,0.35)' },
+  { key: 'p4', label: 'P4 — 低危', headerColor: '#8a8fa0', headerBg: 'rgba(138,143,160,0.07)', borderColor: 'rgba(138,143,160,0.25)' },
+]
+
+const SEV_ICON: Record<string, string> = { critical: '🔴', high: '🟠', medium: '🟡', low: '⚪' }
+
+function getSlaBarColor(pct: number, breached: boolean): string {
+  if (breached) return '#e53935'
+  if (pct > 0.75) return '#ffa726'
+  if (pct > 0.5) return '#f9a825'
+  return '#00c896'
+}
+
+function formatSlaTimeLabel(sla: SLAInfo): string {
+  const absMs = Math.abs(sla.remainingMs)
+  const h = Math.floor(absMs / 3600000)
+  const m = Math.floor((absMs % 3600000) / 60000)
+  if (sla.breached) return `超时${h > 0 ? h + 'h' : ''}${m > 0 ? m + 'm' : ''}`
+  return `剩余${h > 0 ? h + 'h' : ''}${m > 0 ? m + 'm' : ''}`
+}
+
+interface PriorityQueueViewProps {
+  incidents: Incident[]
+  now: number
+  selectedId: string
+  onSelect: (id: string) => void
+  onAssignToMe: (inc: Incident) => Promise<void>
+  onEscalate: (inc: Incident) => Promise<void>
+  onClose: (inc: Incident, e: React.MouseEvent) => Promise<void>
+}
+
+function PriorityQueueView({ incidents, now: _now, selectedId, onSelect, onAssignToMe, onEscalate, onClose }: PriorityQueueViewProps) {
+  const [actionLoading, setActionLoading] = useState<Record<string, string>>({})
+
+  const SLA_LIMITS_LOCAL: Record<string, number> = { critical: 4, high: 8, medium: 24, low: 72 }
+
+  function getLocalTier(inc: Incident): 'p1' | 'p2' | 'p3' | 'p4' {
+    const sev = inc.severity?.toLowerCase() ?? ''
+    const limitH = SLA_LIMITS_LOCAL[sev] ?? null
+    if (!limitH) return 'p4'
+    const created = new Date(inc.created_at).getTime()
+    if (isNaN(created)) return 'p4'
+    const pct = (Date.now() - created) / (limitH * 3600 * 1000)
+    if (sev === 'critical' && pct >= 1) return 'p1'
+    if ((sev === 'critical' && pct >= 0.5) || (sev === 'high' && pct >= 1)) return 'p2'
+    if (sev === 'medium' || (sev === 'high' && pct < 1)) return 'p3'
+    return 'p4'
+  }
+
+  async function doAction(inc: Incident, action: 'assign' | 'escalate' | 'close', e: React.MouseEvent) {
+    e.stopPropagation()
+    const key = `${inc._key}_${action}`
+    setActionLoading(prev => ({ ...prev, [key]: 'loading' }))
+    try {
+      if (action === 'assign') await onAssignToMe(inc)
+      else if (action === 'escalate') await onEscalate(inc)
+      else await onClose(inc, e)
+    } finally {
+      setActionLoading(prev => { const n = { ...prev }; delete n[key]; return n })
+    }
+  }
+
+  const grouped: Record<string, Incident[]> = { p1: [], p2: [], p3: [], p4: [] }
+  for (const inc of incidents) {
+    grouped[getLocalTier(inc)].push(inc)
+  }
+  // Sort within each tier by SLA breach first, then smart_score desc
+  for (const tier of Object.keys(grouped) as Array<keyof typeof grouped>) {
+    grouped[tier].sort((a, b) => (b.smart_score ?? 0) - (a.smart_score ?? 0))
+  }
+
+  return (
+    <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {QUEUE_TIERS.map(tier => {
+        const items = grouped[tier.key]
+        if (items.length === 0) return null
+        return (
+          <div key={tier.key}>
+            {/* Section header */}
+            <div style={{
+              fontSize: 10.5, fontWeight: 700, color: tier.headerColor,
+              background: tier.headerBg, borderLeft: `3px solid ${tier.borderColor}`,
+              padding: '4px 10px', borderRadius: '0 4px 4px 0', marginBottom: 6,
+              letterSpacing: '.3px',
+            }}>
+              {tier.label}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {items.map(inc => {
+                const sev = inc.severity?.toLowerCase() ?? ''
+                const limitH = SLA_LIMITS_LOCAL[sev] ?? null
+                const sla = limitH ? computeSLA(inc.created_at, undefined, sev) : null
+                const barColor = sla ? getSlaBarColor(sla.pct, sla.breached) : '#00c896'
+                const slaLabel = sla ? formatSlaTimeLabel(sla) : null
+                const ssStyle = getSmartScoreStyle(inc.smart_score ?? 0)
+                const isSelected = (inc.incident_id || inc._key) === selectedId
+                const aLoadAssign = actionLoading[`${inc._key}_assign`]
+                const aLoadEscalate = actionLoading[`${inc._key}_escalate`]
+                const aLoadClose = actionLoading[`${inc._key}_close`]
+                return (
+                  <div
+                    key={inc._key}
+                    onClick={() => onSelect(inc.incident_id || inc._key)}
+                    style={{
+                      background: isSelected ? 'rgba(250,88,45,.07)' : 'var(--bg-card)',
+                      border: `1px solid ${isSelected ? 'rgba(250,88,45,.40)' : tier.borderColor}`,
+                      borderRadius: 6, padding: '10px 12px',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6,
+                      transition: 'all .15s',
+                    }}
+                  >
+                    {/* Title row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 13, flexShrink: 0 }}>{SEV_ICON[sev] ?? '⚪'}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {inc.name}
+                      </span>
+                      {ssStyle && inc.smart_score > 0 && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 3,
+                          fontFamily: 'monospace', flexShrink: 0,
+                          background: ssStyle.background, color: ssStyle.color,
+                        }}>SS:{inc.smart_score}</span>
+                      )}
+                    </div>
+                    {/* Meta row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10.5, color: 'var(--text-muted)' }}>
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+                        color: 'white', background: SEV_PILL_BG[(sev[0]?.toUpperCase() as 'C' | 'H' | 'M' | 'L')] ?? 'var(--border)',
+                        flexShrink: 0,
+                      }}>{sev.toUpperCase()}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{inc.status}</span>
+                      <span style={{ color: inc.assigned_to ? 'var(--accent-blue)' : 'var(--text-muted)' }}>
+                        👤 {inc.assigned_to ?? inc.assignee ?? '未分配'}
+                      </span>
+                      {sla?.breached && (
+                        <span style={{ color: '#e53935', fontWeight: 600, marginLeft: 'auto', flexShrink: 0 }}>
+                          ⏱ {slaLabel}
+                        </span>
+                      )}
+                    </div>
+                    {/* SLA progress bar */}
+                    {sla && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 9, color: 'var(--text-muted)', width: 22, flexShrink: 0 }}>SLA</span>
+                          <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+                            <div style={{
+                              width: `${Math.min(100, sla.pct * 100)}%`, height: '100%',
+                              background: barColor, borderRadius: 3,
+                              transition: 'width .3s',
+                            }} />
+                            {/* overflow indicator */}
+                            {sla.breached && (
+                              <div style={{
+                                position: 'absolute', right: 0, top: 0, bottom: 0,
+                                width: `${Math.min(30, (sla.pct - 1) * 100)}%`,
+                                background: 'rgba(229,57,53,0.55)',
+                                borderRadius: '0 3px 3px 0',
+                              }} />
+                            )}
+                          </div>
+                          <span style={{ fontSize: 9.5, color: barColor, fontWeight: 600, flexShrink: 0, fontFamily: 'monospace' }}>
+                            {(sla.pct * 100).toFixed(0)}%
+                          </span>
+                          {!sla.breached && (
+                            <span style={{ fontSize: 9.5, color: 'var(--text-muted)', flexShrink: 0 }}>
+                              ⏱ {slaLabel}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={(e) => doAction(inc, 'assign', e)}
+                        disabled={!!aLoadAssign}
+                        style={{
+                          flex: 1, padding: '3px 0', fontSize: 10.5, border: '1px solid var(--border-light)',
+                          borderRadius: 4, background: 'var(--bg-card2)', color: 'var(--text-secondary)',
+                          cursor: aLoadAssign ? 'wait' : 'pointer', transition: 'all .12s',
+                        }}
+                      >{aLoadAssign ? '…' : '接单'}</button>
+                      <button
+                        onClick={(e) => doAction(inc, 'escalate', e)}
+                        disabled={!!aLoadEscalate}
+                        style={{
+                          flex: 1, padding: '3px 0', fontSize: 10.5,
+                          border: '1px solid rgba(255,167,38,.45)',
+                          borderRadius: 4, background: 'rgba(255,111,0,0.08)', color: '#ffa726',
+                          cursor: aLoadEscalate ? 'wait' : 'pointer', transition: 'all .12s',
+                        }}
+                      >{aLoadEscalate ? '…' : '升级'}</button>
+                      <button
+                        onClick={(e) => doAction(inc, 'close', e)}
+                        disabled={!!aLoadClose}
+                        style={{
+                          flex: 1, padding: '3px 0', fontSize: 10.5,
+                          border: '1px solid rgba(0,200,150,.35)',
+                          borderRadius: 4, background: 'rgba(0,200,150,0.07)', color: 'var(--accent-green)',
+                          cursor: aLoadClose ? 'wait' : 'pointer', transition: 'all .12s',
+                        }}
+                      >{aLoadClose ? '…' : '关闭'}</button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Automation Rules ──────────────────────────────────────────────────────────
+
+interface AutomationRule {
+  id: string
+  name: string
+  trigger: string
+  action: string
+  defaultEnabled: boolean
+}
+
+const AUTOMATION_RULES: AutomationRule[] = [
+  { id: 'rule_critical_create', name: '高危自动创建事件', trigger: 'severity=critical', action: '创建P1事件', defaultEnabled: true },
+  { id: 'rule_similar_merge', name: '相似告警自动关联', trigger: '相似度>85%', action: '合并事件', defaultEnabled: true },
+  { id: 'rule_sla_escalate', name: 'SLA超时自动升级', trigger: 'SLA>80%', action: '发送告警', defaultEnabled: true },
+  { id: 'rule_low_conf_close', name: '低置信自动关闭', trigger: 'AI<20%', action: '关闭告警', defaultEnabled: false },
+]
+
+function getAutomationRuleEnabled(ruleId: string, defaultEnabled: boolean): boolean {
+  try {
+    const stored = localStorage.getItem(`xsiam_rule_${ruleId}`)
+    if (stored === null) return defaultEnabled
+    return stored === 'true'
+  } catch {
+    return defaultEnabled
+  }
+}
+
+function setAutomationRuleEnabled(ruleId: string, enabled: boolean): void {
+  try {
+    localStorage.setItem(`xsiam_rule_${ruleId}`, enabled ? 'true' : 'false')
+  } catch {
+    // ignore
+  }
+}
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
@@ -348,7 +910,177 @@ export default function XDRCases() {
   const [warRoomMsgs, setWarRoomMsgs] = useState<WarRoomMsg[]>(WARROOM_MSGS)
   const warRoomRef = useRef<HTMLDivElement>(null)
 
+  // ── New: SLA banner + Priority Queue + Automation state ──
+  const [slaBannerDismissed, setSlaBannerDismissed] = useState(false)
+  const [slaBreachCount, setSlaBreachCount] = useState(0)
+  const [slaFilterActive, setSlaFilterActive] = useState(false)
+  const [listView, setListView] = useState<'list' | 'queue'>('list')
+  const [automationOpen, setAutomationOpen] = useState(false)
+  const [automationRuleStates, setAutomationRuleStates] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(AUTOMATION_RULES.map(r => [r.id, getAutomationRuleEnabled(r.id, r.defaultEnabled)]))
+  )
+  const [queueNow, setQueueNow] = useState(Date.now())
+
   const agentixBodyRef = useRef<HTMLDivElement>(null)
+
+  // ── Incidents API state ──
+  const [incidents, setIncidents] = useState<Incident[]>([])
+  const [incidentsLoading, setIncidentsLoading] = useState(false)
+  const [priorityFilter, setPriorityFilter] = useState<string>('all')
+  const [slaStats, setSlaStats] = useState<SLAStats | null>(null)
+  const [slaStatsLoading, setSlaStatsLoading] = useState(false)
+  // Track live workflow status per incident key
+  const [workflowStatuses, setWorkflowStatuses] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    setIncidentsLoading(true)
+    const params: Record<string, unknown> = { page: 1, page_size: 20 }
+    if (priorityFilter !== 'all') params.priority = priorityFilter
+    api.get('/incidents', { params })
+      .then(r => {
+        const items: Incident[] = r.data.data?.items ?? []
+        setIncidents(items)
+      })
+      .catch(() => setIncidents([]))
+      .finally(() => setIncidentsLoading(false))
+  }, [priorityFilter])
+
+  // Fetch SLA stats
+  useEffect(() => {
+    setSlaStatsLoading(true)
+    api.get('/incidents/sla_stats')
+      .then(r => {
+        const d = r.data?.data ?? r.data
+        setSlaStats({
+          p1_breach: d?.p1_breach ?? d?.p1Breach ?? 0,
+          p2_at_risk: d?.p2_at_risk ?? d?.p2AtRisk ?? 0,
+          compliance_rate: d?.compliance_rate ?? d?.complianceRate ?? 0,
+        })
+      })
+      .catch(() => setSlaStats(null))
+      .finally(() => setSlaStatsLoading(false))
+  }, [])
+
+  // Map backend incidents to CaseItem display format
+  const incidentCases: CaseItem[] = incidents.map(inc => ({
+    id: inc.incident_id || inc._key,
+    displayId: inc.incident_id || inc._key,
+    severity: (inc.severity?.[0]?.toUpperCase() ?? 'M') as 'C' | 'H' | 'M' | 'L',
+    score: inc.smart_score ?? 0,
+    smartScore: inc.smart_score ?? 0,
+    name: inc.name,
+    description: inc.description || '',
+    issueCount: inc.alert_count ?? 0,
+    issueLabel: `${inc.alert_count ?? 0} alerts`,
+    sources: inc.mitre_tactics?.slice(0, 3) ?? [],
+    status: inc.status,
+    assignedTo: inc.assigned_to || inc.assignee,
+    priority: inc.priority,
+  }))
+
+  // Use live data if available, fall back to static demo data
+  const displayCases: CaseItem[] = incidentsLoading
+    ? CASES
+    : incidentCases.length > 0 ? incidentCases : CASES
+
+  // ── SLA breach counter: recompute whenever incidents change or every 60s ──
+  useEffect(() => {
+    function recompute() {
+      const SLA_LIMITS: Record<string, number> = { critical: 4, high: 8, medium: 24, low: 72 }
+      const now = Date.now()
+      // Use live incidents if available, otherwise fall back to static CASES with fabricated created_at
+      const sourceList = incidents.length > 0 ? incidents : []
+      let count = 0
+      for (const inc of sourceList) {
+        const limitH = SLA_LIMITS[inc.severity?.toLowerCase() ?? ''] ?? null
+        if (!limitH) continue
+        const created = new Date(inc.created_at).getTime()
+        if (isNaN(created)) continue
+        if ((now - created) > limitH * 3600 * 1000) count++
+      }
+      setSlaBreachCount(count)
+    }
+    recompute()
+    const iv = setInterval(() => {
+      recompute()
+      setSlaBannerDismissed(false) // re-surface banner every 60s
+      setQueueNow(Date.now())
+    }, 60000)
+    return () => clearInterval(iv)
+  }, [incidents])
+
+  // Filtered display list (for SLA filter)
+  const filteredCases: CaseItem[] = slaFilterActive
+    ? displayCases.filter(c => {
+        const inc = incidents.find(i => (i.incident_id || i._key) === c.id)
+        if (!inc) return false
+        const SLA_LIMITS: Record<string, number> = { critical: 4, high: 8, medium: 24, low: 72 }
+        const limitH = SLA_LIMITS[inc.severity?.toLowerCase() ?? ''] ?? null
+        if (!limitH) return false
+        const created = new Date(inc.created_at).getTime()
+        if (isNaN(created)) return false
+        return (Date.now() - created) > limitH * 3600 * 1000
+      })
+    : displayCases
+
+  // Queue data: use real incidents or synthesize from CASES for demo
+  const queueIncidents: Incident[] = incidents.length > 0 ? incidents : [
+    {
+      _key: 'INC5254', incident_id: 'INC5254', name: 'Volume Shadow Deletion Attempt',
+      description: 'Ransomware pre-staging activity detected on daas-01', severity: 'high',
+      status: '处理中', smart_score: 41, alert_count: 17, mitre_tactics: [],
+      asset_names: ['daas-01'], assignee: 'watson', assigned_to: 'watson',
+      priority: 'P2',
+      created_at: new Date(Date.now() - 9 * 3600 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      _key: 'INC3324', incident_id: 'INC3324', name: 'EC2 Breakout and Exploitation',
+      description: 'Lateral movement and unauthorized IAM actions on exposed AWS EC2', severity: 'critical',
+      status: '处理中', smart_score: 93, alert_count: 31, mitre_tactics: [],
+      asset_names: ['ec2-prod-01'], assignee: '李明', assigned_to: '李明',
+      priority: 'P1',
+      created_at: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      _key: 'INC7821', incident_id: 'INC7821', name: 'Brute Force Login — VPN Gateway',
+      description: '487次失败登录尝试，来源IP: 185.220.101.45', severity: 'medium',
+      status: '新建', smart_score: 55, alert_count: 8, mitre_tactics: [],
+      asset_names: ['vpn-gw-01'], assignee: undefined, assigned_to: undefined,
+      priority: 'P3',
+      created_at: new Date(Date.now() - 18 * 3600 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      _key: 'INC9102', incident_id: 'INC9102', name: 'Suspicious PowerShell — Finance Server',
+      description: 'Encoded base64 PowerShell execution detected', severity: 'high',
+      status: '分析中', smart_score: 72, alert_count: 5, mitre_tactics: [],
+      asset_names: ['fin-srv-03'], assignee: '张三', assigned_to: '张三',
+      priority: 'P2',
+      created_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ]
+
+  // Quick close handler
+  async function handleCloseIncident(id: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!window.confirm('确认关闭此事件？')) return
+    try {
+      await api.patch(`/incidents/${id}`, { status: 'resolved' })
+      setPriorityFilter(prev => prev) // trigger re-fetch by toggling state identity trick
+      const params: Record<string, unknown> = { page: 1, page_size: 20 }
+      if (priorityFilter !== 'all') params.priority = priorityFilter
+      setIncidentsLoading(true)
+      api.get('/incidents', { params })
+        .then(r => setIncidents(r.data.data?.items ?? []))
+        .catch(() => setIncidents([]))
+        .finally(() => setIncidentsLoading(false))
+    } catch {
+      alert('关闭失败，请稍后重试')
+    }
+  }
 
   // Scroll agentix body to bottom whenever steps change
   useEffect(() => {
@@ -390,7 +1122,18 @@ export default function XDRCases() {
     )
   }
 
-  const selectedCaseData = CASES.find(c => c.id === selectedCase)
+  const selectedCaseData = displayCases.find(c => c.id === selectedCase) ?? CASES.find(c => c.id === selectedCase)
+  const selectedIncident = incidents.find(inc => (inc.incident_id || inc._key) === selectedCase)
+
+  function handleWorkflowChange(incidentKey: string, newStatus: string) {
+    setWorkflowStatuses(prev => ({ ...prev, [incidentKey]: newStatus }))
+    // also refresh list
+    const params: Record<string, unknown> = { page: 1, page_size: 20 }
+    if (priorityFilter !== 'all') params.priority = priorityFilter
+    api.get('/incidents', { params })
+      .then(r => setIncidents(r.data.data?.items ?? []))
+      .catch(() => {/* keep current */})
+  }
 
   // ── Render ──
 
@@ -442,6 +1185,53 @@ export default function XDRCases() {
             </>}
           />
 
+          {/* ── SLA Breach Banner ── */}
+          {!slaBannerDismissed && slaBreachCount > 0 && (
+            <div style={{
+              flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 18px',
+              background: 'linear-gradient(90deg, rgba(229,57,53,0.12) 0%, rgba(255,111,0,0.10) 100%)',
+              borderBottom: '1px solid rgba(229,57,53,0.30)',
+              borderLeft: '3px solid #e53935',
+            }}>
+              <span style={{ fontSize: 14 }}>⚠️</span>
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: '#ef5350', flex: 1 }}>
+                {slaBreachCount} 个案例已超出SLA响应时限
+              </span>
+              <button
+                onClick={() => { setSlaFilterActive(true); setSlaBannerDismissed(false) }}
+                style={{
+                  background: 'rgba(229,57,53,0.18)', border: '1px solid rgba(229,57,53,0.45)',
+                  color: '#ef5350', borderRadius: 4, padding: '3px 12px',
+                  fontSize: 11.5, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap',
+                }}>查看超时案例</button>
+              <button
+                onClick={() => setSlaBannerDismissed(true)}
+                style={{
+                  background: 'none', border: 'none', color: 'rgba(229,57,53,0.7)',
+                  cursor: 'pointer', fontSize: 16, padding: '0 4px', lineHeight: 1,
+                }}>×</button>
+            </div>
+          )}
+          {/* SLA filter active indicator */}
+          {slaFilterActive && (
+            <div style={{
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+              padding: '4px 18px',
+              background: 'rgba(229,57,53,0.07)', borderBottom: '1px solid rgba(229,57,53,0.20)',
+            }}>
+              <span style={{ fontSize: 11, color: '#ef5350' }}>🔴 正在显示超时案例</span>
+              <button
+                onClick={() => setSlaFilterActive(false)}
+                style={{
+                  background: 'none', border: '1px solid rgba(229,57,53,0.35)',
+                  color: 'rgba(229,57,53,0.8)', borderRadius: 3, padding: '1px 8px',
+                  fontSize: 10.5, cursor: 'pointer',
+                }}>清除筛选</button>
+            </div>
+          )}
+
           {/* Body */}
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
@@ -451,7 +1241,28 @@ export default function XDRCases() {
               display: 'flex', flexDirection: 'column', overflow: 'hidden',
             }}>
               <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 700 }}>Cases</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>Cases</div>
+                  {/* View toggle: 列表视图 | 优先队列 */}
+                  <div style={{
+                    display: 'flex', background: 'var(--bg-card2)',
+                    border: '1px solid var(--border)', borderRadius: 5, overflow: 'hidden',
+                  }}>
+                    {(['list', 'queue'] as const).map(v => (
+                      <button
+                        key={v}
+                        onClick={() => setListView(v)}
+                        style={{
+                          padding: '3px 10px', fontSize: 10.5, border: 'none', cursor: 'pointer',
+                          background: listView === v ? 'rgba(255,255,255,0.1)' : 'transparent',
+                          color: listView === v ? 'var(--text-primary)' : 'var(--text-muted)',
+                          fontWeight: listView === v ? 700 : 400,
+                          transition: 'all .12s',
+                        }}
+                      >{v === 'list' ? '列表视图' : '优先队列'}</button>
+                    ))}
+                  </div>
+                </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Found 1 out of 10,354 results</div>
               </div>
               <div style={{
@@ -481,62 +1292,148 @@ export default function XDRCases() {
                     fontSize: 10.5, cursor: 'pointer',
                   }}>Revert</button>
               </div>
+              {/* Priority filter bar */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 10px', borderBottom: '1px solid var(--border)', flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>优先级</span>
+                <select
+                  value={priorityFilter}
+                  onChange={e => setPriorityFilter(e.target.value)}
+                  style={{
+                    background: 'var(--bg-card)', border: '1px solid var(--border-light)',
+                    color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px',
+                    fontSize: 11, cursor: 'pointer', outline: 'none', flex: 1,
+                  }}
+                >
+                  <option value="all">全部</option>
+                  <option value="P1">P1</option>
+                  <option value="P2">P2</option>
+                  <option value="P3">P3</option>
+                  <option value="P4">P4</option>
+                </select>
+              </div>
+              {/* SLA Stats card */}
+              <SLAStatsCard stats={slaStats} loading={slaStatsLoading} />
+
               <div style={{ flex: 1, overflowY: 'auto' }}>
-                {CASES.map(c => (
-                  <div
-                    key={c.id}
-                    onClick={() => setSelectedCase(c.id)}
-                    style={{
-                      padding: selectedCase === c.id ? '10px 14px 10px 12px' : '10px 14px',
-                      borderBottom: '1px solid var(--border)',
-                      borderLeft: selectedCase === c.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
-                      background: selectedCase === c.id ? 'rgba(250,88,45,.07)' : 'transparent',
-                      cursor: 'pointer',
-                      display: 'flex', flexDirection: 'column', gap: 4,
-                      transition: 'background .12s',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <span style={{ color: '#f9a825', fontSize: 12 }}>★</span>
-                      <span style={{
-                        fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 3,
-                        color: 'white', background: SEV_PILL_BG[c.severity],
-                      }}>{c.severity}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', minWidth: 20 }}>{c.score}</span>
-                      {c.badge && (
+                {incidentsLoading ? (
+                  <CaseListSkeleton />
+                ) : null}
+
+                {/* ── List View ── */}
+                {!incidentsLoading && listView === 'list' && filteredCases.map(c => {
+                  const ssStyle = getSmartScoreStyle(c.smartScore ?? c.score)
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => setSelectedCase(c.id)}
+                      style={{
+                        padding: selectedCase === c.id ? '10px 14px 10px 12px' : '10px 14px',
+                        borderBottom: '1px solid var(--border)',
+                        borderLeft: selectedCase === c.id ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                        background: selectedCase === c.id ? 'rgba(250,88,45,.07)' : 'transparent',
+                        cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', gap: 4,
+                        transition: 'background .12s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <span style={{ color: '#f9a825', fontSize: 12 }}>★</span>
                         <span style={{
-                          fontSize: 9, color: 'var(--text-muted)',
-                          border: '1px solid var(--border-light)',
-                          padding: '1px 5px', borderRadius: 3,
-                        }}>{c.badge}</span>
-                      )}
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)', flex: 1 }}>
-                        {c.displayId} {c.name}
-                      </span>
+                          fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 3,
+                          color: 'white', background: SEV_PILL_BG[c.severity],
+                        }}>{c.severity}</span>
+                        {ssStyle && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+                            fontFamily: 'monospace',
+                            background: ssStyle.background, color: ssStyle.color,
+                          }}>SS:{c.smartScore ?? c.score}</span>
+                        )}
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', minWidth: 20 }}>{c.score}</span>
+                        {c.badge && (
+                          <span style={{
+                            fontSize: 9, color: 'var(--text-muted)',
+                            border: '1px solid var(--border-light)',
+                            padding: '1px 5px', borderRadius: 3,
+                          }}>{c.badge}</span>
+                        )}
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {c.displayId} {c.name}
+                        </span>
+                      </div>
+                      <div style={{
+                        fontSize: 11, color: 'var(--text-muted)',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>{c.description}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
+                        <span>{c.issueLabel}</span>
+                        {c.sources.length > 0 && (
+                          <div style={{ display: 'flex', gap: 3 }}>
+                            {c.sources.map((s, i) => (
+                              <div key={i} style={{
+                                width: 14, height: 14, borderRadius: 2,
+                                background: 'var(--bg-card2)', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontSize: 8, color: 'var(--text-muted)',
+                              }}>{s}</div>
+                            ))}
+                          </div>
+                        )}
+                        {c.extraMeta?.map((m, i) => <span key={i}>{m}</span>)}
+                        <span
+                          title="处理人"
+                          style={{
+                            maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap', color: c.assignedTo ? 'var(--accent-blue)' : 'var(--text-muted)',
+                          }}
+                        >
+                          👤 {c.assignedTo ?? '—'}
+                        </span>
+                        <span style={{ marginLeft: 'auto' }}>{c.status}</span>
+                        <button
+                          title="关闭事件"
+                          onClick={e => handleCloseIncident(c.id, e)}
+                          style={{
+                            background: 'rgba(0,200,150,0.08)', border: '1px solid var(--border-light)',
+                            color: 'var(--accent-green)', borderRadius: 4, padding: '1px 7px',
+                            fontSize: 10, cursor: 'pointer', flexShrink: 0,
+                            display: 'flex', alignItems: 'center', gap: 3,
+                          }}
+                        >✓ 关闭</button>
+                      </div>
                     </div>
-                    <div style={{
-                      fontSize: 11, color: 'var(--text-muted)',
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                    }}>{c.description}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
-                      <span>{c.issueLabel}</span>
-                      {c.sources.length > 0 && (
-                        <div style={{ display: 'flex', gap: 3 }}>
-                          {c.sources.map((s, i) => (
-                            <div key={i} style={{
-                              width: 14, height: 14, borderRadius: 2,
-                              background: 'var(--bg-card2)', display: 'flex',
-                              alignItems: 'center', justifyContent: 'center',
-                              fontSize: 8, color: 'var(--text-muted)',
-                            }}>{s}</div>
-                          ))}
-                        </div>
-                      )}
-                      {c.extraMeta?.map((m, i) => <span key={i}>{m}</span>)}
-                      <span>{c.status}</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
+
+                {/* ── Priority Queue View ── */}
+                {!incidentsLoading && listView === 'queue' && (
+                  <PriorityQueueView
+                    incidents={queueIncidents}
+                    now={queueNow}
+                    onSelect={setSelectedCase}
+                    selectedId={selectedCase}
+                    onAssignToMe={async (inc) => {
+                      try {
+                        await api.patch(`/incidents/${inc._key}`, { assigned_to: 'me' })
+                        const params: Record<string, unknown> = { page: 1, page_size: 20 }
+                        api.get('/incidents', { params }).then(r => setIncidents(r.data.data?.items ?? [])).catch(() => {})
+                      } catch { /* ignore */ }
+                    }}
+                    onEscalate={async (inc) => {
+                      const sevMap: Record<string, string> = { low: 'medium', medium: 'high', high: 'critical' }
+                      const nextSev = sevMap[inc.severity?.toLowerCase() ?? ''] ?? inc.severity
+                      try {
+                        await api.patch(`/incidents/${inc._key}`, { severity: nextSev })
+                        const params: Record<string, unknown> = { page: 1, page_size: 20 }
+                        api.get('/incidents', { params }).then(r => setIncidents(r.data.data?.items ?? [])).catch(() => {})
+                      } catch { /* ignore */ }
+                    }}
+                    onClose={async (inc, e) => handleCloseIncident(inc._key, e)}
+                  />
+                )}
               </div>
             </div>
 
@@ -550,23 +1447,25 @@ export default function XDRCases() {
                   <span style={{ color: '#f9a825', fontSize: 14 }}>★</span>
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 3,
-                    color: 'white', background: 'var(--high)',
-                  }}>H</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', minWidth: 28 }}>41</span>
+                    color: 'white', background: selectedCaseData ? SEV_PILL_BG[selectedCaseData.severity] : 'var(--high)',
+                  }}>{selectedCaseData?.severity ?? 'H'}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', minWidth: 28 }}>{selectedCaseData?.score ?? 41}</span>
                   <span style={{
                     fontSize: 11, color: 'var(--text-muted)',
                     border: '1px solid var(--border-light)', padding: '2px 7px', borderRadius: 3,
                   }}>Security</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-orange)', fontFamily: 'monospace' }}>ID-5254</span>
-                  <span style={{ fontSize: 16, fontWeight: 700 }}>Volume Shadow Deletion Attempt</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-orange)', fontFamily: 'monospace' }}>{selectedCaseData?.displayId ?? 'ID-5254'}</span>
+                  <span style={{ fontSize: 16, fontWeight: 700 }}>{selectedCaseData?.name ?? 'Volume Shadow Deletion Attempt'}</span>
                   <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      Assigned: <span style={{ color: 'var(--accent-blue)', cursor: 'pointer' }}>Assign to me</span>
+                      Assigned: <span style={{ color: 'var(--accent-blue)', cursor: 'pointer' }}>{selectedCaseData?.assignedTo ?? 'Assign to me'}</span>
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      Status: <span style={{ color: 'var(--text-secondary)' }}>⊕ 处理中</span>
+                      Status: <span style={{ color: 'var(--text-secondary)' }}>⊕ {workflowStatuses[selectedCase] ?? selectedCaseData?.status ?? '处理中'}</span>
                     </span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>开放 for a year</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      {selectedIncident ? new Date(selectedIncident.created_at).toLocaleDateString('zh-CN') : '开放 for a year'}
+                    </span>
                   </span>
                 </div>
 
@@ -575,7 +1474,7 @@ export default function XDRCases() {
                   fontSize: 11, color: 'var(--text-muted)', marginBottom: 6,
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
-                  'Volume Shadow Deletion Attempt - 1186929355' along with 16 other alerts generated by XSIAM Analytics BIOC, XSIAM Agent, PAN NGFW, Correlation, XSIAM Analytics...
+                  {selectedCaseData?.description ?? "'Volume Shadow Deletion Attempt - 1186929355' along with 16 other alerts generated by XSIAM Analytics BIOC, XSIAM Agent, PAN NGFW, Correlation, XSIAM Analytics..."}
                 </div>
 
                 {/* Meta row */}
@@ -583,7 +1482,7 @@ export default function XDRCases() {
                   display: 'flex', alignItems: 'center', gap: 14,
                   fontSize: 11, color: 'var(--text-muted)', marginBottom: 8,
                 }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>17 Issues</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{selectedCaseData?.issueLabel ?? '17 Issues'}</span>
                   <div style={{ display: 'flex', gap: 3 }}>
                     {(['A', '⊕', '▲', '⚡', '◎'] as const).map((s, i) => (
                       <div key={i} style={{
@@ -814,6 +1713,31 @@ export default function XDRCases() {
                           </div>
                         ))}
                       </div>
+                    </div>
+
+                    {/* SLA tracking panel */}
+                    <div style={{ gridColumn: 1 }}>
+                      {selectedIncident ? (
+                        <SLABadge
+                          createdAt={selectedIncident.created_at}
+                          priority={selectedIncident.priority}
+                          severity={selectedIncident.severity}
+                        />
+                      ) : (
+                        <SLABadge
+                          createdAt={new Date(Date.now() - 2 * 3600 * 1000).toISOString()}
+                          priority="P2"
+                        />
+                      )}
+                    </div>
+
+                    {/* Workflow state machine */}
+                    <div style={{ gridColumn: '2 / span 3' }}>
+                      <WorkflowBar
+                        incidentKey={selectedIncident?._key ?? selectedCase}
+                        currentStatus={workflowStatuses[selectedCase] ?? selectedCaseData?.status ?? 'new'}
+                        onStatusChange={(newStatus) => handleWorkflowChange(selectedIncident?._key ?? selectedCase, newStatus)}
+                      />
                     </div>
 
                   </div>
@@ -1189,6 +2113,106 @@ export default function XDRCases() {
 
               </div>
             </div>
+          </div>
+
+          {/* ── Workflow Automation Rules ── */}
+          <div style={{
+            flexShrink: 0,
+            borderTop: '1px solid var(--border)',
+            background: 'var(--bg-sidebar)',
+          }}>
+            {/* Accordion header */}
+            <button
+              onClick={() => setAutomationOpen(v => !v)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 18px', background: 'none', border: 'none', cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <span style={{
+                fontSize: 10, color: 'var(--text-muted)', transition: 'transform .15s',
+                display: 'inline-block',
+                transform: automationOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+              }}>▶</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '.3px' }}>
+                自动化规则
+              </span>
+              <span style={{
+                fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-card)',
+                border: '1px solid var(--border-light)', borderRadius: 8,
+                padding: '1px 7px', marginLeft: 2,
+              }}>{AUTOMATION_RULES.length}</span>
+              <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>
+                {AUTOMATION_RULES.filter(r => automationRuleStates[r.id]).length} 条已启用
+              </span>
+            </button>
+            {automationOpen && (
+              <div style={{ padding: '0 18px 12px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
+                  <thead>
+                    <tr>
+                      {['规则', '触发条件', '动作', '状态'].map(h => (
+                        <th key={h} style={{
+                          padding: '5px 10px 5px 6px', textAlign: 'left',
+                          fontSize: 10, fontWeight: 700, color: 'var(--text-muted)',
+                          textTransform: 'uppercase', letterSpacing: '.4px',
+                          borderBottom: '1px solid var(--border)',
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {AUTOMATION_RULES.map(rule => {
+                      const enabled = automationRuleStates[rule.id] ?? rule.defaultEnabled
+                      return (
+                        <tr key={rule.id} style={{ opacity: enabled ? 1 : 0.55 }}>
+                          <td style={{ padding: '6px 10px 6px 6px', color: 'var(--text-primary)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>
+                            {rule.name}
+                          </td>
+                          <td style={{ padding: '6px 10px 6px 6px', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 11, borderBottom: '1px solid var(--border)' }}>
+                            {rule.trigger}
+                          </td>
+                          <td style={{ padding: '6px 10px 6px 6px', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border)' }}>
+                            {rule.action}
+                          </td>
+                          <td style={{ padding: '6px 10px 6px 6px', borderBottom: '1px solid var(--border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                              {/* Toggle switch */}
+                              <button
+                                onClick={() => {
+                                  const next = !enabled
+                                  setAutomationRuleStates(prev => ({ ...prev, [rule.id]: next }))
+                                  setAutomationRuleEnabled(rule.id, next)
+                                }}
+                                style={{
+                                  width: 34, height: 18, borderRadius: 9, border: 'none',
+                                  background: enabled ? 'var(--accent-green)' : 'var(--border)',
+                                  cursor: 'pointer', position: 'relative', flexShrink: 0,
+                                  transition: 'background .2s',
+                                }}
+                              >
+                                <span style={{
+                                  position: 'absolute', top: 2,
+                                  left: enabled ? 18 : 2,
+                                  width: 14, height: 14, borderRadius: '50%',
+                                  background: 'white',
+                                  transition: 'left .2s',
+                                }} />
+                              </button>
+                              <span style={{
+                                fontSize: 12,
+                                color: enabled ? 'var(--accent-green)' : 'var(--text-muted)',
+                              }}>{enabled ? '✅' : '❌'}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -1618,6 +2642,7 @@ export default function XDRCases() {
       <style>{`
         @keyframes xsiam-spin { to { transform: rotate(360deg); } }
         @keyframes xsiam-spin-rev { to { transform: rotate(-360deg); } }
+        @keyframes xsiam-pulse { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
       `}</style>
 
     </div>

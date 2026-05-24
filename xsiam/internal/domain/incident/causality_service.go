@@ -259,6 +259,17 @@ func (s *CausalityService) GetGraphByIncident(ctx context.Context, incidentID st
 	return s.graphRepo.GetGraphByIncident(ctx, incidentID)
 }
 
+// BulkCorrelate runs TriggerCorrelation for each alertID and returns any errors encountered.
+func (s *CausalityService) BulkCorrelate(ctx context.Context, alertIDs []string) []error {
+	errs := make([]error, 0)
+	for _, id := range alertIDs {
+		if err := s.TriggerCorrelation(ctx, id); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errs
+}
+
 func dedup(alerts []*model.Alert) []*model.Alert {
 	seen := map[string]bool{}
 	result := make([]*model.Alert, 0)

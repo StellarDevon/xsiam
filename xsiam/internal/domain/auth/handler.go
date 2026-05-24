@@ -127,6 +127,68 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	response.OK(c, gin.H{"message": "password changed"})
 }
 
+// Me returns the profile of the currently authenticated user.
+// GET /api/users/me
+func (h *UserHandler) Me(c *gin.Context) {
+	userID := c.GetString(middleware.CtxUserID)
+	if userID == "" {
+		response.Unauthorized(c)
+		return
+	}
+	user, err := h.svc.Get(c.Request.Context(), userID)
+	if err != nil {
+		// Fallback: return basic JWT-derived info
+		c.JSON(200, gin.H{
+			"_key":      userID,
+			"user_id":   userID,
+			"role":      c.GetString(middleware.CtxRole),
+			"tenant_id": c.GetString(middleware.CtxTenantID),
+		})
+		return
+	}
+	user.PasswordHash = ""
+	response.OK(c, user)
+}
+
+// Bulk performs bulk enable/disable on users.
+// POST /api/users/bulk
+func (h *UserHandler) Bulk(c *gin.Context) {
+	var body struct {
+		Action string   `json:"action" binding:"required"`
+		Keys   []string `json:"keys"`
+		IDs    []string `json:"ids"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	keys := body.Keys
+	if len(keys) == 0 {
+		keys = body.IDs
+	}
+	if len(keys) == 0 {
+		response.BadRequest(c, "keys or ids required")
+		return
+	}
+	var patch map[string]any
+	switch body.Action {
+	case "enable":
+		patch = map[string]any{"enabled": true}
+	case "disable":
+		patch = map[string]any{"enabled": false}
+	default:
+		response.BadRequest(c, "unknown action: "+body.Action)
+		return
+	}
+	count := 0
+	for _, k := range keys {
+		if err := h.svc.Update(c.Request.Context(), k, patch); err == nil {
+			count++
+		}
+	}
+	response.OK(c, gin.H{"updated": count})
+}
+
 type TenantHandler struct {
 	svc *TenantService
 }

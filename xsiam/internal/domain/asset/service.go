@@ -12,6 +12,14 @@ type AuditLogger interface {
 	Record(ctx context.Context, operatorID, action, resourceType, resourceID, resourceName string, oldVal, newVal any)
 }
 
+// AssetStats holds summary statistics for assets.
+type AssetStats struct {
+	Total         int64            `json:"total"`
+	ByType        map[string]int64 `json:"by_type"`
+	ByStatus      map[string]int64 `json:"by_status"`
+	HighRiskCount int64            `json:"high_risk_count"`
+}
+
 // AssetStore is the minimal interface Service needs from the asset repository.
 type AssetStore interface {
 	Create(ctx context.Context, a *model.Asset) error
@@ -19,6 +27,7 @@ type AssetStore interface {
 	Update(ctx context.Context, key string, patch map[string]any) error
 	Delete(ctx context.Context, key string) error
 	List(ctx context.Context, f repository.AssetListFilter) ([]model.Asset, model.PageMeta, error)
+	Stats(ctx context.Context, tenantID string) (*AssetStats, error)
 }
 
 type Service struct {
@@ -63,4 +72,24 @@ func (s *Service) Update(ctx context.Context, key string, patch map[string]any, 
 
 func (s *Service) Delete(ctx context.Context, key, operatorID string) error {
 	return s.assetRepo.Delete(ctx, key)
+}
+
+// Stats returns aggregate statistics for assets belonging to the given tenant.
+func (s *Service) Stats(ctx context.Context, tenantID string) (*AssetStats, error) {
+	return s.assetRepo.Stats(ctx, tenantID)
+}
+
+// PushTag appends tag to an asset's tags slice (deduplicating).
+func (s *Service) PushTag(ctx context.Context, tenantID, key, tag string) error {
+	a, err := s.assetRepo.GetByID(ctx, key)
+	if err != nil {
+		return err
+	}
+	// deduplicate
+	for _, t := range a.Tags {
+		if t == tag {
+			return nil
+		}
+	}
+	return s.assetRepo.Update(ctx, key, map[string]any{"tags": append(a.Tags, tag)})
 }

@@ -118,6 +118,78 @@ func (r *DetectionRuleRepo) Delete(ctx context.Context, key string) error {
 	return err
 }
 
+// CountByTenant returns the total number of detection rules for a given tenant.
+func (r *DetectionRuleRepo) CountByTenant(ctx context.Context, tenantID string) (int64, error) {
+	query := `FOR doc IN detection_rules FILTER doc.tenant_id == @tid COLLECT WITH COUNT INTO n RETURN n`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID},
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer cursor.Close()
+	var n int64
+	if cursor.HasMore() {
+		if _, err = cursor.ReadDocument(ctx, &n); err != nil {
+			return 0, err
+		}
+	}
+	return n, nil
+}
+
+// CountActiveByTenant returns the number of active detection rules for a given tenant.
+func (r *DetectionRuleRepo) CountActiveByTenant(ctx context.Context, tenantID string) (int64, error) {
+	query := `FOR doc IN detection_rules FILTER doc.tenant_id == @tid AND doc.status == "active" COLLECT WITH COUNT INTO n RETURN n`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID},
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer cursor.Close()
+	var n int64
+	if cursor.HasMore() {
+		if _, err = cursor.ReadDocument(ctx, &n); err != nil {
+			return 0, err
+		}
+	}
+	return n, nil
+}
+
+// AggregateByMitreTenant returns a map of tactic -> []technique from active rules for a given tenant.
+// It collects all values from the mitre_tactics array field and groups by tactic name.
+func (r *DetectionRuleRepo) AggregateByMitreTenant(ctx context.Context, tenantID string) (map[string][]string, error) {
+	query := `
+		FOR doc IN detection_rules
+		FILTER doc.tenant_id == @tid AND doc.status == "active"
+		FOR tactic IN (doc.mitre_tactics != null ? doc.mitre_tactics : (doc.mitre_tactic != null AND doc.mitre_tactic != "" ? [doc.mitre_tactic] : []))
+		COLLECT t = tactic INTO techniques = doc.mitre_technique
+		RETURN {tactic: t, techniques: techniques}
+	`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	result := map[string][]string{}
+	for cursor.HasMore() {
+		var row struct {
+			Tactic     string   `json:"tactic"`
+			Techniques []string `json:"techniques"`
+		}
+		if _, err = cursor.ReadDocument(ctx, &row); err != nil {
+			return nil, err
+		}
+		if row.Tactic != "" {
+			result[row.Tactic] = row.Techniques
+		}
+	}
+	return result, nil
+}
+
 func (r *DetectionRuleRepo) AggregateByMitre(ctx context.Context) (map[string][]string, error) {
 	query := `
 		FOR doc IN detection_rules

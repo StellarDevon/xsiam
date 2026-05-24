@@ -57,6 +57,9 @@ func (r *stubAlertRepo) FindByIocValues(ctx context.Context, vals []string, sinc
 func (r *stubAlertRepo) FindByUser(ctx context.Context, u *string, since time.Time) ([]*model.Alert, error) {
 	return nil, nil
 }
+func (r *stubAlertRepo) GetStats(_ context.Context, _ string) (*alert.AlertStats, error) {
+	return &alert.AlertStats{BySeverity: map[string]int64{}, ByStatus: map[string]int64{}}, nil
+}
 
 // --- tests ---
 

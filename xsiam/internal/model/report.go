@@ -15,6 +15,7 @@ type ReportStatus string
 
 const (
 	ReportStatusPending    ReportStatus = "pending"
+	ReportStatusScheduled  ReportStatus = "scheduled"
 	ReportStatusGenerating ReportStatus = "generating"
 	ReportStatusReady      ReportStatus = "ready"
 	ReportStatusFailed     ReportStatus = "failed"
@@ -27,6 +28,8 @@ type Report struct {
 	Description  string             `json:"description"`
 	TemplateType ReportTemplateType `json:"template_type"`
 	Status       ReportStatus       `json:"status"`
+	Schedule     string             `json:"schedule,omitempty"`  // "daily"|"weekly"|"monthly"|"once"
+	NextRunAt    *time.Time         `json:"next_run_at,omitempty"`
 	Config       map[string]any     `json:"config"`
 	DownloadURL  string             `json:"download_url"`
 	GeneratedAt  *time.Time         `json:"generated_at"`

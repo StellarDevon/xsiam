@@ -26,11 +26,13 @@ type AssetListFilter struct {
 	Type      string
 	Status    string
 	RiskLevel string
+	Tag       string
 	Keyword   string
 	Page      int
 	PageSize  int
 	SortBy    string
 	SortDesc  bool
+	SortOrder string // "asc" or "desc"; takes precedence over SortDesc when set
 }
 
 func (r *AssetRepo) List(ctx context.Context, f AssetListFilter) ([]model.Asset, model.PageMeta, error) {
@@ -51,9 +53,22 @@ func (r *AssetRepo) List(ctx context.Context, f AssetListFilter) ([]model.Asset,
 		filters = append(filters, "doc.risk_level == @riskLevel")
 		bindVars["riskLevel"] = f.RiskLevel
 	}
+	if f.Tag != "" {
+		filters = append(filters, "@tag IN doc.tags")
+		bindVars["tag"] = f.Tag
+	}
 	if f.Keyword != "" {
 		filters = append(filters, "CONTAINS(LOWER(doc.name), LOWER(@kw))")
 		bindVars["kw"] = f.Keyword
+	}
+
+	sortBy := f.SortBy
+	sortDesc := f.SortDesc
+	if f.SortOrder != "" {
+		sortDesc = f.SortOrder == "desc"
+	}
+	if sortBy == "" && f.SortOrder != "" {
+		sortBy = "created_at"
 	}
 
 	var data []model.Asset
@@ -61,8 +76,8 @@ func (r *AssetRepo) List(ctx context.Context, f AssetListFilter) ([]model.Asset,
 		Collection: colAssets,
 		Filters:    filters,
 		BindVars:   bindVars,
-		SortBy:     f.SortBy,
-		SortDesc:   f.SortDesc,
+		SortBy:     sortBy,
+		SortDesc:   sortDesc,
 		Page:       f.Page,
 		PageSize:   f.PageSize,
 	}, &data)
@@ -112,4 +127,30 @@ func (r *AssetRepo) Delete(ctx context.Context, key string) error {
 		r.listVer.bump()
 	}
 	return err
+}
+
+// FindByHostnameOrIP looks up an asset by its name (case-insensitive) or by
+// one of its ip_addresses entries.  Returns nil, nil when not found.
+// Used by the ETL lookup_asset action to enrich inbound log events.
+func (r *AssetRepo) FindByHostnameOrIP(ctx context.Context, tenantID, target string) (*model.Asset, error) {
+	aql := `FOR doc IN assets
+	          FILTER doc.tenant_id == @tid
+	          FILTER LOWER(doc.name) == LOWER(@target) OR @target IN doc.ip_addresses
+	          LIMIT 1
+	          RETURN doc`
+	cursor, err := r.db.Query(ctx, aql, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID, "target": target},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("asset find by hostname/ip: %w", err)
+	}
+	defer cursor.Close()
+	if !cursor.HasMore() {
+		return nil, nil
+	}
+	var asset model.Asset
+	if _, err = cursor.ReadDocument(ctx, &asset); err != nil {
+		return nil, err
+	}
+	return &asset, nil
 }

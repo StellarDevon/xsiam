@@ -9,6 +9,24 @@ import (
 	"xsiam/pkg/utils"
 )
 
+// AlertStats holds aggregated statistics for alerts.
+type AlertStats struct {
+	Total             int64            `json:"total"`
+	BySeverity        map[string]int64 `json:"by_severity"`
+	ByStatus          map[string]int64 `json:"by_status"`
+	NewLast24h        int64            `json:"new_last_24h"`
+	ResolvedLast24h   int64            `json:"resolved_last_24h"`
+	MTTRHours         float64          `json:"mttr_hours"`
+	FalsePositiveRate float64          `json:"false_positive_rate"`
+	TopHosts          []HostCount      `json:"top_hosts"`
+}
+
+// HostCount associates a host name with an alert count.
+type HostCount struct {
+	Host  string `json:"host"`
+	Count int64  `json:"count"`
+}
+
 // CorrelationSubmitter is the interface for submitting alerts to the correlation pool.
 type CorrelationSubmitter interface {
 	Submit(alertID string)
@@ -129,6 +147,10 @@ func (s *Service) LinkIncident(ctx context.Context, alertKey, incidentKey, opera
 		}
 	}
 	return s.alertRepo.Update(ctx, alertKey, map[string]any{model.FieldIncidentID: incidentKey})
+}
+
+func (s *Service) GetStats(ctx context.Context, tenantID string) (*AlertStats, error) {
+	return s.alertRepo.GetStats(ctx, tenantID)
 }
 
 func (s *Service) Bulk(ctx context.Context, keys []string, action string, patch map[string]any, operatorID string) error {

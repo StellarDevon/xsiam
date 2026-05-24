@@ -92,29 +92,33 @@ func (r *RuleRepo) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-func (r *RuleRepo) AggregateByMitre(ctx context.Context) (map[string][]string, error) {
+func (r *RuleRepo) AggregateByMitre(ctx context.Context, tenantID string) (map[string]int, error) {
 	query := `
-		FOR doc IN detection_rules
-		FILTER doc.status == "active"
-		COLLECT tactic = doc.mitre_tactic INTO techniques = doc.mitre_technique
-		RETURN {tactic, techniques}
+		FOR r IN detection_rules
+		  FILTER r.tenant_id == @tenant_id AND r.status IN ["active", "testing"]
+		  FOR tactic IN (r.mitre_tactics || [r.mitre_tactic])
+		    FILTER tactic != null AND tactic != ""
+		    COLLECT t = tactic WITH COUNT INTO n
+		    RETURN {tactic: t, count: n}
 	`
-	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{})
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tenant_id": tenantID},
+	})
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close()
 
-	result := map[string][]string{}
+	result := map[string]int{}
 	for cursor.HasMore() {
 		var row struct {
-			Tactic     string   `json:"tactic"`
-			Techniques []string `json:"techniques"`
+			Tactic string `json:"tactic"`
+			Count  int    `json:"count"`
 		}
 		if _, err = cursor.ReadDocument(ctx, &row); err != nil {
 			return nil, err
 		}
-		result[row.Tactic] = row.Techniques
+		result[row.Tactic] = row.Count
 	}
 	return result, nil
 }

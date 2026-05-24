@@ -16,16 +16,28 @@ func NewHandler(svc *Service) *Handler {
 }
 
 func (h *Handler) Query(c *gin.Context) {
-	spl2 := c.Query("spl2")
-	if spl2 == "" {
-		response.BadRequest(c, "spl2 query is required")
+	// Accept both "q" (frontend convention) and "spl2" (legacy).
+	xql := c.Query("q")
+	if xql == "" {
+		xql = c.Query("spl2")
+	}
+	if xql == "" {
+		response.BadRequest(c, "query parameter 'q' is required")
 		return
 	}
 	fromTS, _ := strconv.ParseInt(c.DefaultQuery("from_ts", "0"), 10, 64)
 	toTS, _ := strconv.ParseInt(c.DefaultQuery("to_ts", "0"), 10, 64)
-	result, err := h.svc.Query(c.Request.Context(), spl2, fromTS, toTS)
+
+	// Inject tenant_id from gin context into request context so the service
+	// can scope its AQL query.
+	ctx := c.Request.Context()
+	if tid, ok := c.Get("tenant_id"); ok {
+		ctx = contextWithTenant(ctx, tid.(string))
+	}
+
+	result, err := h.svc.Query(ctx, xql, fromTS, toTS)
 	if err != nil {
-		response.InternalError(c, err)
+		response.BadRequest(c, err.Error())
 		return
 	}
 	response.OK(c, result)

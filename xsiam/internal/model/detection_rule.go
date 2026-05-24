@@ -51,7 +51,12 @@ type BIOCEvent struct {
 }
 
 type RuleTestResult struct {
-	MatchCount     int       `json:"match_count"`
+	RuleID         string    `json:"rule_id"`
+	RuleName       string    `json:"rule_name"`
+	Status         string    `json:"status"`
+	MatchCount     int       `json:"matched_count"`
+	SampleMatches  []string  `json:"sample_matches"`
+	ReplayedAt     string    `json:"replayed_at"`
 	FalsePositives int       `json:"false_positives"`
 	TestedAt       time.Time `json:"tested_at"`
 	TimeRangeH     int       `json:"time_range_h"`

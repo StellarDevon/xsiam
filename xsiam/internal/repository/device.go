@@ -24,6 +24,8 @@ type DeviceListFilter struct {
 	TenantID    string
 	AgentStatus string
 	Keyword     string
+	OS          string
+	Hostname    string
 	Page        int
 	PageSize    int
 	SortBy      string
@@ -43,6 +45,14 @@ func (r *DeviceRepo) List(ctx context.Context, f DeviceListFilter) ([]model.Devi
 	if f.Keyword != "" {
 		filters = append(filters, "CONTAINS(LOWER(doc.hostname), LOWER(@kw))")
 		bindVars["kw"] = f.Keyword
+	}
+	if f.OS != "" {
+		filters = append(filters, "LOWER(doc.os) LIKE LOWER(CONCAT('%', @os, '%'))")
+		bindVars["os"] = f.OS
+	}
+	if f.Hostname != "" {
+		filters = append(filters, "LOWER(doc.hostname) LIKE LOWER(CONCAT('%', @hostname, '%'))")
+		bindVars["hostname"] = f.Hostname
 	}
 
 	var data []model.Device

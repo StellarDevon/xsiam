@@ -1,6 +1,6 @@
-SERVER_PORT: "8080"
+SERVER_PORT: "18080"
 SERVER_MODE: "debug"
-SVC_SERVER_PORT: "8090"
+SVC_SERVER_PORT: "18090"
 ARANGO_ENDPOINTS:
   - "http://127.0.0.1:8529"
 ARANGO_USERNAME: "root"
@@ -9,16 +9,22 @@ ARANGO_DATABASE: "xsiamdb"
 JWT_SECRET: "change-me-in-production"
 JWT_EXPIRE_HR: 24
 STUB_EXECUTION: true
-STUB_ETL: true
+STUB_ETL: false
 STUB_DATALAKE: true
 STUB_AI_ENGINE: true
 DATALAKE_QUERY_URL: "http://localhost:8080"
 DATALAKE_HEC_URL: "http://localhost:18088"
 DATALAKE_HEC_TOKEN: "changeme-hec-token"
 DATALAKE_ENABLED: false
-SVC_URL: "http://localhost:8090"
+SVC_URL: "http://localhost:18090"
 INTERNAL_ALLOWED_CIDR: "127.0.0.1"
-INTERNAL_ALERT_CALLBACK_URL: "http://localhost:8080/api/internal/alerts"
+INTERNAL_ALERT_CALLBACK_URL: "http://localhost:18080/api/internal/alerts"
 NOTIFY_EMAIL_ENABLED: false
 NOTIFY_DINGTALK_ENABLED: false
 NOTIFY_SLACK_ENABLED: false
+REDIS_ADDR: "localhost:6379"
+REDIS_PASSWORD: ""
+copilot_api_key: ""  # set ANTHROPIC_API_KEY env var to enable real AI responses
+webhook:
+  endpoints: []
+  secret: ""

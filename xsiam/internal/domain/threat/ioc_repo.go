@@ -66,10 +66,46 @@ func (r *IocRepo) GetByID(ctx context.Context, key string) (*model.IOC, error) {
 	return &ioc, nil
 }
 
-func (r *IocRepo) Search(ctx context.Context, tenantID, value string) ([]model.IOC, error) {
-	query := `FOR doc IN iocs FILTER doc.tenant_id == @tenantID AND CONTAINS(doc.value, @value) RETURN doc`
+func (r *IocRepo) Search(ctx context.Context, tenantID, q string, limit int) ([]model.IOC, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	query := `FOR doc IN iocs
+  FILTER doc.tenant_id == @tenant_id
+  FILTER LOWER(doc.value) LIKE LOWER(CONCAT('%', @q, '%'))
+     OR LOWER(doc.threat_name) LIKE LOWER(CONCAT('%', @q, '%'))
+  LIMIT @limit
+  RETURN doc`
 	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
-		BindVars: map[string]any{"tenantID": tenantID, "value": value},
+		BindVars: map[string]any{"tenant_id": tenantID, "q": q, "limit": limit},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+	var results []model.IOC
+	for cursor.HasMore() {
+		var ioc model.IOC
+		if _, err = cursor.ReadDocument(ctx, &ioc); err != nil {
+			return nil, err
+		}
+		results = append(results, ioc)
+	}
+	return results, nil
+}
+
+// FindByValues returns IOCs whose value field matches any of the supplied values
+// (case-insensitive), scoped to the given tenant.
+func (r *IocRepo) FindByValues(ctx context.Context, tenantID string, values []string) ([]model.IOC, error) {
+	if len(values) == 0 {
+		return nil, nil
+	}
+	query := `FOR doc IN iocs
+  FILTER doc.tenant_id == @tenantID
+  FILTER LOWER(doc.value) IN @values
+  RETURN doc`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tenantID": tenantID, "values": values},
 	})
 	if err != nil {
 		return nil, err

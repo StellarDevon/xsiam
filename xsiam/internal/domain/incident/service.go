@@ -9,6 +9,16 @@ import (
 	"xsiam/pkg/utils"
 )
 
+// SLAStats holds SLA compliance metrics for open incidents.
+type SLAStats struct {
+	Total          int     `json:"total"`
+	P1Breached     int     `json:"p1_breached"`
+	P2Breached     int     `json:"p2_breached"`
+	P1AtRisk       int     `json:"p1_at_risk"`
+	P2AtRisk       int     `json:"p2_at_risk"`
+	ComplianceRate float64 `json:"compliance_rate"`
+}
+
 // IncidentStore is the minimal interface Service needs from IncidentRepo.
 type IncidentStore interface {
 	Create(ctx context.Context, inc *model.Incident) error
@@ -18,6 +28,7 @@ type IncidentStore interface {
 	List(ctx context.Context, f repository.IncidentListFilter) ([]model.Incident, model.PageMeta, error)
 	ListAlertKeys(ctx context.Context, incidentKey string) ([]string, error)
 	Merge(ctx context.Context, primaryKey string, secondaryKeys []string) error
+	GetSLAStats(ctx context.Context, tenantID string) (*SLAStats, error)
 }
 
 // AlertStore is the minimal interface Service needs from AlertRepo.
@@ -32,9 +43,10 @@ type AuditLogger interface {
 }
 
 type Service struct {
-	incRepo   IncidentStore
-	alertRepo AlertStore
-	auditRepo AuditLogger
+	incRepo           IncidentStore
+	alertRepo         AlertStore
+	auditRepo         AuditLogger
+	webhookDispatcher *WebhookDispatcher
 }
 
 func NewService(
@@ -70,6 +82,7 @@ type CreateIncidentReq struct {
 	Title       string         `json:"title"`
 	Description string         `json:"description"`
 	Severity    model.Severity `json:"severity" binding:"required"`
+	Priority    string         `json:"priority"`   // P1, P2, P3, P4
 	TenantID    string         `json:"tenant_id"`
 }
 
@@ -90,6 +103,7 @@ func (s *Service) Create(ctx context.Context, req CreateIncidentReq, operatorID 
 		Title:        name,
 		Description:  req.Description,
 		Severity:     req.Severity,
+		Priority:     req.Priority,
 		Status:       model.IncidentStatusNew,
 		FirstSeen:    now,
 		LastActivity: now,
@@ -99,6 +113,9 @@ func (s *Service) Create(ctx context.Context, req CreateIncidentReq, operatorID 
 	}
 	if s.auditRepo != nil {
 		s.auditRepo.Record(ctx, operatorID, "create", "incident", inc.Key, inc.Name, nil, inc)
+	}
+	if s.webhookDispatcher != nil {
+		s.webhookDispatcher.Dispatch(ctx, inc, "incident.created")
 	}
 	return inc, nil
 }
@@ -171,4 +188,8 @@ func (s *Service) Bulk(ctx context.Context, keys []string, action string, patch 
 		}
 	}
 	return nil
+}
+
+func (s *Service) GetSLAStats(ctx context.Context, tenantID string) (*SLAStats, error) {
+	return s.incRepo.GetSLAStats(ctx, tenantID)
 }

@@ -92,6 +92,25 @@ func (r *IdentityRiskRepo) Upsert(ctx context.Context, risk *model.IdentityRisk)
 	return err
 }
 
+// CountByTenant returns the total number of identity risks for the given tenant.
+func (r *IdentityRiskRepo) CountByTenant(ctx context.Context, tenantID string) (int64, error) {
+	query := `FOR doc IN identity_risks FILTER doc.tenant_id == @tid COLLECT WITH COUNT INTO n RETURN n`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID},
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer cursor.Close()
+	var n int64
+	if cursor.HasMore() {
+		if _, err = cursor.ReadDocument(ctx, &n); err != nil {
+			return 0, err
+		}
+	}
+	return n, nil
+}
+
 func (r *IdentityRiskRepo) ListAll(ctx context.Context) ([]model.IdentityRisk, error) {
 	query := `FOR doc IN identity_risks RETURN doc`
 	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{})

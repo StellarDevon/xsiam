@@ -7,15 +7,19 @@ import (
 )
 
 type Config struct {
-	WebPort      string
-	InternalPort string
-	Mode         string
-	WebhookURL   string // alert callback from datalake → internal port
-	ArangoDB     ArangoDBConfig
-	Auth         AuthConfig
-	Stub         StubConfig
-	DataLake     DataLakeConfig
-	Notify       NotifyConfig
+	WebPort       string
+	InternalPort  string
+	Mode          string
+	WebhookURL    string // alert callback from datalake → internal port
+	ArangoDB      ArangoDBConfig
+	Auth          AuthConfig
+	Stub          StubConfig
+	DataLake      DataLakeConfig
+	Notify        NotifyConfig
+	Webhook       WebhookConfig `mapstructure:"webhook"`
+	RedisAddr     string // host:port, e.g. "localhost:6379"
+	RedisPassword string
+	CopilotAPIKey string `mapstructure:"copilot_api_key"`
 }
 
 type ArangoDBConfig struct {
@@ -48,6 +52,14 @@ type NotifyConfig struct {
 	Email    EmailConfig
 	DingTalk DingTalkConfig
 	Slack    SlackConfig
+	Webhook  WebhookNotifyConfig
+}
+
+// WebhookNotifyConfig is for outbound notification webhooks (distinct from the
+// inbound alert-ingest WebhookConfig at the top-level Config).
+type WebhookNotifyConfig struct {
+	Enabled bool
+	URLs    []string
 }
 
 type EmailConfig struct {
@@ -69,11 +81,17 @@ type SlackConfig struct {
 	WebhookURL string
 }
 
+type WebhookConfig struct {
+	Endpoints []string `mapstructure:"endpoints"`
+	Secret    string   `mapstructure:"secret"`
+}
+
 func Load() *Config {
 	viper.SetConfigFile("config.yaml")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	_ = viper.ReadInConfig()
+	_ = viper.BindEnv("copilot_api_key", "ANTHROPIC_API_KEY")
 
 	webPort := viper.GetString("SERVER_PORT")
 	if webPort == "" {
@@ -111,6 +129,13 @@ func Load() *Config {
 			Enabled:  viper.GetBool("DATALAKE_ENABLED"),
 		},
 		WebhookURL: viper.GetString("WEBHOOK_URL"),
+		Webhook: WebhookConfig{
+			Endpoints: viper.GetStringSlice("webhook.endpoints"),
+			Secret:    viper.GetString("webhook.secret"),
+		},
+		RedisAddr:     func() string { a := viper.GetString("REDIS_ADDR"); if a == "" { return "localhost:6379" }; return a }(),
+		RedisPassword: viper.GetString("REDIS_PASSWORD"),
+		CopilotAPIKey: viper.GetString("copilot_api_key"),
 		Notify: NotifyConfig{
 			Email: EmailConfig{
 				Enabled:  viper.GetBool("NOTIFY_EMAIL_ENABLED"),
@@ -127,6 +152,10 @@ func Load() *Config {
 			Slack: SlackConfig{
 				Enabled:    viper.GetBool("NOTIFY_SLACK_ENABLED"),
 				WebhookURL: viper.GetString("NOTIFY_SLACK_WEBHOOK_URL"),
+			},
+			Webhook: WebhookNotifyConfig{
+				Enabled: viper.GetBool("NOTIFY_WEBHOOK_ENABLED"),
+				URLs:    viper.GetStringSlice("NOTIFY_WEBHOOK_URLS"),
 			},
 		},
 	}

@@ -33,8 +33,9 @@ const (
 )
 
 type PageMeta struct {
-	Total    int64 `json:"total"`
-	Page     int   `json:"page"`
-	PageSize int   `json:"page_size"`
-	Pages    int   `json:"total_pages"`
+	Total    int64          `json:"total"`
+	Page     int            `json:"page"`
+	PageSize int            `json:"page_size"`
+	Pages    int            `json:"total_pages"`
+	Extra    map[string]any `json:"extra,omitempty"` // e.g. online_count for device list
 }

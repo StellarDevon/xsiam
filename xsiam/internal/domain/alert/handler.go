@@ -1,8 +1,10 @@
 package alert
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 	"xsiam/internal/middleware"
 	"xsiam/internal/model"
 	"xsiam/internal/repository"
@@ -40,6 +42,7 @@ func (h *Handler) List(c *gin.Context) {
 		SourceType: sourceType,
 		IncidentID: c.Query("incident_id"),
 		AssetID:    c.Query("asset_id"),
+		Host:       c.Query("host"),
 		Keyword:    firstOf(c.Query("q"), c.Query("keyword")),
 		Unlinked:   c.Query("unlinked") == "true",
 		Linked:     c.Query("linked") == "true",
@@ -119,32 +122,89 @@ func (h *Handler) LinkIncident(c *gin.Context) {
 func (h *Handler) Bulk(c *gin.Context) {
 	operatorID := c.GetString(middleware.CtxUserID)
 	var body struct {
-		Action string         `json:"action" binding:"required"`
-		Keys   []string       `json:"keys" binding:"required,min=1"`
-		Patch  map[string]any `json:"patch"`
+		Action     string         `json:"action" binding:"required"`
+		Keys       []string       `json:"keys"`
+		IDs        []string       `json:"ids"`
+		Patch      map[string]any `json:"patch"`
+		Status     string         `json:"status"`
+		AssignedTo string         `json:"assigned_to"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		response.BadRequest(c, err.Error())
 		return
 	}
-	patch := body.Patch
+	// Accept either "keys" or "ids" as the list of document keys.
+	keys := body.Keys
+	if len(keys) == 0 {
+		keys = body.IDs
+	}
+	if len(keys) == 0 {
+		response.BadRequest(c, "ids or keys is required and must not be empty")
+		return
+	}
+	var patch map[string]any
 	switch body.Action {
 	case "close":
 		patch = map[string]any{"status": string(model.AlertStatusAutoClosed)}
+	case "status":
+		if body.Status == "" {
+			response.BadRequest(c, "status field required for status action")
+			return
+		}
+		patch = map[string]any{"status": body.Status}
+	case "assign":
+		if body.AssignedTo == "" {
+			response.BadRequest(c, "assigned_to field required for assign action")
+			return
+		}
+		patch = map[string]any{"assignee_id": body.AssignedTo}
+	case "resolve":
+		patch = map[string]any{"status": string(model.AlertStatusResolved)}
 	case "update":
-		if patch == nil {
+		if body.Patch == nil {
 			response.BadRequest(c, "patch required for update action")
 			return
 		}
+		patch = body.Patch
 	default:
 		response.BadRequest(c, "unknown action: "+body.Action)
 		return
 	}
-	if err := h.svc.Bulk(c.Request.Context(), body.Keys, body.Action, patch, operatorID); err != nil {
+	if err := h.svc.Bulk(c.Request.Context(), keys, body.Action, patch, operatorID); err != nil {
 		response.Err(c, http.StatusMultiStatus, "PARTIAL_ERROR", err.Error())
 		return
 	}
-	response.OK(c, gin.H{"updated": len(body.Keys)})
+	response.OK(c, gin.H{"updated": len(keys)})
+}
+
+func (h *Handler) Stats(c *gin.Context) {
+	tenantID := c.GetString(middleware.CtxTenantID)
+	stats, err := h.svc.GetStats(c.Request.Context(), tenantID)
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	response.OK(c, stats)
+}
+
+// Summary generates an AI summary for a specific alert.
+// GET /api/alerts/:id/summary
+func (h *Handler) Summary(c *gin.Context) {
+	key := c.Param("id")
+	a, err := h.svc.Get(c.Request.Context(), key)
+	if err != nil {
+		response.NotFound(c, "alert")
+		return
+	}
+	summary := fmt.Sprintf(
+		"Alert '%s' (severity: %s, status: %s) was triggered at %s. Source: %s. Host: %s.",
+		a.Name, a.Severity, a.Status, a.TriggeredAt.Format(time.RFC3339), a.SourceType, a.Host,
+	)
+	c.JSON(http.StatusOK, gin.H{
+		"summary":     summary,
+		"alert_key":   key,
+		"ai_enhanced": false,
+	})
 }
 
 // firstOf returns the first non-empty string.

@@ -11,6 +11,16 @@ import (
 	"github.com/arangodb/go-driver/v2/arangodb/shared"
 )
 
+// slaRow is used to unmarshal the aggregated AQL SLA result.
+type slaRow struct {
+	Total      int     `json:"total"`
+	P1Breached int     `json:"p1_breached"`
+	P2Breached int     `json:"p2_breached"`
+	P1AtRisk   int     `json:"p1_at_risk"`
+	P2AtRisk   int     `json:"p2_at_risk"`
+	Compliant  int     `json:"compliant"`
+}
+
 const colIncidents = "incidents"
 
 // Repo is the ArangoDB-backed incident repository.
@@ -36,13 +46,25 @@ func (r *Repo) List(ctx context.Context, f repository.IncidentListFilter) ([]mod
 		filters = append(filters, "doc.status == @status")
 		bindVars["status"] = f.Status
 	}
+	if f.Priority != "" {
+		filters = append(filters, "doc.priority == @priority")
+		bindVars["priority"] = f.Priority
+	}
 	if f.AssigneeID != "" {
 		filters = append(filters, "doc.assignee_id == @assigneeId")
 		bindVars["assigneeId"] = f.AssigneeID
 	}
 	if f.Keyword != "" {
-		filters = append(filters, "CONTAINS(LOWER(doc.name), LOWER(@kw))")
+		filters = append(filters, "(CONTAINS(LOWER(doc.name), LOWER(@kw)) OR CONTAINS(LOWER(doc.title), LOWER(@kw)) OR CONTAINS(LOWER(doc.description), LOWER(@kw)))")
 		bindVars["kw"] = f.Keyword
+	}
+	if f.MitreTactic != "" {
+		filters = append(filters, "(@mitreTactic IN doc.mitre_tactics OR doc.mitre_tactic == @mitreTactic)")
+		bindVars["mitreTactic"] = f.MitreTactic
+	}
+	if f.AssignedTo != "" {
+		filters = append(filters, "doc.assigned_to == @assignedTo")
+		bindVars["assignedTo"] = f.AssignedTo
 	}
 
 	sortBy := "last_activity"
@@ -135,4 +157,59 @@ func (r *Repo) Merge(ctx context.Context, primaryKey string, secondaryKeys []str
 		}
 	}
 	return nil
+}
+
+// GetSLAStats computes SLA compliance for all open incidents of a tenant.
+// SLA hours by priority/severity: P1/critical=4h, P2/high=8h, P3/medium=24h, P4/default=72h.
+// Breached = open incident where deadline < now.
+// At risk  = open incident where time until deadline < 2h AND NOT breached.
+func (r *Repo) GetSLAStats(ctx context.Context, tenantID string) (*SLAStats, error) {
+	aql := `
+FOR doc IN incidents
+  FILTER doc.tenant_id == @tenantID
+  LET sla_hours = (doc.priority == "P1" OR doc.severity == "critical") ? 4 :
+                  (doc.priority == "P2" OR doc.severity == "high") ? 8 :
+                  (doc.priority == "P3" OR doc.severity == "medium") ? 24 : 72
+  LET deadline = DATE_ADD(doc.created_at, sla_hours, "hours")
+  LET breached = (doc.status NOT IN ["resolved","auto_closed","false_positive"] AND deadline < DATE_NOW())
+  LET at_risk = (!breached AND doc.status NOT IN ["resolved","auto_closed","false_positive"] AND DATE_DIFF(DATE_NOW(), deadline, "hours") < 2)
+  COLLECT INTO rows
+  RETURN {
+    total: LENGTH(rows),
+    p1_breached: COUNT(rows[* FILTER CURRENT.sla_hours == 4 AND CURRENT.breached]),
+    p2_breached: COUNT(rows[* FILTER CURRENT.sla_hours == 8 AND CURRENT.breached]),
+    p1_at_risk: COUNT(rows[* FILTER CURRENT.sla_hours == 4 AND CURRENT.at_risk]),
+    p2_at_risk: COUNT(rows[* FILTER CURRENT.sla_hours == 8 AND CURRENT.at_risk]),
+    compliant: COUNT(rows[* FILTER !CURRENT.breached])
+  }
+`
+	cursor, err := r.db.Query(ctx, aql, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tenantID": tenantID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	// The COLLECT INTO ... RETURN query returns exactly one row (or zero if no docs).
+	var row slaRow
+	if cursor.HasMore() {
+		if _, err := cursor.ReadDocument(ctx, &row); err != nil {
+			return nil, err
+		}
+	}
+
+	var complianceRate float64
+	if row.Total > 0 {
+		complianceRate = float64(row.Compliant) / float64(row.Total)
+	}
+
+	return &SLAStats{
+		Total:          row.Total,
+		P1Breached:     row.P1Breached,
+		P2Breached:     row.P2Breached,
+		P1AtRisk:       row.P1AtRisk,
+		P2AtRisk:       row.P2AtRisk,
+		ComplianceRate: complianceRate,
+	}, nil
 }

@@ -19,6 +19,7 @@ type AlertStore interface {
 	FindByAssetSince(ctx context.Context, assetID *string, since time.Time) ([]*model.Alert, error)
 	FindByIocValues(ctx context.Context, values []string, since time.Time) ([]*model.Alert, error)
 	FindByUser(ctx context.Context, username *string, since time.Time) ([]*model.Alert, error)
+	GetStats(ctx context.Context, tenantID string) (*AlertStats, error)
 }
 
 // IncidentStore is the minimal interface AlertService needs from IncidentRepo.

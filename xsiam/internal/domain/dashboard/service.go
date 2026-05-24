@@ -7,19 +7,24 @@ import (
 )
 
 type Stats struct {
-	TotalAlerts       int64            `json:"total_alerts"`
-	OpenAlerts        int64            `json:"open_alerts"`
-	TotalIncidents    int64            `json:"total_incidents"`
-	OpenIncidents     int64            `json:"open_incidents"`
-	TotalAssets       int64            `json:"total_assets"`
-	TotalVulns        int64            `json:"total_vulns"`
-	CriticalVulns     int64            `json:"critical_vulns"`
-	AlertsByDay       []DayCount       `json:"alerts_by_day"`
-	AlertsBySeverity  map[string]int64 `json:"alerts_by_severity"`
-	IncidentsByStatus map[string]int64 `json:"incidents_by_status"`
-	TopTactics        []TacticCount    `json:"top_tactics"`
-	RecentAlerts      []AlertSummary   `json:"recent_alerts"`
-	MttrHours         float64          `json:"mttr_hours"`
+	TotalAlerts           int64            `json:"total_alerts"`
+	OpenAlerts            int64            `json:"open_alerts"`
+	TotalIncidents        int64            `json:"total_incidents"`
+	OpenIncidents         int64            `json:"open_incidents"`
+	TotalAssets           int64            `json:"total_assets"`
+	TotalVulns            int64            `json:"total_vulns"`
+	// TotalVulnerabilities is an alias for TotalVulns for frontend compatibility.
+	TotalVulnerabilities  int64            `json:"total_vulnerabilities"`
+	CriticalVulns         int64            `json:"critical_vulns"`
+	TotalIOCs             int64            `json:"total_iocs"`
+	TotalRisks            int64            `json:"total_risks"`
+	TotalReports          int64            `json:"total_reports"`
+	AlertsByDay           []DayCount       `json:"alerts_by_day"`
+	AlertsBySeverity      map[string]int64 `json:"alerts_by_severity"`
+	IncidentsByStatus     map[string]int64 `json:"incidents_by_status"`
+	TopTactics            []TacticCount    `json:"top_tactics"`
+	RecentAlerts          []AlertSummary   `json:"recent_alerts"`
+	MttrHours             float64          `json:"mttr_hours"`
 }
 
 type DayCount struct {
@@ -41,11 +46,14 @@ type AlertSummary struct {
 }
 
 type Service struct {
-	alertRepo    *repository.AlertRepo
-	incidentRepo *repository.IncidentRepo
-	assetRepo    *repository.AssetRepo
-	vulnRepo     *repository.VulnerabilityRepo
-	ruleRepo     *repository.DetectionRuleRepo
+	alertRepo        *repository.AlertRepo
+	incidentRepo     *repository.IncidentRepo
+	assetRepo        *repository.AssetRepo
+	vulnRepo         *repository.VulnerabilityRepo
+	ruleRepo         *repository.DetectionRuleRepo
+	iocRepo          *repository.IocRepo
+	identityRiskRepo *repository.IdentityRiskRepo
+	reportRepo       *repository.ReportRepo
 }
 
 func NewService(
@@ -54,8 +62,20 @@ func NewService(
 	assetRepo *repository.AssetRepo,
 	vulnRepo *repository.VulnerabilityRepo,
 	ruleRepo *repository.DetectionRuleRepo,
+	iocRepo *repository.IocRepo,
+	identityRiskRepo *repository.IdentityRiskRepo,
+	reportRepo *repository.ReportRepo,
 ) *Service {
-	return &Service{alertRepo: alertRepo, incidentRepo: incidentRepo, assetRepo: assetRepo, vulnRepo: vulnRepo, ruleRepo: ruleRepo}
+	return &Service{
+		alertRepo:        alertRepo,
+		incidentRepo:     incidentRepo,
+		assetRepo:        assetRepo,
+		vulnRepo:         vulnRepo,
+		ruleRepo:         ruleRepo,
+		iocRepo:          iocRepo,
+		identityRiskRepo: identityRiskRepo,
+		reportRepo:       reportRepo,
+	}
 }
 
 func (s *Service) GetStats(ctx context.Context, tenantID string) (*Stats, error) {
@@ -108,8 +128,23 @@ func (s *Service) GetStats(ctx context.Context, tenantID string) (*Stats, error)
 
 	_, vulnMeta, _ := s.vulnRepo.List(ctx, repository.VulnerabilityListFilter{TenantID: tenantID, PageSize: 1, Page: 1})
 	stats.TotalVulns = int64(vulnMeta.Total)
+	stats.TotalVulnerabilities = stats.TotalVulns
 	_, critMeta, _ := s.vulnRepo.List(ctx, repository.VulnerabilityListFilter{TenantID: tenantID, Severity: "critical", PageSize: 1, Page: 1})
 	stats.CriticalVulns = int64(critMeta.Total)
+
+	if iocCount, err := s.iocRepo.CountByTenant(ctx, tenantID); err == nil {
+		stats.TotalIOCs = iocCount
+	}
+	if s.identityRiskRepo != nil {
+		if riskCount, err := s.identityRiskRepo.CountByTenant(ctx, tenantID); err == nil {
+			stats.TotalRisks = riskCount
+		}
+	}
+	if s.reportRepo != nil {
+		if reportCount, err := s.reportRepo.CountByTenant(ctx, tenantID); err == nil {
+			stats.TotalReports = reportCount
+		}
+	}
 
 	now := time.Now()
 	dayMap := make(map[string]int64)

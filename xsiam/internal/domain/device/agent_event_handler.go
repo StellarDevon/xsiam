@@ -24,6 +24,7 @@ package device
 
 import (
 	"net/http"
+	"xsiam/internal/presence"
 	"xsiam/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -33,13 +34,13 @@ import (
 // AgentEventInternalHandler sits on the :18090 internal engine.
 type AgentEventInternalHandler struct {
 	svc      *Service
-	liveness *LivenessRegistry
+	presence *presence.Registry
 	log      *zap.Logger
 }
 
 // NewAgentEventInternalHandler constructs the handler.
-func NewAgentEventInternalHandler(svc *Service, liveness *LivenessRegistry, log *zap.Logger) *AgentEventInternalHandler {
-	return &AgentEventInternalHandler{svc: svc, liveness: liveness, log: log}
+func NewAgentEventInternalHandler(svc *Service, reg *presence.Registry, log *zap.Logger) *AgentEventInternalHandler {
+	return &AgentEventInternalHandler{svc: svc, presence: reg, log: log}
 }
 
 // Handle processes POST /internal/agent/event.
@@ -56,7 +57,7 @@ func (h *AgentEventInternalHandler) Handle(c *gin.Context) {
 		zap.String("hostname", ev.Hostname),
 	)
 
-	if err := h.svc.HandleAgentEvent(c.Request.Context(), ev, h.liveness); err != nil {
+	if err := h.svc.HandleAgentEvent(c.Request.Context(), ev, h.presence); err != nil {
 		h.log.Warn("agent event error", zap.Error(err), zap.String("agent_id", ev.AgentID))
 		// Non-fatal: liveness was already updated; DB failure shouldn't block the agent
 		c.Status(http.StatusNoContent)

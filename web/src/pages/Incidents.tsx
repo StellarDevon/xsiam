@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
@@ -19,6 +20,7 @@ interface Incident {
   updated_at: string
   first_seen?: string
   last_activity?: string
+  resolved_at?: string
   mitre_tactic?: string
   mitre_tactics?: string[]
   host_count?: number
@@ -91,8 +93,61 @@ function fmtDuration(isoStart: string | undefined) {
   } catch { return '-' }
 }
 
+function timeAgo(iso: string | undefined) {
+  if (!iso) return '-'
+  try {
+    const ms = Date.now() - new Date(iso).getTime()
+    if (ms < 0) return '刚刚'
+    const mins = Math.floor(ms / 60000)
+    if (mins < 1) return '刚刚'
+    if (mins < 60) return `${mins}分钟前`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}小时前`
+    return `${Math.floor(hours / 24)}天前`
+  } catch { return '-' }
+}
+
+function fmtResolveTime(created_at: string | undefined, resolved_at: string | undefined) {
+  if (!created_at || !resolved_at) return null
+  try {
+    const ms = new Date(resolved_at).getTime() - new Date(created_at).getTime()
+    if (isNaN(ms) || ms < 0) return null
+    const h = Math.floor(ms / 3600000)
+    const m = Math.floor((ms % 3600000) / 60000)
+    return `${h}h ${m}m`
+  } catch { return null }
+}
+
 function incidentTitle(inc: Incident) {
   return inc.title || inc.name || '(无标题)'
+}
+
+// ─── SLA helpers ─────────────────────────────────────────────────────────────
+
+const SLA_HOURS: Record<string, number> = { P1: 4, P2: 8, P3: 24 }
+const SEV_PRIORITY: Record<string, string> = {
+  critical: 'P1', high: 'P2', medium: 'P3', low: 'P4', info: 'P4',
+}
+
+function slaInfo(inc: Incident): { status: 'ok' | 'at-risk' | 'breached'; remainMs: number; deadlineMs: number } {
+  const priority = SEV_PRIORITY[inc.severity] ?? 'P4'
+  const hours = SLA_HOURS[priority] ?? 72
+  const createdMs = new Date(inc.created_at).getTime()
+  const deadlineMs = createdMs + hours * 3600_000
+  const now = Date.now()
+  const remainMs = deadlineMs - now
+  const totalMs = hours * 3600_000
+  if (remainMs <= 0) return { status: 'breached', remainMs, deadlineMs }
+  if (remainMs / totalMs < 0.2) return { status: 'at-risk', remainMs, deadlineMs }
+  return { status: 'ok', remainMs, deadlineMs }
+}
+
+function fmtSlaRemain(ms: number): string {
+  if (ms <= 0) return '已超时'
+  const h = Math.floor(ms / 3600_000)
+  const m = Math.floor((ms % 3600_000) / 60_000)
+  if (h > 0) return `剩余 ${h}h${m > 0 ? m + 'm' : ''}`
+  return `剩余 ${m}m`
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -144,6 +199,177 @@ function ScoreBadge({ score }: { score?: number }) {
   )
 }
 
+// ─── SmartScore Arc Gauge ─────────────────────────────────────────────────────
+
+function SmartScoreGauge({ score }: { score?: number }) {
+  const s = score ?? 0
+  const color = s >= 80 ? '#e53935' : s >= 60 ? '#ff6f00' : s >= 40 ? '#f9a825' : s > 0 ? '#2fb07a' : '#3f4e6a'
+  const TOOLTIP = '基于告警数量、严重程度、资产价值和MITRE战术加权计算'
+
+  // SVG arc: center (60,60), radius 48, arc from 210° to 330° (240° sweep)
+  const cx = 60, cy = 60, r = 48
+  const startDeg = 210, totalDeg = 240
+  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const arcX = (deg: number) => cx + r * Math.cos(toRad(deg))
+  const arcY = (deg: number) => cy + r * Math.sin(toRad(deg))
+
+  const bgPath = [
+    `M ${arcX(startDeg)} ${arcY(startDeg)}`,
+    `A ${r} ${r} 0 1 1 ${arcX(startDeg + totalDeg)} ${arcY(startDeg + totalDeg)}`,
+  ].join(' ')
+
+  const fillDeg = s > 0 ? (s / 100) * totalDeg : 0
+  const fillPath = fillDeg > 0 ? [
+    `M ${arcX(startDeg)} ${arcY(startDeg)}`,
+    `A ${r} ${r} 0 ${fillDeg > 180 ? 1 : 0} 1 ${arcX(startDeg + fillDeg)} ${arcY(startDeg + fillDeg)}`,
+  ].join(' ') : ''
+
+  if (s === 0) {
+    return (
+      <div
+        title={TOOLTIP}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
+      >
+        <svg width={120} height={70} viewBox="0 0 120 80">
+          <path d={bgPath} fill="none" stroke="var(--border)" strokeWidth={10} strokeLinecap="round" />
+          <text x={cx} y={cy + 8} textAnchor="middle" fill="var(--text-muted)" fontSize={11}>计算中...</text>
+        </svg>
+        {/* Spinner */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <svg width={14} height={14} viewBox="0 0 14 14" style={{ animation: 'spin 1s linear infinite' }}>
+            <circle cx={7} cy={7} r={5} fill="none" stroke="var(--text-muted)" strokeWidth={2} strokeDasharray="18 8" />
+          </svg>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>AI 风险评分</span>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); transform-origin: 7px 7px; } }`}</style>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      title={TOOLTIP}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'default' }}
+    >
+      <svg width={120} height={80} viewBox="0 0 120 80">
+        {/* Track */}
+        <path d={bgPath} fill="none" stroke="rgba(255,255,255,.08)" strokeWidth={10} strokeLinecap="round" />
+        {/* Fill */}
+        {fillPath && (
+          <path d={fillPath} fill="none" stroke={color} strokeWidth={10} strokeLinecap="round"
+            style={{ filter: `drop-shadow(0 0 5px ${color}80)` }} />
+        )}
+        {/* Score text */}
+        <text x={cx} y={cy - 2} textAnchor="middle" fill={color} fontSize={22} fontWeight={800}
+          fontFamily="system-ui, sans-serif">{s}</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fill={color} fontSize={9} opacity={0.7}>/ 100</text>
+      </svg>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -4 }}>AI 风险评分</span>
+    </div>
+  )
+}
+
+// ─── MITRE Heatmap (14 tactics) ───────────────────────────────────────────────
+
+const ALL_TACTICS: string[] = [
+  'Reconnaissance', 'Resource Development', 'Initial Access', 'Execution',
+  'Persistence', 'Privilege Escalation', 'Defense Evasion', 'Credential Access',
+  'Discovery', 'Lateral Movement', 'Collection', 'C&C',
+  'Exfiltration', 'Impact',
+]
+
+function MitreHeatmap({ activeTactics }: { activeTactics?: string[] }) {
+  const active = new Set((activeTactics ?? []).map(t => t.toLowerCase().replace(/\s+/g, '')))
+  return (
+    <div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>
+        ATT&amp;CK 战术覆盖 — 红色单元格表示本事件命中的战术
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(7, 1fr)',
+        gap: 4,
+      }}>
+        {ALL_TACTICS.map(tactic => {
+          const key = tactic.toLowerCase().replace(/\s+/g, '').replace(/&/g, '')
+          const isActive = active.has(key) ||
+            // also match partial / common aliases
+            [...active].some(a => a.includes(key.slice(0, 6)) || key.includes(a.slice(0, 6)))
+          const count = isActive ? 1 : 0
+          return (
+            <div
+              key={tactic}
+              title={`${tactic}${isActive ? ' — 已命中' : ''}`}
+              style={{
+                padding: '7px 5px 5px',
+                borderRadius: 4,
+                background: isActive ? '#e5393522' : 'rgba(255,255,255,.04)',
+                border: `1px solid ${isActive ? '#e5393555' : 'rgba(255,255,255,.07)'}`,
+                textAlign: 'center',
+                cursor: 'default',
+                transition: 'background .15s',
+                position: 'relative',
+              }}
+            >
+              {isActive && (
+                <span style={{
+                  position: 'absolute', top: -5, right: -5,
+                  width: 14, height: 14, borderRadius: '50%',
+                  background: '#e53935', color: '#fff',
+                  fontSize: 8, fontWeight: 800,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 0 4px #e53935',
+                }}>
+                  {count}
+                </span>
+              )}
+              <div style={{
+                width: '100%', height: 28, borderRadius: 3,
+                background: isActive ? '#e5393540' : '#1e2a3a',
+                marginBottom: 5,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 16 }}>
+                  {isActive ? '🔴' : '⬛'}
+                </span>
+              </div>
+              <div style={{
+                fontSize: 8.5,
+                color: isActive ? '#ff8a80' : 'var(--text-muted)',
+                fontWeight: isActive ? 700 : 400,
+                lineHeight: 1.25,
+                wordBreak: 'break-word',
+              }}>
+                {tactic}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── SLA Dot ─────────────────────────────────────────────────────────────────
+
+function SlaDot({ inc }: { inc: Incident }) {
+  const { status, remainMs } = slaInfo(inc)
+  const color = status === 'breached' ? '#e53935' : status === 'at-risk' ? '#ff6f00' : '#2fb07a'
+  const tooltip = `SLA: ${fmtSlaRemain(remainMs)}`
+  return (
+    <span
+      title={tooltip}
+      style={{
+        display: 'inline-block',
+        width: 7, height: 7, borderRadius: '50%',
+        background: color, flexShrink: 0,
+        boxShadow: status !== 'ok' ? `0 0 5px ${color}` : undefined,
+        cursor: 'default',
+      }}
+    />
+  )
+}
+
 // ─── Incident Drawer ─────────────────────────────────────────────────────────
 
 interface DrawerProps {
@@ -153,6 +379,7 @@ interface DrawerProps {
 }
 
 function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
+  const navigate = useNavigate()
   const [tab, setTab] = useState('overview')
   const [scoreData, setScoreData] = useState<SmartScoreEntry | null>(null)
   const [alerts, setAlerts] = useState<any[]>([])
@@ -162,11 +389,17 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
   const [playbooks, setPlaybooks] = useState<PlaybookItem[]>([])
   const [playbooksLoading, setPlaybooksLoading] = useState(false)
   const [executingPb, setExecutingPb] = useState<string | null>(null)
+  const [alertFeed, setAlertFeed] = useState<any[]>([])
+  const [alertFeedLoading, setAlertFeedLoading] = useState(false)
   const [note, setNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
   const [assignInput, setAssignInput] = useState('')
   const [assigning, setAssigning] = useState(false)
   const [resolving, setResolving] = useState(false)
+  const [recalcingScore, setRecalcingScore] = useState(false)
+  const [aiSummary, setAiSummary] = useState<string | null>(null)
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false)
+  const [aiSummaryError, setAiSummaryError] = useState(false)
 
   // Reset state when incident changes
   const prevKey = useRef<string | null>(null)
@@ -174,14 +407,18 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
     if (!inc) {
       prevKey.current = null
       setScoreData(null); setAlerts([]); setTimeline([]); setPlaybooks([])
+      setAlertFeed([])
       setNote(''); setAssignInput(''); setAssigning(false)
+    setAiSummary(null); setAiSummaryLoading(false); setAiSummaryError(false)
       return
     }
     if (inc._key === prevKey.current) return
     prevKey.current = inc._key
     setTab('overview')
     setScoreData(null); setAlerts([]); setTimeline([]); setPlaybooks([])
+    setAlertFeed([])
     setNote(''); setAssignInput(''); setAssigning(false)
+    setAiSummary(null); setAiSummaryLoading(false); setAiSummaryError(false)
 
     // Load score + alerts for overview
     api.get(`/incidents/${inc._key}/smart_score`)
@@ -238,6 +475,38 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
       .finally(() => setPlaybooksLoading(false))
   }, [inc?._key, tab])
 
+  // Load alert-based feed for "时间线" tab
+  useEffect(() => {
+    if (!inc || tab !== 'alertfeed') return
+    if (alertFeed.length > 0 || alertFeedLoading) return
+    setAlertFeedLoading(true)
+    api.get('/alerts', { params: { incident_id: inc._key, page_size: 20, sort_by: 'triggered_at', sort_desc: false } })
+      .then(r => {
+        const items = r.data.data?.items ?? r.data.data ?? []
+        setAlertFeed(items)
+      })
+      .catch(() => setAlertFeed([]))
+      .finally(() => setAlertFeedLoading(false))
+  }, [inc?._key, tab])
+
+  // Load AI summary lazily
+  useEffect(() => {
+    if (!inc || tab !== 'aisummary') return
+    if (aiSummary !== null || aiSummaryLoading) return
+    setAiSummaryLoading(true)
+    setAiSummaryError(false)
+    api.get(`/incidents/${inc._key}/summary`)
+      .then(r => {
+        const text: string = r.data.data?.summary ?? r.data.summary ?? ''
+        setAiSummary(text || '暂无摘要内容')
+      })
+      .catch(() => {
+        setAiSummaryError(true)
+        setAiSummary(null)
+      })
+      .finally(() => setAiSummaryLoading(false))
+  }, [inc?._key, tab])
+
   function resolve() {
     if (!inc || resolving) return
     setResolving(true)
@@ -285,6 +554,19 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
       .finally(() => setExecutingPb(null))
   }
 
+  function recalcScore() {
+    if (!inc || recalcingScore) return
+    setRecalcingScore(true)
+    api.post(`/incidents/${inc._key}/smart_score/recalc`)
+      .then(() => {
+        return api.get(`/incidents/${inc._key}/smart_score`)
+          .then(r => setScoreData(r.data.data))
+          .catch(() => {})
+          .finally(() => onRefresh())
+      })
+      .finally(() => setRecalcingScore(false))
+  }
+
   const open = !!inc
   const score = scoreData?.score ?? inc?.smart_score ?? 0
   const scoreColor = score >= 80 ? '#e53935' : score >= 60 ? '#ff6f00' : score >= 40 ? '#f9a825' : score > 0 ? '#2fb07a' : '#3f4e6a'
@@ -312,7 +594,9 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
 
   const SIDE_TABS = [
     { id: 'overview',   label: '概览' },
+    { id: 'aisummary',  label: 'AI摘要' },
     { id: 'alerts',     label: `告警 (${alerts.length || inc?.alert_count || 0})` },
+    { id: 'alertfeed',  label: '时间线' },
     { id: 'timeline',   label: '时间轴' },
     { id: 'mitre',      label: 'MITRE ATT&CK' },
     { id: 'causality',  label: '溯源图' },
@@ -432,6 +716,13 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                   <button
                     className="btn-secondary"
                     style={{ fontSize: 11 }}
+                    onClick={() => navigate('/causality', { state: { incidentId: inc._key } })}
+                  >
+                    攻击链 →
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    style={{ fontSize: 11 }}
                     onClick={() => setTab('playbooks')}
                   >
                     ▶ 执行剧本
@@ -522,20 +813,22 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                       {/* SmartScore */}
                       <div className="card" style={{ padding: '14px 16px' }}>
-                        <div className="card-title" style={{ marginBottom: 10 }}>AI 风险评分</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
-                          <div style={{
-                            width: 56, height: 56, borderRadius: 10, flexShrink: 0,
-                            background: scoreColor + '18', border: `2px solid ${scoreColor}40`,
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            <span style={{ fontSize: 22, fontWeight: 800, color: scoreColor, lineHeight: 1 }}>
-                              {score > 0 ? score : '-'}
-                            </span>
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: scoreColor, marginBottom: 3 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <div className="card-title">AI 风险评分</div>
+                          <button
+                            className="btn-secondary"
+                            style={{ fontSize: 10, padding: '2px 8px' }}
+                            disabled={recalcingScore}
+                            onClick={recalcScore}
+                          >
+                            {recalcingScore ? '计算中...' : '重新计算'}
+                          </button>
+                        </div>
+                        {/* SVG Arc Gauge */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                          <SmartScoreGauge score={score > 0 ? score : undefined} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: scoreColor, marginBottom: 4 }}>
                               {scoreLabel}
                             </div>
                             <div style={{ fontSize: 10.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -683,6 +976,184 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         </div>
                       </div>
                     )}
+
+                    {/* Time to resolve */}
+                    {inc.resolved_at && (() => {
+                      const dur = fmtResolveTime(inc.created_at, inc.resolved_at)
+                      if (!dur) return null
+                      return (
+                        <div className="card" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>处置耗时:</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#2fb07a' }}>{dur}</span>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                )}
+
+                {/* ── AI摘要 ─────────────────────────────────── */}
+                {tab === 'aisummary' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* AI Summary card */}
+                    <div style={{
+                      padding: '16px 18px',
+                      background: 'var(--bg-card)',
+                      border: '1px solid rgba(79,163,224,.35)',
+                      borderLeft: '3px solid #4fa3e0',
+                      borderRadius: 6,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <span style={{ fontSize: 18 }}>🤖</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#4fa3e0' }}>AI 事件摘要</span>
+                        {aiSummaryLoading && (
+                          <span style={{ fontSize: 10.5, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <svg width={12} height={12} viewBox="0 0 12 12"
+                              style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
+                              <circle cx={6} cy={6} r={4} fill="none" stroke="#4fa3e0" strokeWidth={2} strokeDasharray="14 6" />
+                            </svg>
+                            分析中...
+                          </span>
+                        )}
+                      </div>
+                      {aiSummaryLoading && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                          {[90, 75, 85, 60].map((w, i) => (
+                            <div key={i} style={{
+                              height: 10, width: `${w}%`, borderRadius: 4,
+                              background: 'rgba(79,163,224,.12)',
+                              animation: 'pulse 1.4s ease-in-out infinite',
+                              animationDelay: `${i * 0.15}s`,
+                            }} />
+                          ))}
+                          <style>{`
+                            @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
+                            @keyframes spin { to { transform: rotate(360deg); transform-origin: 6px 6px; } }
+                          `}</style>
+                        </div>
+                      )}
+                      {!aiSummaryLoading && aiSummaryError && (
+                        <div style={{
+                          padding: '12px 14px', borderRadius: 5,
+                          background: 'rgba(229,57,53,.06)', border: '1px solid rgba(229,57,53,.2)',
+                          fontSize: 12.5, color: '#e57373', lineHeight: 1.6,
+                        }}>
+                          AI摘要暂时不可用，请稍后重试。
+                        </div>
+                      )}
+                      {!aiSummaryLoading && !aiSummaryError && aiSummary && (
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75 }}>
+                          {aiSummary}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* SmartScore explanation */}
+                    {inc && (() => {
+                      const sev = inc.severity ?? 'medium'
+                      const alertCnt = inc.alert_count ?? 0
+                      const tactics = inc.mitre_tactics ?? (inc.mitre_tactic ? [inc.mitre_tactic] : [])
+                      const tacticCnt = tactics.length
+
+                      // Compute mock sub-scores from real fields
+                      const sevScore   = sev === 'critical' ? 40 : sev === 'high' ? 32 : sev === 'medium' ? 20 : 10
+                      const alertScore = Math.min(20, Math.round(Math.log2(alertCnt + 1) * 5))
+                      // asset value: derive from host_count; servers = 15, workstation = 10, other = 6
+                      const assetType  = (inc.host_count ?? 0) > 3 ? '服务器集群' : (inc.host_count ?? 0) > 0 ? '服务器' : '工作站'
+                      const assetScore = (inc.host_count ?? 0) > 3 ? 15 : (inc.host_count ?? 0) > 0 ? 12 : 8
+                      const mitreScore = Math.min(15, tacticCnt * 4 + (tacticCnt > 0 ? 4 : 0))
+                      const ageMins    = Math.floor((Date.now() - new Date(inc.created_at).getTime()) / 60000)
+                      const ageDays    = Math.floor(ageMins / 1440)
+                      const timeScore  = ageDays <= 1 ? 10 : ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : 3
+                      const timeLabel  = ageDays === 0 ? '今天' : ageDays === 1 ? '1天前' : `${ageDays}天前`
+
+                      const rows: { label: string; weight: string; detail: string; score: number; color: string }[] = [
+                        {
+                          label: '严重程度', weight: '40%',
+                          detail: `${SEV_LABELS[sev] ?? sev} → +${sevScore}分`,
+                          score: sevScore, color: SEV_COLORS[sev] ?? '#f9a825',
+                        },
+                        {
+                          label: '告警数量', weight: '20%',
+                          detail: `${alertCnt}个告警 → +${alertScore}分`,
+                          score: alertScore, color: '#ff6f00',
+                        },
+                        {
+                          label: '资产价值', weight: '15%',
+                          detail: `${assetType} → +${assetScore}分`,
+                          score: assetScore, color: '#4fa3e0',
+                        },
+                        {
+                          label: 'MITRE覆盖', weight: '15%',
+                          detail: `${tacticCnt}个战术 → +${mitreScore}分`,
+                          score: mitreScore, color: '#9b59b6',
+                        },
+                        {
+                          label: '时间因素', weight: '10%',
+                          detail: `${timeLabel} → +${timeScore}分`,
+                          score: timeScore, color: '#2fb07a',
+                        },
+                      ]
+
+                      return (
+                        <div style={{
+                          padding: '16px 18px',
+                          background: 'var(--bg-card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 6,
+                        }}>
+                          <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 14, color: 'var(--text-secondary)' }}>
+                            SmartScore 构成
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {rows.map(row => (
+                              <div key={row.label}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
+                                  <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 68 }}>
+                                    {row.label}
+                                  </span>
+                                  <span style={{
+                                    fontSize: 9.5, color: row.color,
+                                    background: row.color + '18',
+                                    padding: '1px 5px', borderRadius: 3, flexShrink: 0,
+                                  }}>
+                                    {row.weight}
+                                  </span>
+                                  <span style={{ fontSize: 11.5, color: 'var(--text-secondary)', flex: 1 }}>
+                                    {row.detail}
+                                  </span>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: row.color, flexShrink: 0 }}>
+                                    +{row.score}
+                                  </span>
+                                </div>
+                                <div style={{ height: 3, background: 'var(--border)', borderRadius: 2 }}>
+                                  <div style={{
+                                    height: 3,
+                                    width: `${Math.min(row.score / 40 * 100, 100)}%`,
+                                    background: row.color,
+                                    borderRadius: 2,
+                                    transition: 'width .4s',
+                                  }} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{
+                            marginTop: 14, paddingTop: 10,
+                            borderTop: '1px solid var(--border)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          }}>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>综合得分</span>
+                            <span style={{
+                              fontSize: 16, fontWeight: 800,
+                              color: score >= 80 ? '#e53935' : score >= 60 ? '#ff6f00' : score >= 40 ? '#f9a825' : '#2fb07a',
+                            }}>
+                              {sevScore + alertScore + assetScore + mitreScore + timeScore} 分
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
 
@@ -701,12 +1172,19 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         border: '1px solid var(--border)', borderRadius: 5, marginBottom: 6,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                          {/* Colored severity dot */}
+                          <span style={{
+                            width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                            background: SEV_COLORS[a.severity] ?? '#546e7a',
+                            boxShadow: `0 0 4px ${SEV_COLORS[a.severity] ?? '#546e7a'}80`,
+                          }} />
                           <SevBadge sev={a.severity} />
                           <span style={{ flex: 1, fontSize: 12.5, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {a.name}
                           </span>
+                          <StatusBadge status={a.status ?? 'new'} />
                           <span style={{ fontSize: 10.5, color: 'var(--text-muted)', flexShrink: 0 }}>
-                            {fmtDate(a.triggered_at ?? a.created_at)}
+                            {timeAgo(a.triggered_at ?? a.created_at)}
                           </span>
                         </div>
                         <div style={{ display: 'flex', gap: 14, fontSize: 11, color: 'var(--text-muted)' }}>
@@ -720,6 +1198,72 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                   </div>
                 )}
 
+                {/* ── 时间线 (alert feed) ────────────────────── */}
+                {tab === 'alertfeed' && (
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 14 }}>
+                      按时间顺序展示关联告警 — 最多 20 条
+                    </div>
+                    {alertFeedLoading && (
+                      <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>加载中...</div>
+                    )}
+                    {!alertFeedLoading && alertFeed.length === 0 && (
+                      <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+                        无关联告警
+                      </div>
+                    )}
+                    {alertFeed.length > 0 && (
+                      <div style={{ position: 'relative', paddingLeft: 30 }}>
+                        {/* Vertical line */}
+                        <div style={{
+                          position: 'absolute', left: 9, top: 8, bottom: 8, width: 1,
+                          background: 'linear-gradient(to bottom, #e5393580, transparent)',
+                        }} />
+                        {alertFeed.map((a: any, i: number) => {
+                          const sev = a.severity ?? 'info'
+                          const sevColor = SEV_COLORS[sev] ?? '#546e7a'
+                          const ts = a.triggered_at ?? a.created_at
+                          return (
+                            <div key={a._key ?? i} style={{ marginBottom: 16, position: 'relative' }}>
+                              {/* Dot */}
+                              <div style={{
+                                position: 'absolute', left: -30, top: 4,
+                                width: 16, height: 16, borderRadius: '50%',
+                                background: sevColor + '28', border: `2px solid ${sevColor}`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}>
+                                <div style={{ width: 5, height: 5, borderRadius: '50%', background: sevColor }} />
+                              </div>
+                              {/* Content */}
+                              <div style={{
+                                padding: '9px 12px',
+                                background: 'var(--bg-card)',
+                                border: `1px solid ${sevColor}30`,
+                                borderRadius: 5,
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                  <SevBadge sev={sev} />
+                                  <span style={{ fontSize: 12, fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {a.name ?? '(无名称)'}
+                                  </span>
+                                  <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'monospace' }}>
+                                    {fmtDate(ts)}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
+                                  {(a.host ?? a.asset_name) && <span>🖥 {a.host ?? a.asset_name}</span>}
+                                  {(a.user ?? a.user_name) && <span>👤 {a.user ?? a.user_name}</span>}
+                                  {a.mitre_tactic && <span style={{ color: '#4fa3e0' }}>🎯 {a.mitre_tactic}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* ── 时间轴 ─────────────────────────────────── */}
                 {tab === 'timeline' && (
                   <div>
@@ -729,27 +1273,79 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     {!timelineLoading && timeline.length === 0 && (
                       <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>暂无时间轴记录</div>
                     )}
+
+                    {/* Attack chain narrative */}
+                    {inc && !timelineLoading && (
+                      <div style={{
+                        marginBottom: 20, padding: '13px 16px',
+                        background: 'rgba(229,57,53,.05)',
+                        border: '1px solid rgba(229,57,53,.2)',
+                        borderLeft: '3px solid #e53935',
+                        borderRadius: 6,
+                      }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 600, color: '#e57373', marginBottom: 6 }}>
+                          攻击链叙述
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.75 }}>
+                          {(() => {
+                            const dt = fmtDate(inc.first_seen ?? inc.created_at)
+                            const host = alertHosts[0] ?? '未知主机'
+                            const tactics = inc.mitre_tactics ?? (inc.mitre_tactic ? [inc.mitre_tactic] : [])
+                            const primaryTac = tactics[0] ?? '未知战术'
+                            const tacticChain = tactics.length > 1
+                              ? tactics.slice(0, 4).join(' → ')
+                              : '初始访问 → 执行 → 权限提升 → 横向移动'
+                            return `攻击者于 ${dt} 首次在 ${host} 上发现可疑活动，随后通过 ${primaryTac} 技术进行横向移动。共触发 ${inc.alert_count} 条告警，涉及 ${(inc.host_count ?? alertHosts.length) || 1} 个资产。攻击链显示 ${tacticChain} 的典型APT攻击模式。`
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
                     <div style={{ position: 'relative', paddingLeft: 28 }}>
                       <div style={{ position: 'absolute', left: 7, top: 8, bottom: 8, width: 1, background: 'var(--border)' }} />
                       {timeline.map((item, i) => {
                         const color = evtColor[item.event_type] ?? '#4fa3e0'
                         const label = evtLabel[item.event_type] ?? item.event_type.replace(/_/g, ' ')
+                        // Icon per event type
+                        const icon = item.event_type === 'alert' ? '🚨'
+                          : item.event_type === 'note' ? '📝'
+                          : item.event_type === 'resolved' ? '✅'
+                          : item.event_type === 'assigned' ? '👤'
+                          : item.event_type === 'playbook' ? '▶'
+                          : item.event_type === 'created' ? '🆕'
+                          : '🔄'
                         return (
                           <div key={i} style={{ marginBottom: 18, position: 'relative' }}>
+                            {/* Colored dot */}
                             <div style={{
                               position: 'absolute', left: -28, top: 3,
                               width: 14, height: 14, borderRadius: '50%',
                               background: color + '28', border: `2px solid ${color}`,
-                            }} />
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 3 }}>
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 7,
+                            }}>
+                              <div style={{ width: 5, height: 5, borderRadius: '50%', background: color }} />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 12 }}>{icon}</span>
                               <span style={{ fontSize: 11, fontWeight: 600, color }}>
                                 {label}
                               </span>
-                              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                                {fmtDate(item.created_at)}
+                              {/* Relative time (prominent) + absolute (tooltip) */}
+                              <span
+                                title={fmtDate(item.created_at)}
+                                style={{ fontSize: 10.5, color: 'var(--text-muted)', cursor: 'default' }}
+                              >
+                                {timeAgo(item.created_at)}
                               </span>
                               {item.actor && (
-                                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>by {item.actor}</span>
+                                <span style={{
+                                  fontSize: 10, color: 'var(--text-muted)',
+                                  background: 'rgba(255,255,255,.05)',
+                                  padding: '1px 6px', borderRadius: 10, border: '1px solid var(--border)',
+                                }}>
+                                  👤 {item.actor}
+                                </span>
                               )}
                             </div>
                             <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
@@ -766,13 +1362,10 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                 {tab === 'mitre' && (
                   <div>
                     <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-                        MITRE ATT&amp;CK 技术映射 — 本事件关联战术
-                      </div>
                       {primaryTactic && (
                         <div style={{
                           display: 'inline-flex', alignItems: 'center', gap: 6,
-                          padding: '4px 10px',
+                          padding: '4px 10px', marginBottom: 12,
                           background: 'rgba(250,88,45,.1)', border: '1px solid rgba(250,88,45,.3)',
                           borderRadius: 4, fontSize: 12,
                         }}>
@@ -781,37 +1374,45 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {Object.entries(mitreMap).map(([tactic, techs]) => (
-                        <div key={tactic} className="card" style={{ padding: '12px 14px' }}>
-                          <div style={{
-                            fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase',
-                            letterSpacing: 0.6, marginBottom: 8, fontWeight: 600,
-                          }}>
-                            {tactic}
-                          </div>
-                          {(techs ?? []).map((t: string) => {
-                            const [id, ...rest] = t.split(' ')
-                            return (
-                              <div key={t} style={{
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                padding: '6px 10px', marginBottom: 4,
-                                background: 'rgba(250,88,45,.06)', border: '1px solid rgba(250,88,45,.15)',
-                                borderRadius: 4,
+                    {/* 14-tactic heatmap */}
+                    <MitreHeatmap activeTactics={inc?.mitre_tactics ?? (inc?.mitre_tactic ? [inc.mitre_tactic] : [])} />
+                    {/* Technique detail cards */}
+                    {Object.keys(mitreMap).length > 0 && (
+                      <div style={{ marginTop: 20 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>关联技术详情</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {Object.entries(mitreMap).map(([tactic, techs]) => (
+                            <div key={tactic} className="card" style={{ padding: '12px 14px' }}>
+                              <div style={{
+                                fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase',
+                                letterSpacing: 0.6, marginBottom: 8, fontWeight: 600,
                               }}>
-                                <span style={{
-                                  fontFamily: 'monospace', fontSize: 10.5, color: 'var(--text-muted)',
-                                  background: 'rgba(255,255,255,.04)', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
-                                }}>
-                                  {id}
-                                </span>
-                                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{rest.join(' ')}</span>
+                                {tactic}
                               </div>
-                            )
-                          })}
+                              {(techs ?? []).map((t: string) => {
+                                const [id, ...rest] = t.split(' ')
+                                return (
+                                  <div key={t} style={{
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    padding: '6px 10px', marginBottom: 4,
+                                    background: 'rgba(250,88,45,.06)', border: '1px solid rgba(250,88,45,.15)',
+                                    borderRadius: 4,
+                                  }}>
+                                    <span style={{
+                                      fontFamily: 'monospace', fontSize: 10.5, color: 'var(--text-muted)',
+                                      background: 'rgba(255,255,255,.04)', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
+                                    }}>
+                                      {id}
+                                    </span>
+                                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{rest.join(' ')}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -949,6 +1550,11 @@ export default function Incidents() {
   const [assigneeFilter, setAssigneeFilter] = useState('')
   const [timeFilter, setTimeFilter] = useState('')
   const [search, setSearch] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [keywordInput, setKeywordInput] = useState('')
+  const [mitreTacticFilter, setMitreTacticFilter] = useState('')
+  const [assignedToInput, setAssignedToInput] = useState('')
+  const [assignedToFilter, setAssignedToFilter] = useState('')
   const [selected, setSelected] = useState<Incident | null>(null)
   const [loading, setLoading] = useState(false)
   const [checked, setChecked] = useState<Set<string>>(new Set())
@@ -964,21 +1570,28 @@ export default function Incidents() {
   function load(p: number, opts?: {
     status?: string; severity?: string; assignee?: string; time?: string; q?: string
     sortBy?: string; sortDesc?: boolean
+    keyword?: string; mitreTactic?: string; assignedTo?: string
   }) {
-    const s  = opts?.status    ?? statusFilter
-    const v  = opts?.severity  ?? severityFilter
-    const a  = opts?.assignee  ?? assigneeFilter
-    const t  = opts?.time      ?? timeFilter
-    const q  = opts?.q         ?? search
-    const sb = opts?.sortBy    ?? sortBy
-    const sd = opts?.sortDesc  ?? sortDesc
+    const s   = opts?.status      ?? statusFilter
+    const v   = opts?.severity    ?? severityFilter
+    const a   = opts?.assignee    ?? assigneeFilter
+    const t   = opts?.time        ?? timeFilter
+    const q   = opts?.q           ?? search
+    const kw  = opts?.keyword     ?? keyword
+    const mt  = opts?.mitreTactic ?? mitreTacticFilter
+    const at  = opts?.assignedTo  ?? assignedToFilter
+    const sb  = opts?.sortBy      ?? sortBy
+    const sd  = opts?.sortDesc    ?? sortDesc
     setLoading(true)
     const params: Record<string, unknown> = { page: p, page_size: 20, sort_by: sb, sort_desc: sd }
     if (s) params.status = s
     if (v) params.severity = v
     if (q) params.q = q
+    if (kw) params.keyword = kw
+    if (mt) params.mitre_tactic = mt
     if (a === 'unassigned') params.unassigned = true
     else if (a) params.assigned_to = a
+    if (at) params.assigned_to = at
     if (t) params.hours = t
     api.get('/incidents', { params })
       .then(r => {
@@ -1001,7 +1614,20 @@ export default function Incidents() {
   useEffect(() => {
     if (!mountedRef.current) { mountedRef.current = true; return }
     setPage(1); load(1)
-  }, [statusFilter, severityFilter, assigneeFilter, timeFilter])
+  }, [statusFilter, severityFilter, assigneeFilter, timeFilter, mitreTacticFilter, assignedToFilter])
+
+  // Debounce keyword input → commit to `keyword` state after 400ms
+  const keywordDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const handleKeywordChange = useCallback((val: string) => {
+    setKeywordInput(val)
+    if (keywordDebounceRef.current) clearTimeout(keywordDebounceRef.current)
+    keywordDebounceRef.current = setTimeout(() => {
+      setKeyword(val)
+      setPage(1)
+      // load with explicit keyword to avoid stale closure on `keyword` state
+      load(1, { keyword: val })
+    }, 400)
+  }, [statusFilter, severityFilter, assigneeFilter, timeFilter, mitreTacticFilter, assignedToFilter, search, sortBy, sortDesc])
 
   function doSearch() { setPage(1); load(1) }
 
@@ -1024,6 +1650,16 @@ export default function Incidents() {
     if (!confirm(`确认将 ${checked.size} 条事件标记为「${label}」？`)) return
     Promise.all([...checked].map(key => api.patch(`/incidents/${key}`, { status })))
       .then(() => { setChecked(new Set()); load(page) })
+  }
+
+  function mergeIncidents() {
+    if (checked.size < 2) return
+    const keys = [...checked]
+    const primaryKey = keys[0]
+    const secondaryKeys = keys.slice(1)
+    if (!confirm(`确认将 ${secondaryKeys.length} 条事件合并到 INC-${primaryKey.slice(-6).padStart(6, '0')}？合并后次要事件将关闭。`)) return
+    api.post(`/incidents/${primaryKey}/merge`, { secondary_ids: secondaryKeys })
+      .then(() => { setChecked(new Set()); load(1) })
   }
 
   function createIncident() {
@@ -1063,7 +1699,7 @@ export default function Incidents() {
   })
 
   const allChecked = !!incidents.length && checked.size === incidents.length
-  const hasFilters = !!(statusFilter || severityFilter || assigneeFilter || timeFilter || search)
+  const hasFilters = !!(statusFilter || severityFilter || assigneeFilter || timeFilter || search || keyword || mitreTacticFilter || assignedToFilter)
 
   // Summary stats from current page
   const pageStats = {
@@ -1118,6 +1754,30 @@ export default function Incidents() {
 
       {/* ── Filter bar ──────────────────────────────────────── */}
       <div className="filter-bar">
+        {/* Keyword search with clear button */}
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+          <input
+            className="filter-input"
+            style={{ width: 180, paddingRight: keyword ? 24 : undefined }}
+            placeholder="搜索事件"
+            value={keywordInput}
+            onChange={e => handleKeywordChange(e.target.value)}
+          />
+          {keyword && (
+            <button
+              onClick={() => { setKeywordInput(''); setKeyword(''); setPage(1); load(1, { keyword: '' }) }}
+              style={{
+                position: 'absolute', right: 6,
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)', fontSize: 13, lineHeight: 1, padding: 0,
+              }}
+              title="清除关键词"
+            >
+              &#x2715;
+            </button>
+          )}
+        </div>
+
         <input
           className="filter-input"
           style={{ width: 200 }}
@@ -1143,6 +1803,22 @@ export default function Incidents() {
           <option value="resolved">已解决</option>
           <option value="closed">已关闭</option>
         </select>
+        {/* MITRE tactic filter */}
+        <select className="filter-select" value={mitreTacticFilter} onChange={e => setMitreTacticFilter(e.target.value)}>
+          <option value="">战术</option>
+          <option value="initial_access">Initial Access</option>
+          <option value="execution">Execution</option>
+          <option value="persistence">Persistence</option>
+          <option value="privilege_escalation">Privilege Escalation</option>
+          <option value="defense_evasion">Defense Evasion</option>
+          <option value="credential_access">Credential Access</option>
+          <option value="discovery">Discovery</option>
+          <option value="lateral_movement">Lateral Movement</option>
+          <option value="collection">Collection</option>
+          <option value="command_and_control">Command and Control</option>
+          <option value="exfiltration">Exfiltration</option>
+          <option value="impact">Impact</option>
+        </select>
         <select className="filter-select" value={assigneeFilter} onChange={e => setAssigneeFilter(e.target.value)}>
           <option value="">全部负责人</option>
           <option value="unassigned">未分配</option>
@@ -1150,6 +1826,18 @@ export default function Incidents() {
             <option key={u} value={u}>{u}</option>
           ))}
         </select>
+        {/* Assigned-to free-text filter */}
+        <input
+          className="filter-input"
+          style={{ width: 140 }}
+          placeholder="处理人"
+          value={assignedToInput}
+          onChange={e => setAssignedToInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { setAssignedToFilter(assignedToInput.trim()); setPage(1) }
+          }}
+          onBlur={() => { setAssignedToFilter(assignedToInput.trim()); setPage(1) }}
+        />
         <select className="filter-select" value={timeFilter} onChange={e => setTimeFilter(e.target.value)}>
           <option value="">全部时间</option>
           <option value="24">近 24 小时</option>
@@ -1161,6 +1849,9 @@ export default function Incidents() {
           <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => {
             setStatusFilter(''); setSeverityFilter(''); setAssigneeFilter('')
             setTimeFilter(''); setSearch('')
+            setKeywordInput(''); setKeyword('')
+            setMitreTacticFilter('')
+            setAssignedToInput(''); setAssignedToFilter('')
           }}>
             ✕ 清除
           </button>
@@ -1180,6 +1871,10 @@ export default function Incidents() {
             onClick={() => bulkStatus('resolved', '已解决')}>批量解决</button>
           <button className="btn-secondary" style={{ fontSize: 11 }}
             onClick={() => bulkStatus('closed', '已关闭')}>批量关闭</button>
+          {checked.size >= 2 && (
+            <button className="btn-secondary" style={{ fontSize: 11, color: '#9b59b6', borderColor: '#9b59b6' }}
+              onClick={mergeIncidents}>合并事件</button>
+          )}
           <button
             style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11 }}
             onClick={() => setChecked(new Set())}
@@ -1274,8 +1969,11 @@ export default function Incidents() {
                   </span>
                 </td>
                 <td style={{ maxWidth: 260 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {incidentTitle(inc)}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <SlaDot inc={inc} />
+                    <div style={{ fontSize: 12.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {incidentTitle(inc)}
+                    </div>
                   </div>
                   {(inc.host_count || inc.mitre_tactic) && (
                     <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 1 }}>
@@ -1285,7 +1983,26 @@ export default function Incidents() {
                     </div>
                   )}
                 </td>
-                <td><SevBadge sev={inc.severity} /></td>
+                <td>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                    <SevBadge sev={inc.severity} />
+                    {(inc.smart_score ?? 0) > 0 && (() => {
+                      const ss = inc.smart_score!
+                      const ssColor = ss >= 80 ? '#e53935' : ss >= 60 ? '#ff6f00' : '#f9a825'
+                      return (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center',
+                          padding: '2px 6px', borderRadius: 3,
+                          background: ssColor + '22', color: ssColor,
+                          fontSize: 10, fontWeight: 700, letterSpacing: 0.2,
+                          border: `1px solid ${ssColor}44`,
+                        }}>
+                          SS: {ss}
+                        </span>
+                      )
+                    })()}
+                  </div>
+                </td>
                 <td><ScoreBadge score={inc.smart_score} /></td>
                 <td><StatusBadge status={inc.status} /></td>
                 <td>

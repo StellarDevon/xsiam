@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { isAuthenticated } from '@/lib/auth'
 import { ThemeProvider } from '@/lib/theme'
 import { I18nProvider } from '@/lib/i18n'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import { ToastProvider } from '@/components/Toast'
 import Layout from '@/components/Layout'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
@@ -24,6 +26,10 @@ import Settings from '@/pages/Settings'
 import AgentsHub from '@/pages/AgentsHub'
 import Agentix from '@/pages/Agentix'
 import XSIAMCases from '@/pages/XSIAMCases'
+import ETLPipeline from '@/pages/ETLPipeline'
+import NetworkSecurity from '@/pages/NetworkSecurity'
+import EndpointSecurity from '@/pages/EndpointSecurity'
+import TenantAdmin from '@/pages/TenantAdmin'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />
@@ -31,9 +37,11 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <ToastProvider>
     <ThemeProvider>
     <I18nProvider>
     <BrowserRouter>
+      <ErrorBoundary>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
@@ -58,11 +66,17 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="agentix" element={<Agentix />} />
           <Route path="xsiam-cases" element={<XSIAMCases />} />
+          <Route path="etl-pipeline" element={<ETLPipeline />} />
+          <Route path="network-security" element={<NetworkSecurity />} />
+          <Route path="endpoint-security" element={<EndpointSecurity />} />
+          <Route path="tenant-admin" element={<TenantAdmin />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
     </I18nProvider>
     </ThemeProvider>
+    </ToastProvider>
   )
 }

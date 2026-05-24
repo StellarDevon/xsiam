@@ -30,6 +30,9 @@ func (r *stubIncidentRepo) ListAlertKeys(ctx context.Context, incidentKey string
 func (r *stubIncidentRepo) Merge(ctx context.Context, primaryKey string, secondaryKeys []string) error {
 	return nil
 }
+func (r *stubIncidentRepo) GetSLAStats(ctx context.Context, tenantID string) (*incident.SLAStats, error) {
+	return &incident.SLAStats{}, nil
+}
 
 func TestIncidentCreate_SetsIncidentIDAndStatus(t *testing.T) {
 	repo := &stubIncidentRepo{}

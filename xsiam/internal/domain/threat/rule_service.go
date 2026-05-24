@@ -117,8 +117,24 @@ func (s *RuleService) TestReplay(ctx context.Context, key string, timeRangeH int
 		return nil, err
 	}
 
-	spl2 := s.RuleToSPL2(rule)
 	now := time.Now()
+
+	// Stub mode: lakeClient not configured
+	if s.lakeClient == nil {
+		return &model.RuleTestResult{
+			RuleID:        rule.RuleID,
+			RuleName:      rule.Name,
+			Status:        "stub",
+			MatchCount:    0,
+			SampleMatches: []string{},
+			ReplayedAt:    now.UTC().Format(time.RFC3339),
+			TestedAt:      now,
+			TimeRangeH:    timeRangeH,
+			Note:          "datalake not configured",
+		}, nil
+	}
+
+	spl2 := s.RuleToSPL2(rule)
 	from := now.Add(-time.Duration(timeRangeH) * time.Hour)
 
 	result, err := s.lakeClient.Query(ctx, spl2, from.UnixMilli(), now.UnixMilli())
@@ -126,10 +142,28 @@ func (s *RuleService) TestReplay(ctx context.Context, key string, timeRangeH int
 		return nil, err
 	}
 
+	// Collect up to 5 sample match summaries
+	samples := make([]string, 0, 5)
+	for i, row := range result.Rows {
+		if i >= 5 {
+			break
+		}
+		if ts, ok := row["_time"].(string); ok {
+			samples = append(samples, ts)
+		} else {
+			samples = append(samples, fmt.Sprintf("match_%d", i+1))
+		}
+	}
+
 	testResult := &model.RuleTestResult{
-		MatchCount: len(result.Rows),
-		TestedAt:   now,
-		TimeRangeH: timeRangeH,
+		RuleID:        rule.RuleID,
+		RuleName:      rule.Name,
+		Status:        "ok",
+		MatchCount:    len(result.Rows),
+		SampleMatches: samples,
+		ReplayedAt:    now.UTC().Format(time.RFC3339),
+		TestedAt:      now,
+		TimeRangeH:    timeRangeH,
 	}
 
 	_ = s.ruleRepo.Update(ctx, key, map[string]any{
@@ -139,8 +173,56 @@ func (s *RuleService) TestReplay(ctx context.Context, key string, timeRangeH int
 	return testResult, nil
 }
 
-func (s *RuleService) MitreCoverage(ctx context.Context) (map[string][]string, error) {
-	return s.ruleRepo.AggregateByMitre(ctx)
+func (s *RuleService) MitreCoverage(ctx context.Context, tenantID string) (map[string]int, error) {
+	return s.ruleRepo.AggregateByMitre(ctx, tenantID)
+}
+
+// TestSampleEvent checks whether the provided sample event matches the rule's query
+// using a simple case-insensitive string-contains check against the rule's Query field.
+func (s *RuleService) TestSampleEvent(ctx context.Context, key string, sampleEvent map[string]any) (map[string]any, error) {
+	rule, err := s.ruleRepo.GetByID(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	query := strings.ToLower(rule.Query)
+	matched := false
+	message := "no match found"
+
+	if query == "" {
+		// No query configured — fall back to the rule's SPL2 definition condition
+		spl2 := strings.ToLower(s.RuleToSPL2(rule))
+		for _, v := range sampleEvent {
+			val := strings.ToLower(fmt.Sprintf("%v", v))
+			if val != "" && strings.Contains(spl2, val) {
+				matched = true
+				break
+			}
+		}
+		if matched {
+			message = "sample event matched rule definition (spl2 contains check)"
+		}
+	} else {
+		// Stringify each event field value and check if any contains the query term,
+		// or if any field value appears in the query string.
+		for _, v := range sampleEvent {
+			val := strings.ToLower(fmt.Sprintf("%v", v))
+			if val != "" && (strings.Contains(query, val) || strings.Contains(val, query)) {
+				matched = true
+				break
+			}
+		}
+		if matched {
+			message = "sample event matched rule query"
+		}
+	}
+
+	return map[string]any{
+		"matched":   matched,
+		"rule_id":   rule.RuleID,
+		"rule_name": rule.Name,
+		"message":   message,
+	}, nil
 }
 
 func (s *RuleService) RuleToSPL2(rule *model.DetectionRule) string {

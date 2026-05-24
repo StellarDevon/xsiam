@@ -12,8 +12,14 @@ api.interceptors.response.use(
   r => r,
   err => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('auth_expires_at')
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('auth_expires_at')
+        window.location.href = '/login?reason=expired'
+      }
     }
     return Promise.reject(err)
   }

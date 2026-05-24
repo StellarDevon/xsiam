@@ -1,7 +1,10 @@
 package asset
 
 import (
+	"encoding/csv"
+	"fmt"
 	"strconv"
+	"strings"
 	"xsiam/internal/middleware"
 	"xsiam/internal/model"
 	"xsiam/internal/repository"
@@ -22,16 +25,28 @@ func (h *Handler) List(c *gin.Context) {
 	tenantID := c.GetString(middleware.CtxTenantID)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	sortParam := c.Query("sort")
+	orderParam := c.Query("order")
+	sortBy := c.Query("sort_by")
+	sortDesc := c.Query("sort_desc") == "true"
+	// "sort" + "order" query params take precedence over legacy "sort_by"/"sort_desc"
+	if sortParam == "risk_score" {
+		sortBy = "risk_score"
+		sortDesc = orderParam == "desc"
+	}
+
 	data, meta, err := h.svc.List(c.Request.Context(), repository.AssetListFilter{
 		TenantID:  tenantID,
 		Type:      c.Query("type"),
 		Status:    c.Query("status"),
 		RiskLevel: c.Query("risk_level"),
+		Tag:       c.Query("tag"),
 		Keyword:   c.Query("keyword"),
 		Page:      page,
 		PageSize:  pageSize,
-		SortBy:    c.Query("sort_by"),
-		SortDesc:  c.Query("sort_desc") == "true",
+		SortBy:    sortBy,
+		SortDesc:  sortDesc,
+		SortOrder: orderParam,
 	})
 	if err != nil {
 		response.InternalError(c, err)
@@ -40,27 +55,16 @@ func (h *Handler) List(c *gin.Context) {
 	response.Paginated(c, data, meta)
 }
 
+// Stats returns summary statistics for assets.
+// GET /api/assets/stats
 func (h *Handler) Stats(c *gin.Context) {
 	tenantID := c.GetString(middleware.CtxTenantID)
-	all, _, err := h.svc.List(c.Request.Context(), repository.AssetListFilter{TenantID: tenantID, PageSize: 10000, Page: 1})
+	stats, err := h.svc.Stats(c.Request.Context(), tenantID)
 	if err != nil {
 		response.InternalError(c, err)
 		return
 	}
-	stats := map[string]int64{"total": int64(len(all))}
-	for _, a := range all {
-		stats["total_"+string(a.Type)]++
-		if a.RiskLevel == "critical" {
-			stats["critical_risk"]++
-		}
-	}
-	response.OK(c, map[string]any{
-		"total":           stats["total"],
-		"critical_risk":   stats["critical_risk"],
-		"total_endpoints": stats["total_endpoint"] + stats["total_workstation"] + stats["total_server"],
-		"active_users":    stats["total_user"],
-		"cloud_assets":    stats["total_cloud"],
-	})
+	response.OK(c, stats)
 }
 
 func (h *Handler) Get(c *gin.Context) {
@@ -111,4 +115,98 @@ func (h *Handler) Delete(c *gin.Context) {
 		return
 	}
 	c.Status(204)
+}
+
+// Bulk performs bulk operations on assets.
+// POST /api/assets/bulk
+func (h *Handler) Bulk(c *gin.Context) {
+	var body struct {
+		Action     string         `json:"action" binding:"required"`
+		Keys       []string       `json:"keys"`
+		IDs        []string       `json:"ids"`
+		Tag        string         `json:"tag"`
+		AssignedTo string         `json:"assigned_to"`
+		Patch      map[string]any `json:"patch"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	// keys takes precedence; fall back to ids
+	keys := body.Keys
+	if len(keys) == 0 {
+		keys = body.IDs
+	}
+	if len(keys) == 0 {
+		response.BadRequest(c, "keys or ids required")
+		return
+	}
+	tenantID := c.GetString(middleware.CtxTenantID)
+	operatorID := c.GetString(middleware.CtxUserID)
+	ctx := c.Request.Context()
+
+	var updated int
+	for _, id := range keys {
+		var err error
+		switch body.Action {
+		case "tag":
+			if body.Tag != "" {
+				err = h.svc.PushTag(ctx, tenantID, id, body.Tag)
+			}
+		case "delete":
+			err = h.svc.Delete(ctx, id, operatorID)
+		case "assign":
+			err = h.svc.Update(ctx, id, map[string]any{"owner": body.AssignedTo}, operatorID)
+		case "patch":
+			if len(body.Patch) > 0 {
+				err = h.svc.Update(ctx, id, body.Patch, operatorID)
+			}
+		default:
+			response.BadRequest(c, "unknown action: "+body.Action)
+			return
+		}
+		if err == nil {
+			updated++
+		}
+	}
+	response.OK(c, gin.H{"updated": updated})
+}
+
+// GET /assets/export
+func (h *Handler) Export(c *gin.Context) {
+	tenantID := c.GetString(middleware.CtxTenantID)
+	assets, _, err := h.svc.List(c.Request.Context(), repository.AssetListFilter{
+		TenantID: tenantID,
+		Page:     1,
+		PageSize: 10000,
+	})
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	c.Header("Content-Disposition", `attachment; filename="assets.csv"`)
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	w := csv.NewWriter(c.Writer)
+	defer w.Flush()
+	_ = w.Write([]string{"Key", "Name", "Type", "IP", "OS", "Status", "RiskScore", "Tags"})
+	for _, a := range assets {
+		ip := a.IP
+		if ip == "" && len(a.IPAddresses) > 0 {
+			ip = a.IPAddresses[0]
+		}
+		os := a.OS
+		if os == "" {
+			os = a.OSInfo.Name
+		}
+		_ = w.Write([]string{
+			a.Key,
+			a.Name,
+			string(a.Type),
+			ip,
+			os,
+			a.Status,
+			fmt.Sprintf("%.2f", a.RiskScore),
+			strings.Join(a.Tags, "|"),
+		})
+	}
 }

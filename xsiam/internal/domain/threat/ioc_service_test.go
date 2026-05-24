@@ -30,7 +30,7 @@ func (r *stubIocRepo) GetByID(_ context.Context, key string) (*model.IOC, error)
 	return r.iocs[key], nil
 }
 
-func (r *stubIocRepo) Search(_ context.Context, tenantID, value string) ([]model.IOC, error) {
+func (r *stubIocRepo) Search(_ context.Context, tenantID, value string, _ int) ([]model.IOC, error) {
 	var out []model.IOC
 	for _, ioc := range r.iocs {
 		if ioc.TenantID == tenantID && len(ioc.Value) > 0 {
@@ -68,6 +68,23 @@ func (r *stubIocRepo) List(_ context.Context, f repository.IocListFilter) ([]mod
 		out = append(out, *ioc)
 	}
 	return out, model.PageMeta{Total: int64(len(out)), Page: 1, PageSize: 20, Pages: 1}, nil
+}
+
+func (r *stubIocRepo) FindByValues(_ context.Context, tenantID string, values []string) ([]model.IOC, error) {
+	set := make(map[string]bool, len(values))
+	for _, v := range values {
+		set[v] = true
+	}
+	var out []model.IOC
+	for _, ioc := range r.iocs {
+		if ioc.TenantID != tenantID {
+			continue
+		}
+		if set[ioc.Value] {
+			out = append(out, *ioc)
+		}
+	}
+	return out, nil
 }
 
 // ── tests ────────────────────────────────────────────────────────────────────

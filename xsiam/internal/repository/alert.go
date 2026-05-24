@@ -42,6 +42,7 @@ type AlertListFilter struct {
 	SourceType string
 	IncidentID string
 	AssetID    string
+	Host       string // filter by host name (exact match, case-insensitive)
 	Keyword    string
 	Unlinked   bool  // only alerts with no incident_id
 	Linked     bool  // only alerts that have an incident_id
@@ -79,6 +80,10 @@ func (r *AlertRepo) List(ctx context.Context, f AlertListFilter) ([]model.Alert,
 	if f.AssetID != "" {
 		filters = append(filters, "doc.asset_id == @assetId")
 		bindVars["assetId"] = f.AssetID
+	}
+	if f.Host != "" {
+		filters = append(filters, "LOWER(doc.host) == LOWER(@host)")
+		bindVars["host"] = f.Host
 	}
 	if f.Keyword != "" {
 		filters = append(filters, "(CONTAINS(LOWER(doc.name), LOWER(@kw)) OR CONTAINS(LOWER(doc.asset_name), LOWER(@kw)) OR CONTAINS(LOWER(doc.host), LOWER(@kw)) OR CONTAINS(LOWER(doc.user), LOWER(@kw)))")
@@ -241,6 +246,95 @@ func (r *AlertRepo) FindByTimeRange(ctx context.Context, from, to time.Time) ([]
 		results = append(results, a)
 	}
 	return results, nil
+}
+
+// AggregateBySourceType runs an AQL GROUP-BY on the alerts collection and returns
+// per-source counts for the given tenant.
+func (r *AlertRepo) AggregateBySourceType(ctx context.Context, tenantID string) ([]struct {
+	SourceType string `json:"source_type"`
+	Count      int64  `json:"count"`
+}, error) {
+	query := `FOR a IN alerts
+FILTER a.tenant_id == @tid
+COLLECT src = a.source_type WITH COUNT INTO n
+RETURN {source_type: src, count: n}`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+	type row struct {
+		SourceType string `json:"source_type"`
+		Count      int64  `json:"count"`
+	}
+	var results []row
+	for cursor.HasMore() {
+		var rec row
+		if _, err = cursor.ReadDocument(ctx, &rec); err != nil {
+			return nil, err
+		}
+		results = append(results, rec)
+	}
+	out := make([]struct {
+		SourceType string `json:"source_type"`
+		Count      int64  `json:"count"`
+	}, len(results))
+	for i, r := range results {
+		out[i].SourceType = r.SourceType
+		out[i].Count = r.Count
+	}
+	return out, nil
+}
+
+// AggregateTopAssets returns the top `limit` assets by alert count for the given tenant.
+// Each row contains the asset_id, asset_name (from the alert's stored asset_name field), and alert_count.
+func (r *AlertRepo) AggregateTopAssets(ctx context.Context, tenantID string, limit int) ([]struct {
+	AssetID    string `json:"asset_id"`
+	AssetName  string `json:"asset_name"`
+	AlertCount int64  `json:"alert_count"`
+}, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	query := `FOR a IN alerts
+FILTER a.tenant_id == @tid
+COLLECT asset_id = a.asset_id, asset_name = a.asset_name WITH COUNT INTO cnt
+SORT cnt DESC
+LIMIT @limit
+RETURN {asset_id: asset_id, asset_name: asset_name, alert_count: cnt}`
+	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID, "limit": limit},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+	type row struct {
+		AssetID    string `json:"asset_id"`
+		AssetName  string `json:"asset_name"`
+		AlertCount int64  `json:"alert_count"`
+	}
+	var results []row
+	for cursor.HasMore() {
+		var rec row
+		if _, err = cursor.ReadDocument(ctx, &rec); err != nil {
+			return nil, err
+		}
+		results = append(results, rec)
+	}
+	out := make([]struct {
+		AssetID    string `json:"asset_id"`
+		AssetName  string `json:"asset_name"`
+		AlertCount int64  `json:"alert_count"`
+	}, len(results))
+	for i, r := range results {
+		out[i].AssetID = r.AssetID
+		out[i].AssetName = r.AssetName
+		out[i].AlertCount = r.AlertCount
+	}
+	return out, nil
 }
 
 func (r *AlertRepo) Create(ctx context.Context, alert *model.Alert) error {

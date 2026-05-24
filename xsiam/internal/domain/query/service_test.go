@@ -7,19 +7,20 @@ import (
 	"xsiam/internal/domain/query"
 )
 
-func TestQueryService_Datasets_ReturnsFour(t *testing.T) {
+func TestQueryService_Datasets_ReturnsBuiltins(t *testing.T) {
 	svc := query.NewService(&datalake.DataLakeStub{})
 	datasets := svc.Datasets(context.Background())
-	if len(datasets) != 4 {
-		t.Errorf("expected 4 datasets, got %d", len(datasets))
+	if len(datasets) == 0 {
+		t.Fatalf("expected at least one dataset, got 0")
 	}
 	ids := make(map[string]bool)
 	for _, d := range datasets {
-		ids[d["id"]] = true
+		ids[d.ID] = true
 	}
-	for _, want := range []string{"xsiam_endpoint", "xsiam_network", "xsiam_identity", "xsiam_cloud"} {
+	// Core datasets that must always be present
+	for _, want := range []string{"xdr_data", "network_story", "syslog_raw"} {
 		if !ids[want] {
-			t.Errorf("missing dataset id: %s", want)
+			t.Errorf("missing required dataset id: %s", want)
 		}
 	}
 }

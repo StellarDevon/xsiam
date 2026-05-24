@@ -67,6 +67,8 @@ type Incident struct {
 	AssigneeName    *string            `json:"assignee_name"`
 	// AssignedTo is the display name read by the SPA table.
 	AssignedTo      string             `json:"assigned_to"`
+	Priority        string             `json:"priority,omitempty"`     // P1, P2, P3, P4 — also accepts "critical"|"high"|"medium"|"low"
+	SLADeadline     string             `json:"sla_deadline,omitempty"` // computed ISO8601 deadline
 	Timeline        []IncidentTimeline `json:"timeline"`
 	Notes           []IncidentNote     `json:"notes"`
 	FirstSeen       time.Time          `json:"first_seen"`

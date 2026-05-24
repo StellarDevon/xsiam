@@ -127,6 +127,27 @@ const navItems: NavItem[] = [
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
   },
   {
+    to: '/etl-pipeline',
+    label: 'ETL 流水线',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v4H4z"/><path d="M4 10h10v4H4z"/><path d="M4 16h6v4H4z"/><polyline points="18 14 22 18 18 22"/><line x1="14" y1="18" x2="22" y2="18"/></svg>,
+  },
+  { to: '__divider5', label: '', icon: null },
+  {
+    to: '/network-security',
+    label: '网络安全',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6" strokeWidth="2.5" strokeLinecap="round"/><line x1="6" y1="18" x2="6.01" y2="18" strokeWidth="2.5" strokeLinecap="round"/><line x1="10" y1="6" x2="18" y2="6"/><line x1="10" y1="18" x2="18" y2="18"/></svg>,
+  },
+  {
+    to: '/endpoint-security',
+    label: '终端安全',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M9 10l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    to: '/tenant-admin',
+    label: '租户管理',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+  },
+  {
     to: '/reports',
     label: '报表',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="12" y1="17" x2="8" y2="17"/></svg>,
@@ -244,13 +265,15 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
               key={item.to}
               to={item.to}
               end={item.to === '/'}
+              title={!open ? item.label : undefined}
               style={({ isActive }) => ({
                 position: 'relative', width: 192, height: 36,
                 display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
-                padding: '0 10px', gap: 10, borderRadius: 8, textDecoration: 'none',
+                padding: '0 10px 0 8px', gap: 10, borderRadius: 8, textDecoration: 'none',
                 color: sidebarNavColor(isActive, isDark),
                 background: isActive ? 'var(--nav-active-bg)' : 'none',
-                transition: 'background .15s, color .15s',
+                borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                transition: 'background .15s, color .15s, border-color .15s',
                 whiteSpace: 'nowrap', overflow: 'hidden',
                 flexShrink: 0,
               })}
@@ -296,7 +319,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         })}
       </div>
 
-      {/* Bottom: settings + avatar */}
+      {/* Bottom: settings + avatar + collapse button */}
       <div style={{
         width: 200, display: 'flex', flexDirection: 'column',
         padding: '8px 4px 12px', gap: 4,
@@ -305,13 +328,15 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
       }}>
         <NavLink
           to="/settings"
+          title={!open ? '系统设置' : undefined}
           style={({ isActive }) => ({
             position: 'relative', width: 192, height: 36,
-            display: 'flex', alignItems: 'center', padding: '0 10px', gap: 10,
+            display: 'flex', alignItems: 'center', padding: '0 10px 0 8px', gap: 10,
             borderRadius: 8, textDecoration: 'none',
             color: sidebarNavColor(isActive, isDark),
             background: isActive ? 'var(--nav-active-bg)' : 'none',
-            transition: 'background .15s, color .15s',
+            borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
+            transition: 'background .15s, color .15s, border-color .15s',
             whiteSpace: 'nowrap', overflow: 'hidden',
           })}
         >
@@ -322,9 +347,11 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
           <span style={{ fontSize: 12.5, opacity: open ? 1 : 0, transition: 'opacity .15s .05s' }}>系统设置</span>
         </NavLink>
 
-        {/* Theme toggle moved to global TopBar */}
-
-<div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px' }}>
+        {/* Avatar row */}
+        <div
+          title={!open ? `${user?.display_name ?? ''} — 点击退出` : undefined}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px' }}
+        >
           <div
             onClick={() => { clearAuth(); navigate('/login') }}
             style={{
@@ -346,6 +373,45 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
             {user?.display_name}
           </span>
         </div>
+
+        {/* Collapse / expand button */}
+        <button
+          onClick={onToggle}
+          title={open ? '收起侧栏' : '展开侧栏'}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            width: 192, height: 32,
+            padding: '0 10px 0 8px', borderRadius: 8,
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: isDark ? 'var(--text-muted)' : 'rgba(255,255,255,.45)',
+            transition: 'background .15s, color .15s',
+            flexShrink: 0,
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = isDark ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.10)'
+            e.currentTarget.style.color = isDark ? 'var(--text-secondary)' : 'rgba(255,255,255,.80)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'none'
+            e.currentTarget.style.color = isDark ? 'var(--text-muted)' : 'rgba(255,255,255,.45)'
+          }}
+        >
+          {/* Chevron icon — points left when expanded, right when collapsed */}
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ flexShrink: 0, transition: 'transform .2s', transform: open ? 'rotate(0deg)' : 'rotate(180deg)' }}
+          >
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          <span style={{
+            fontSize: 12, opacity: open ? 1 : 0,
+            transition: 'opacity .15s .05s',
+            whiteSpace: 'nowrap',
+          }}>
+            收起侧栏
+          </span>
+        </button>
       </div>
     </nav>
   )

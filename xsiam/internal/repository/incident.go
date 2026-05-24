@@ -22,17 +22,20 @@ func NewIncidentRepo(db arangodb.Database) *IncidentRepo {
 }
 
 type IncidentListFilter struct {
-	TenantID   string
-	Severity   string
-	Status     string
-	AssigneeID string
-	Unassigned bool   // filter for no assignee_id set
-	Keyword    string
-	HoursAgo   int    // if > 0, only return incidents created within last N hours
-	Page       int
-	PageSize   int
-	SortBy     string
-	SortDesc   bool
+	TenantID    string
+	Severity    string
+	Status      string
+	Priority    string // filter by priority: "critical"|"high"|"medium"|"low"
+	AssigneeID  string
+	Unassigned  bool   // filter for no assignee_id set
+	Keyword     string
+	MitreTactic string // filter by MITRE tactic (matches mitre_tactics array or mitre_tactic field)
+	AssignedTo  string // filter by assigned_to display name/ID (exact match)
+	HoursAgo    int    // if > 0, only return incidents created within last N hours
+	Page        int
+	PageSize    int
+	SortBy      string
+	SortDesc    bool
 }
 
 func (r *IncidentRepo) List(ctx context.Context, f IncidentListFilter) ([]model.Incident, model.PageMeta, error) {
@@ -49,6 +52,10 @@ func (r *IncidentRepo) List(ctx context.Context, f IncidentListFilter) ([]model.
 		filters = append(filters, "doc.status == @status")
 		bindVars["status"] = f.Status
 	}
+	if f.Priority != "" {
+		filters = append(filters, "doc.priority == @priority")
+		bindVars["priority"] = f.Priority
+	}
 	if f.AssigneeID != "" {
 		// match either the assignee_id field or the assigned_to display field
 		filters = append(filters, "(doc.assignee_id == @assigneeId OR doc.assigned_to == @assigneeId)")
@@ -62,8 +69,16 @@ func (r *IncidentRepo) List(ctx context.Context, f IncidentListFilter) ([]model.
 		bindVars["hoursAgo"] = f.HoursAgo
 	}
 	if f.Keyword != "" {
-		filters = append(filters, "(CONTAINS(LOWER(doc.name), LOWER(@kw)) OR CONTAINS(LOWER(doc.title), LOWER(@kw)))")
+		filters = append(filters, "(CONTAINS(LOWER(doc.name), LOWER(@kw)) OR CONTAINS(LOWER(doc.title), LOWER(@kw)) OR CONTAINS(LOWER(doc.description), LOWER(@kw)))")
 		bindVars["kw"] = f.Keyword
+	}
+	if f.MitreTactic != "" {
+		filters = append(filters, "(@mitreTactic IN doc.mitre_tactics OR doc.mitre_tactic == @mitreTactic)")
+		bindVars["mitreTactic"] = f.MitreTactic
+	}
+	if f.AssignedTo != "" {
+		filters = append(filters, "doc.assigned_to == @assignedTo")
+		bindVars["assignedTo"] = f.AssignedTo
 	}
 
 	sortBy := "last_activity"

@@ -7,6 +7,7 @@ import (
 	"xsiam/internal/domain/dashboard"
 	"xsiam/internal/domain/report"
 	"xsiam/internal/model"
+	"xsiam/internal/repository"
 )
 
 // ── stub repo ─────────────────────────────────────────────────────────────────
@@ -48,6 +49,10 @@ func (r *stubReportRepo) Delete(_ context.Context, key string) error {
 	return nil
 }
 
+func (r *stubReportRepo) Stats(_ context.Context, _ string) (*repository.ReportStats, error) {
+	return &repository.ReportStats{Total: int64(len(r.reports))}, nil
+}
+
 func (r *stubReportRepo) List(_ context.Context, tenantID string, _, _ int) ([]model.Report, model.PageMeta, error) {
 	var out []model.Report
 	for _, rep := range r.reports {
@@ -72,7 +77,7 @@ func (s *stubStats) GetStats(_ context.Context, _ string) (*dashboard.Stats, err
 
 // ── tests ────────────────────────────────────────────────────────────────────
 
-func TestReportService_Create_SetsPendingStatus(t *testing.T) {
+func TestReportService_Create_SetsGeneratingStatus(t *testing.T) {
 	repo := newStubReportRepo()
 	svc := report.NewServiceWith(repo, &stubStats{})
 
@@ -80,8 +85,9 @@ func TestReportService_Create_SetsPendingStatus(t *testing.T) {
 	if err := svc.Create(context.Background(), rep, "op-1"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if rep.Status != model.ReportStatusPending {
-		t.Errorf("expected status pending immediately after Create, got %s", rep.Status)
+	// Create sets status to "generating" immediately and kicks off async simulation.
+	if rep.Status != model.ReportStatusGenerating {
+		t.Errorf("expected status generating immediately after Create, got %s", rep.Status)
 	}
 	if rep.Key == "" {
 		t.Error("Key should be set after Create")

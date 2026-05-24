@@ -19,15 +19,19 @@ func NewExposureScoreRepo(db arangodb.Database) *ExposureScoreRepo {
 }
 
 type ExposureListFilter struct {
-	TenantID    string
-	Keyword     string
-	FixStatus   string
+	TenantID     string
+	Keyword      string
+	FixStatus    string
 	Reachability string
-	InWild      string
-	Page        int
-	PageSize    int
-	SortBy      string
-	SortDesc    bool
+	InWild       string
+	MinScore     float64
+	MaxScore     float64
+	CVEID        string
+	AssetID      string
+	Page         int
+	PageSize     int
+	SortBy       string
+	SortDesc     bool
 }
 
 func (r *ExposureScoreRepo) List(ctx context.Context, f ExposureListFilter) ([]model.ExposureScore, model.PageMeta, error) {
@@ -45,11 +49,37 @@ func (r *ExposureScoreRepo) List(ctx context.Context, f ExposureListFilter) ([]m
 		bindVars["fixStatus"] = f.FixStatus
 	}
 	if f.Reachability != "" {
-		filters = append(filters, "doc.reachability == @reachability")
-		bindVars["reachability"] = f.Reachability
+		// Map string category to reachability_factor threshold range
+		switch f.Reachability {
+		case "internet":
+			filters = append(filters, "doc.reachability_factor >= 0.8")
+		case "dmz":
+			filters = append(filters, "doc.reachability_factor >= 0.6 AND doc.reachability_factor < 0.8")
+		case "internal":
+			filters = append(filters, "doc.reachability_factor >= 0.3 AND doc.reachability_factor < 0.6")
+		case "isolated":
+			filters = append(filters, "doc.reachability_factor < 0.3")
+		}
 	}
 	if f.InWild == "true" {
-		filters = append(filters, "doc.in_wild == true")
+		// in_wild_factor > 0.5 means actively exploited in the wild
+		filters = append(filters, "doc.in_wild_factor > 0.5")
+	}
+	if f.MinScore > 0 {
+		filters = append(filters, "doc.priority_score >= @min_score")
+		bindVars["min_score"] = f.MinScore
+	}
+	if f.MaxScore > 0 {
+		filters = append(filters, "doc.priority_score <= @max_score")
+		bindVars["max_score"] = f.MaxScore
+	}
+	if f.CVEID != "" {
+		filters = append(filters, "doc.cve_id == @cve_id")
+		bindVars["cve_id"] = f.CVEID
+	}
+	if f.AssetID != "" {
+		filters = append(filters, "doc.asset_id == @asset_id")
+		bindVars["asset_id"] = f.AssetID
 	}
 
 	sortBy := "priority_score"
