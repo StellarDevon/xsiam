@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -20,6 +22,14 @@ type Config struct {
 	RedisAddr     string // host:port, e.g. "localhost:6379"
 	RedisPassword string
 	CopilotAPIKey string `mapstructure:"copilot_api_key"`
+	GeoIP         GeoIPConfig
+}
+
+// GeoIPConfig points to MaxMind GeoLite2 offline database files.
+// Both paths are optional: if empty the corresponding enrichment is disabled.
+type GeoIPConfig struct {
+	CityDBPath string // path to GeoLite2-City.mmdb
+	ASNDBPath  string // path to GeoLite2-ASN.mmdb (optional)
 }
 
 type ArangoDBConfig struct {
@@ -86,8 +96,30 @@ type WebhookConfig struct {
 	Secret    string   `mapstructure:"secret"`
 }
 
+// configPath resolves the config file location.
+// Search order:
+//  1. ./config.yaml           (current working directory — dev mode, run from xsiam/)
+//  2. <exe-dir>/config.yaml   (production — exe in output/bin/, config in output/)
+//  3. <exe-dir>/../config.yaml (exe in output/bin/, config one level up in output/)
+func configPath() string {
+	candidates := []string{"config.yaml"}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(exeDir, "config.yaml"),
+			filepath.Join(exeDir, "..", "config.yaml"),
+		)
+	}
+	for _, p := range candidates {
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	return "config.yaml" // fallback; viper will warn but not fatal
+}
+
 func Load() *Config {
-	viper.SetConfigFile("config.yaml")
+	viper.SetConfigFile(configPath())
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	_ = viper.ReadInConfig()
@@ -136,6 +168,10 @@ func Load() *Config {
 		RedisAddr:     func() string { a := viper.GetString("REDIS_ADDR"); if a == "" { return "localhost:6379" }; return a }(),
 		RedisPassword: viper.GetString("REDIS_PASSWORD"),
 		CopilotAPIKey: viper.GetString("copilot_api_key"),
+		GeoIP: GeoIPConfig{
+			CityDBPath: viper.GetString("GEOIP_CITY_DB"),
+			ASNDBPath:  viper.GetString("GEOIP_ASN_DB"),
+		},
 		Notify: NotifyConfig{
 			Email: EmailConfig{
 				Enabled:  viper.GetBool("NOTIFY_EMAIL_ENABLED"),

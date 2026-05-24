@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
-import PageHeader from '@/components/PageHeader'
 
 // ── Incident list shape ───────────────────────────────────────────────────────
 interface IncidentItem {
@@ -953,6 +952,9 @@ export default function CausalityGraph() {
   const [showAiSummary, setShowAiSummary] = useState(false)
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false)
 
+  // ── Left bar search
+  const [listSearch, setListSearch] = useState('')
+
   // Track SVG container size
   useEffect(() => {
     const el = svgWrapRef.current
@@ -1481,65 +1483,120 @@ export default function CausalityGraph() {
     return null
   }
 
-  return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <PageHeader
-        title="溯源图"
-        subtitle={graph
-          ? `· ${graph.nodes.length} 节点, ${graph.edges.length} 边${graph.confidence ? `  置信度 ${(graph.confidence * 100).toFixed(0)}%` : ''}`
-          : undefined}
-        actions={<>
-          <select
-            className="filter-select"
-            style={{ minWidth: 240 }}
-            value={incidentId}
-            onChange={e => { setIncidentId(e.target.value); loadGraph(e.target.value) }}
-          >
-            <option value="">— 选择事件 —</option>
-            {incidentList.map(inc => (
-              <option key={inc._key} value={inc._key}>
-                {inc.title ? `${inc.title} (${inc._key})` : inc._key}
-              </option>
-            ))}
-          </select>
+  // ── Incident list search filter ──────────────────────────────────────────
+  const filteredIncidents = incidentList.filter(inc =>
+    !listSearch.trim() ||
+    (inc.title ?? '').toLowerCase().includes(listSearch.toLowerCase()) ||
+    inc._key.toLowerCase().includes(listSearch.toLowerCase())
+  )
 
+  return (
+    <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
+
+      {/* ── Left incident list bar ──────────────────────────────────────────── */}
+      <div style={{
+        width: 240, flexShrink: 0,
+        borderRight: '1px solid var(--border)',
+        background: 'var(--bg-card)',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+      }}>
+        {/* Bar header */}
+        <div style={{
+          padding: '12px 12px 8px',
+          borderBottom: '1px solid var(--border)',
+          flexShrink: 0,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+            溯源图
+          </div>
           <input
             className="filter-input"
-            style={{ width: 140 }}
-            placeholder="事件ID..."
-            value={incidentId}
-            onChange={e => setIncidentId(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && loadGraph(incidentId)}
+            style={{ width: '100%', fontSize: 12 }}
+            placeholder="搜索事件..."
+            value={listSearch}
+            onChange={e => setListSearch(e.target.value)}
           />
+        </div>
 
-          <button
-            className="btn-primary"
-            onClick={() => loadGraph(incidentId)}
-            disabled={loading || !incidentId}
-          >
-            {loading ? '加载中...' : '加载图谱'}
-          </button>
+        {/* Incident list */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {filteredIncidents.length === 0 ? (
+            <div style={{
+              padding: '24px 16px', textAlign: 'center',
+              color: 'var(--text-muted)', fontSize: 12,
+            }}>
+              {incidentList.length === 0 ? '暂无事件数据' : '无匹配事件'}
+            </div>
+          ) : filteredIncidents.map(inc => {
+            const isActive = incidentId === inc._key
+            return (
+              <div
+                key={inc._key}
+                onClick={() => { setIncidentId(inc._key); loadGraph(inc._key) }}
+                style={{
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                  background: isActive ? 'var(--nav-active-bg)' : 'transparent',
+                  borderBottom: '1px solid var(--border-light)',
+                  transition: 'background .12s',
+                }}
+                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)' }}
+                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              >
+                <div style={{
+                  fontSize: 12, fontWeight: isActive ? 600 : 400,
+                  color: isActive ? 'var(--accent-blue)' : 'var(--text-primary)',
+                  lineHeight: 1.4,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {inc.title || inc._key}
+                </div>
+                <div style={{
+                  fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2,
+                  fontFamily: 'monospace',
+                }}>
+                  {inc._key}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
+      {/* ── Right content area ───────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+
+      {/* ── Top action bar ───────────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '8px 14px', borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-card)', flexShrink: 0,
+      }}>
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', flex: 1 }}>
+          {incidentId
+            ? (incidentList.find(i => i._key === incidentId)?.title ?? incidentId)
+            : '选择左侧事件以加载溯源图'}
+        </span>
+        <button
+          className="btn-secondary"
+          onClick={() => generateGraph(incidentId)}
+          disabled={generating || !incidentId}
+          style={{ fontSize: 12 }}
+        >
+          {generating ? '生成中...' : '⚡ 生成攻击链'}
+        </button>
+        {hasGraph && (
           <button
             className="btn-secondary"
-            onClick={() => generateGraph(incidentId)}
-            disabled={generating || !incidentId}
+            onClick={exportPng}
             style={{ fontSize: 12 }}
           >
-            {generating ? '生成中...' : '⚡ 生成攻击链'}
+            📥 导出 PNG
           </button>
-
-          {hasGraph && (
-            <button
-              className="btn-secondary"
-              onClick={exportPng}
-              style={{ fontSize: 12 }}
-            >
-              📥 导出 PNG
-            </button>
-          )}
-        </>}
-      />
+        )}
+      </div>
 
       {/* ── Graph statistics bar ──────────────────────────────────────────── */}
       {hasGraph && graphStats && (
@@ -2446,6 +2503,7 @@ export default function CausalityGraph() {
           </div>
         )}
       </div>
+      </div> {/* end right content area */}
     </div>
   )
 }

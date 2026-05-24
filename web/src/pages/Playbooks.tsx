@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import ResizableTh from '@/components/ResizableTh'
 import ReactFlow, {
   Background, Controls, MiniMap,
@@ -160,10 +160,10 @@ const NODE_LIBRARY = [
     group: '触发器',
     color: 'var(--accent-blue)',
     items: [
-      { icon: '⚡', name: 'Alert Triggered' },
-      { icon: '📁', name: 'Incident Created' },
-      { icon: '⏰', name: 'Schedule' },
-      { icon: '🖐', name: 'Manual' },
+      { icon: '⚡', name: '告警触发' },
+      { icon: '📁', name: '事件创建' },
+      { icon: '⏰', name: '定时触发' },
+      { icon: '🖐', name: '手动触发' },
     ],
   },
   {
@@ -179,20 +179,20 @@ const NODE_LIBRARY = [
     group: '数据查询',
     color: 'var(--accent-blue)',
     items: [
-      { icon: '🔔', name: 'Get Alert' },
-      { icon: '📋', name: 'Get Incident' },
-      { icon: '🔍', name: 'Query Logs' },
-      { icon: '🖥', name: 'Get Asset' },
+      { icon: '🔔', name: '获取告警' },
+      { icon: '📋', name: '获取事件' },
+      { icon: '🔍', name: '查询日志' },
+      { icon: '🖥', name: '获取资产' },
     ],
   },
   {
     group: '响应操作',
     color: 'var(--accent-green)',
     items: [
-      { icon: '🚫', name: 'Block IP' },
-      { icon: '🔒', name: 'Isolate Host' },
-      { icon: '📧', name: 'Send Notification' },
-      { icon: '🎫', name: 'Create Ticket' },
+      { icon: '🚫', name: '封锁 IP' },
+      { icon: '🔒', name: '隔离主机' },
+      { icon: '📧', name: '发送通知' },
+      { icon: '🎫', name: '创建工单' },
     ],
   },
   {
@@ -2110,7 +2110,7 @@ export default function Playbooks() {
       `}</style>
 
       <PageHeader
-        title="Playbooks"
+        title="剧本"
         actions={<button className="btn-primary" onClick={openCreate}>+ 新建剧本</button>}
       />
 
@@ -2120,17 +2120,17 @@ export default function Playbooks() {
         <input className="filter-input" placeholder="搜索剧本..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { setPage(1); load(1) } }} />
         <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => { setPage(1); load(1) }}>搜索</button>
         <select className="filter-select" value={triggerFilter} onChange={e => setTriggerFilter(e.target.value)}>
-          <option value="">All Triggers</option>
-          <option value="手动">Manual</option>
-          <option value="alert">Alert</option>
-          <option value="incident">Incident</option>
-          <option value="schedule">Schedule</option>
+          <option value="">全部触发器</option>
+          <option value="手动">手动</option>
+          <option value="alert">告警</option>
+          <option value="incident">事件</option>
+          <option value="schedule">定时</option>
           <option value="webhook">Webhook</option>
         </select>
         <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="">全部状态</option>
           <option value="active">活跃</option>
-          <option value="inactive">Inactive</option>
+          <option value="inactive">停用</option>
           <option value="draft">草稿</option>
         </select>
       </div>
@@ -2146,7 +2146,7 @@ export default function Playbooks() {
                 <ResizableTh>状态</ResizableTh>
                 <ResizableTh>步骤</ResizableTh>
                 <ResizableTh>执行次数</ResizableTh>
-                <ResizableTh>Success Rate</ResizableTh>
+                <ResizableTh>成功率</ResizableTh>
                 <ResizableTh>最近运行</ResizableTh>
                 <ResizableTh></ResizableTh>
               </tr>
@@ -2168,8 +2168,7 @@ export default function Playbooks() {
                         background: `${triggerColor[pb.trigger_type] ?? 'var(--text-muted)'}22`,
                         color: triggerColor[pb.trigger_type] ?? 'var(--text-muted)',
                         border: `1px solid ${triggerColor[pb.trigger_type] ?? 'var(--border)'}44`,
-                        textTransform: 'capitalize',
-                      }}>{pb.trigger_type || '手动'}</span>
+                      }}>{ ({'alert':'告警','incident':'事件','schedule':'定时','webhook':'Webhook','manual':'手动'} as Record<string,string>)[pb.trigger_type] ?? pb.trigger_type ?? '手动' }</span>
                     </td>
                     <td>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5 }}>
@@ -2179,7 +2178,7 @@ export default function Playbooks() {
                           boxShadow: pb.status === 'active' ? `0 0 4px ${dotColor}` : pb.status === 'running' ? `0 0 0 2px ${dotColor}44` : 'none',
                           animation: pb.status === 'running' ? 'pulse 1.2s ease-in-out infinite' : undefined,
                         }} />
-                        {pb.status || 'inactive'}
+                        { ({'active':'活跃','inactive':'停用','running':'执行中','disabled':'已禁用'} as Record<string,string>)[pb.status] ?? pb.status ?? '停用' }
                       </span>
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{(pb.steps as unknown[])?.length ?? 0}</td>
@@ -2270,12 +2269,12 @@ export default function Playbooks() {
               {detailTab === 'overview' && (
                 <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div className="card">
-                    <div className="card-title">Metadata</div>
+                    <div className="card-title">元数据</div>
                     {[
                       ['Trigger', selected.trigger_type || '手动'],
                       ['状态', selected.status || 'inactive'],
                       ['步骤', String((selected.steps as unknown[])?.length ?? 0)],
-                      ['Total Runs', String(selected.run_count ?? 0)],
+                      ['总执行次数', String(selected.run_count ?? 0)],
                       ['Successes', String(selected.success_count ?? 0)],
                       ['Failures', String(selected.fail_count ?? 0)],
                       ['创建者', selected.created_by || '-'],
@@ -2291,7 +2290,7 @@ export default function Playbooks() {
                   <div className="card">
                     <div className="card-title" style={{ marginBottom: 8 }}>执行历史 (近期)</div>
                     {histLoading && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>加载中...</div>}
-                    {!histLoading && history.length === 0 && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>No runs yet</div>}
+                    {!histLoading && history.length === 0 && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>暂无执行记录</div>}
                     {history.map((r, i) => (
                       <div key={r.run_id ?? i} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -2328,10 +2327,10 @@ export default function Playbooks() {
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button className="btn-secondary" style={{ flex: 1, fontSize: 11, color: selected.status === 'active' ? 'var(--critical)' : 'var(--accent-green)' }} onClick={() => toggle活跃(selected)}>
-                      {selected.status === 'active' ? 'Deactivate' : 'Activate'}
+                      {selected.status === 'active' ? '停用' : '启用'}
                     </button>
                   </div>
-                  <button className="btn-secondary" style={{ fontSize: 11, color: 'var(--critical)' }} onClick={() => deletePlaybook(selected)}>Delete Playbook</button>
+                  <button className="btn-secondary" style={{ fontSize: 11, color: 'var(--critical)' }} onClick={() => deletePlaybook(selected)}>删除剧本</button>
                 </div>
               )}
 
@@ -2384,7 +2383,7 @@ export default function Playbooks() {
         <>
           <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 520, maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editTarget ? '编辑剧本' : 'New Playbook'}</div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editTarget ? '编辑剧本' : '新建剧本'}</div>
             {/* Quick template picker — only shown on create */}
             {!editTarget && (
               <div style={{ marginBottom: 16 }}>
@@ -2447,10 +2446,10 @@ export default function Playbooks() {
                 <div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>触发方式</div>
                   <select className="filter-select" style={{ width: '100%' }} value={form.trigger_type} onChange={e => setForm(p => ({ ...p, trigger_type: e.target.value }))}>
-                    <option value="手动">Manual</option>
-                    <option value="alert">Alert</option>
-                    <option value="incident">Incident</option>
-                    <option value="schedule">Schedule</option>
+                    <option value="手动">手动</option>
+                    <option value="alert">告警</option>
+                    <option value="incident">事件</option>
+                    <option value="schedule">定时</option>
                     <option value="webhook">Webhook</option>
                   </select>
                 </div>
@@ -2459,7 +2458,7 @@ export default function Playbooks() {
                   <select className="filter-select" style={{ width: '100%' }} value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
                     <option value="draft">草稿</option>
                     <option value="active">活跃</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="inactive">停用</option>
                   </select>
                 </div>
               </div>

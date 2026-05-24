@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
+import ResizableTh from '@/components/ResizableTh'
+import { IOCsTab } from './IOCs'
 
 // ─── Additional interfaces for new features ───────────────────────────────────
 
@@ -96,7 +98,7 @@ interface Report {
   download_url: string
 }
 
-type Tab = 'indicators' | 'feeds' | 'rules' | 'samples' | 'sessions' | 'reports' | 'trc' | 'actors' | 'graph'
+type Tab = 'indicators' | 'feeds' | 'rules' | 'samples' | 'sessions' | 'reports' | 'trc' | 'actors' | 'graph' | 'ioc_mgmt'
 
 // ─── Threat Actor Data ────────────────────────────────────────────────────────
 interface ThreatActor {
@@ -715,9 +717,9 @@ export default function ThreatIntel() {
   })()
 
   const headerBtn = () => {
-    if (tab === 'feeds') return <button className="btn-primary" onClick={openCreateFeed}>+ Add Feed</button>
-    if (tab === 'indicators') return <button className="btn-primary" onClick={openCreateIoc}>+ Add Indicator</button>
-    if (tab === 'rules') return <button className="btn-primary" onClick={openCreateRule}>+ New Rule</button>
+    if (tab === 'feeds') return <button className="btn-primary" onClick={openCreateFeed}>+ 新增订阅源</button>
+    if (tab === 'indicators') return <button className="btn-primary" onClick={openCreateIoc}>+ 新增指标</button>
+    if (tab === 'rules') return <button className="btn-primary" onClick={openCreateRule}>+ 新建规则</button>
     if (tab === 'samples') return <button className="btn-primary" onClick={() => setShow提交Modal(true)}>+ 提交样本</button>
     if (tab === 'reports') return <button className="btn-primary" onClick={() => setShowReportModal(true)}>+ 创建报告</button>
     return null
@@ -726,7 +728,7 @@ export default function ThreatIntel() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
-        title="Threat Intel Management"
+        title="威胁情报"
         actions={<div style={{ display: 'flex', gap: 8 }}>{headerBtn()}</div>}
       />
 
@@ -823,6 +825,9 @@ export default function ThreatIntel() {
 
       {/* Tabs */}
       <div className="tab-bar" style={{ position: 'relative' }}>
+        <button className={`tab ${tab === 'ioc_mgmt' ? 'active' : ''}`} onClick={() => setTab('ioc_mgmt')}>
+          IOC 管理
+        </button>
         <button className={`tab ${tab === 'indicators' ? 'active' : ''}`} onClick={() => setTab('indicators')}>
           指标 <span className="tab-count">{iocMeta.total}</span>
         </button>
@@ -904,6 +909,13 @@ export default function ThreatIntel() {
         </div>
       )}
 
+      {/* ===== IOC 管理 (embedded IOCsTab) ===== */}
+      {tab === 'ioc_mgmt' && (
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <IOCsTab />
+        </div>
+      )}
+
       {/* ===== INDICATORS ===== */}
       {tab === 'indicators' && (
         <>
@@ -931,11 +943,11 @@ export default function ThreatIntel() {
           <div className="data-table-wrap">
             <table className="data-table">
               <thead>
-                <tr><th>类型</th><th style={{ minWidth: 220 }}>Indicator Value</th><th>判定结论</th><th>置信度</th><th>Source / Feed</th><th>Related Incidents</th><th>最近发现</th><th></th></tr>
+                <tr><ResizableTh>类型</ResizableTh><ResizableTh style={{ minWidth: 220 }}>指标值</ResizableTh><ResizableTh>判定结论</ResizableTh><ResizableTh>置信度</ResizableTh><ResizableTh>来源 / 情报源</ResizableTh><ResizableTh>关联事件</ResizableTh><ResizableTh>最近发现</ResizableTh><ResizableTh></ResizableTh></tr>
               </thead>
               <tbody>
                 {iocLoading && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>}
-                {!iocLoading && iocs.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No indicators</td></tr>}
+                {!iocLoading && iocs.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>暂无指标</td></tr>}
                 {iocs.map(ioc => (
                   <tr key={ioc._key}>
                     <td><span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 3, fontWeight: 600, textTransform: 'uppercase', background: `${typeColor[ioc.type] ?? 'var(--accent-blue)'}22`, color: typeColor[ioc.type] ?? 'var(--accent-blue)' }}>{ioc.type}</span></td>
@@ -982,21 +994,21 @@ export default function ThreatIntel() {
               <option value="virustotal">VirusTotal</option>
               <option value="unit42">Unit 42</option>
               <option value="wildfire">WildFire</option>
-              <option value="custom">Custom</option>
+              <option value="custom">自定义</option>
             </select>
             <select className="filter-select" value={feedStatusFilter} onChange={e => setFeedStatusFilter(e.target.value)}>
               <option value="">全部状态</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="error">Error</option>
+              <option value="active">活跃</option>
+              <option value="inactive">停用</option>
+              <option value="error">异常</option>
             </select>
           </div>
           <div className="data-table-wrap">
             <table className="data-table">
-              <thead><tr><th>Feed Name</th><th>类型</th><th>状态</th><th>指标</th><th>Last Synced</th><th>Interval</th><th></th></tr></thead>
+              <thead><tr><ResizableTh>情报源名称</ResizableTh><ResizableTh>类型</ResizableTh><ResizableTh>状态</ResizableTh><ResizableTh>指标</ResizableTh><ResizableTh>最近同步</ResizableTh><ResizableTh>同步间隔</ResizableTh><ResizableTh></ResizableTh></tr></thead>
               <tbody>
                 {feedLoading && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>}
-                {!feedLoading && feeds.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No feeds configured</td></tr>}
+                {!feedLoading && feeds.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>暂无情报源</td></tr>}
                 {feeds.map(f => (
                   <tr key={f._key}>
                     <td>
@@ -1051,7 +1063,7 @@ export default function ThreatIntel() {
           </div>
           <div className="data-table-wrap" style={{ flex: 'unset' }}>
             <table className="data-table">
-              <thead><tr><th>Rule Name</th><th>Type</th><th>Severity</th><th>MITRE Tactic</th><th>状态</th><th>Hits</th><th>创建时间</th><th></th></tr></thead>
+              <thead><tr><ResizableTh>规则名称</ResizableTh><ResizableTh>类型</ResizableTh><ResizableTh>严重程度</ResizableTh><ResizableTh>MITRE 战术</ResizableTh><ResizableTh>状态</ResizableTh><ResizableTh>命中数</ResizableTh><ResizableTh>创建时间</ResizableTh><ResizableTh></ResizableTh></tr></thead>
               <tbody>
                 {rulesLoading && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>加载中...</td></tr>}
                 {!rulesLoading && rules.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>No indicator rules configured. Click "+ New Rule" to create one.</td></tr>}
@@ -1076,7 +1088,7 @@ export default function ThreatIntel() {
                     <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDate(r.created_at)}</td>
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
-                        <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: r.status === 'active' ? 'var(--high)' : 'var(--accent-green)' }} onClick={() => toggleRule(r)}>{r.status === 'active' ? 'Disable' : 'Enable'}</button>
+                        <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: r.status === 'active' ? 'var(--high)' : 'var(--accent-green)' }} onClick={() => toggleRule(r)}>{r.status === 'active' ? '禁用' : '启用'}</button>
                         <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px' }} onClick={() => openEditRule(r)}>编辑</button>
                         <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: 'var(--critical)' }} onClick={() => deleteRule(r)}>删</button>
                       </div>
@@ -1141,16 +1153,16 @@ export default function ThreatIntel() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: 32 }}>类型</th>
-                    <th style={{ minWidth: 180 }}>Hash / 值</th>
-                    <th>Threat Name</th>
-                    <th>判定结论</th>
-                    <th style={{ minWidth: 120 }}>置信度</th>
-                    <th>Severity</th>
-                    <th>Source</th>
-                    <th>Tags</th>
-                    <th>创建时间</th>
-                    <th></th>
+                    <ResizableTh style={{ width: 32 }}>类型</ResizableTh>
+                    <ResizableTh style={{ minWidth: 180 }}>Hash / 值</ResizableTh>
+                    <ResizableTh>威胁名称</ResizableTh>
+                    <ResizableTh>判定结论</ResizableTh>
+                    <ResizableTh style={{ minWidth: 120 }}>置信度</ResizableTh>
+                    <ResizableTh>严重程度</ResizableTh>
+                    <ResizableTh>来源</ResizableTh>
+                    <ResizableTh>标签</ResizableTh>
+                    <ResizableTh>创建时间</ResizableTh>
+                    <ResizableTh></ResizableTh>
                   </tr>
                 </thead>
                 <tbody>
@@ -1222,13 +1234,13 @@ export default function ThreatIntel() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>用户</th>
-                  <th>域</th>
-                  <th style={{ minWidth: 140 }}>风险评分</th>
-                  <th>信号数</th>
-                  <th>最近活动</th>
-                  <th>状态</th>
-                  <th></th>
+                  <ResizableTh>用户</ResizableTh>
+                  <ResizableTh>域</ResizableTh>
+                  <ResizableTh style={{ minWidth: 140 }}>风险评分</ResizableTh>
+                  <ResizableTh>信号数</ResizableTh>
+                  <ResizableTh>最近活动</ResizableTh>
+                  <ResizableTh>状态</ResizableTh>
+                  <ResizableTh></ResizableTh>
                 </tr>
               </thead>
               <tbody>
@@ -1314,7 +1326,7 @@ export default function ThreatIntel() {
           </div>
           <div className="data-table-wrap" style={{ flex: 'unset' }}>
             <table className="data-table">
-              <thead><tr><th>Report Name</th><th>模板类型</th><th>状态</th><th>Description</th><th>创建时间</th><th></th></tr></thead>
+              <thead><tr><ResizableTh>报表名称</ResizableTh><ResizableTh>模板类型</ResizableTh><ResizableTh>状态</ResizableTh><ResizableTh>描述</ResizableTh><ResizableTh>创建时间</ResizableTh><ResizableTh></ResizableTh></tr></thead>
               <tbody>
                 {reportsLoading && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>加载中...</td></tr>}
                 {!reportsLoading && reports.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>暂无报告. Click "+ 创建报告" to generate one.</td></tr>}
@@ -1945,9 +1957,9 @@ export default function ThreatIntel() {
               <text x="315" y="228" fontSize="9" fill="rgba(144,164,174,0.7)" textAnchor="middle">uses</text>
 
               {/* section labels */}
-              <text x="30" y="22" fontSize="10" fontWeight="600" fill="rgba(239,83,80,0.6)" letterSpacing="1">ACTORS</text>
-              <text x="300" y="22" fontSize="10" fontWeight="600" fill="rgba(255,167,38,0.6)" letterSpacing="1">MALWARE</text>
-              <text x="545" y="22" fontSize="10" fontWeight="600" fill="rgba(79,163,224,0.6)" letterSpacing="1">CAMPAIGNS</text>
+              <text x="30" y="22" fontSize="10" fontWeight="600" fill="rgba(239,83,80,0.6)" letterSpacing="1">威胁组织</text>
+              <text x="300" y="22" fontSize="10" fontWeight="600" fill="rgba(255,167,38,0.6)" letterSpacing="1">恶意软件</text>
+              <text x="545" y="22" fontSize="10" fontWeight="600" fill="rgba(79,163,224,0.6)" letterSpacing="1">攻击活动</text>
               <line x1="0" y1="30" x2="900" y2="30" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
             </svg>
           </div>
@@ -2151,7 +2163,7 @@ export default function ThreatIntel() {
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editIoc ? 'Edit Indicator' : 'Add Indicator'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>IOC Type</div>
+                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>IOC 类型</div>
                   <select className="filter-select" style={{ width: '100%' }} value={iocForm.type} onChange={e => setIocForm(p => ({ ...p, type: e.target.value }))}>
                     {IOC_TYPES.map(t => <option key={t} value={t}>{IOC_LABELS[t] ?? t}</option>)}
                   </select></div>
@@ -2168,10 +2180,10 @@ export default function ThreatIntel() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>置信度 (0-100)</div>
                   <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} type="number" min="0" max="100" value={iocForm.confidence} onChange={e => setIocForm(p => ({ ...p, confidence: e.target.value }))} /></div>
-                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Source Name</div>
+                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>来源名称</div>
                   <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="Unit 42 / Manual" value={iocForm.source_name} onChange={e => setIocForm(p => ({ ...p, source_name: e.target.value }))} /></div>
               </div>
-              <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Threat Name</div>
+              <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>威胁名称</div>
                 <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="LockBit C2 / Phishing" value={iocForm.threat_name} onChange={e => setIocForm(p => ({ ...p, threat_name: e.target.value }))} /></div>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Tags (comma-separated)</div>
                 <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="c2, ransomware, apt" value={iocForm.tags} onChange={e => setIocForm(p => ({ ...p, tags: e.target.value }))} /></div>
@@ -2197,11 +2209,11 @@ export default function ThreatIntel() {
                 <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>类型</div>
                   <select className="filter-select" style={{ width: '100%' }} value={feedForm.feed_type} onChange={e => setFeedForm(p => ({ ...p, feed_type: e.target.value }))}>
                     <option value="unit42">Unit 42</option><option value="wildfire">WildFire</option><option value="misp">MISP</option>
-                    <option value="stix_taxii">STIX/TAXII</option><option value="mitre">MITRE ATT&CK</option><option value="virustotal">VirusTotal</option><option value="custom">Custom</option>
+                    <option value="stix_taxii">STIX/TAXII</option><option value="mitre">MITRE ATT&CK</option><option value="virustotal">VirusTotal</option><option value="custom">自定义</option>
                   </select></div>
                 <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>状态</div>
                   <select className="filter-select" style={{ width: '100%' }} value={feedForm.status} onChange={e => setFeedForm(p => ({ ...p, status: e.target.value }))}>
-                    <option value="active">Active</option><option value="inactive">Inactive</option>
+                    <option value="active">活跃</option><option value="inactive">停用</option>
                   </select></div>
               </div>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>订阅URL</div>
@@ -2229,17 +2241,17 @@ export default function ThreatIntel() {
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>规则名称 *</div>
                 <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="Block 恶意 IPs" value={ruleForm.name} onChange={e => setRuleForm(p => ({ ...p, name: e.target.value }))} /></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Rule Type</div>
+                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>规则类型</div>
                   <select className="filter-select" style={{ width: '100%' }} value={ruleForm.rule_type} onChange={e => setRuleForm(p => ({ ...p, rule_type: e.target.value }))}>
-                    <option value="match">Match</option><option value="threshold">Threshold</option><option value="schedule">Schedule</option><option value="correlation">Correlation</option>
+                    <option value="match">匹配</option><option value="threshold">阈值</option><option value="schedule">定时</option><option value="correlation">关联</option>
                   </select></div>
-                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Severity</div>
+                <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>严重程度</div>
                   <select className="filter-select" style={{ width: '100%' }} value={ruleForm.severity} onChange={e => setRuleForm(p => ({ ...p, severity: e.target.value }))}>
-                    <option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+                    <option value="critical">严重</option><option value="high">高危</option><option value="medium">中危</option><option value="low">低危</option>
                   </select></div>
                 <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>状态</div>
                   <select className="filter-select" style={{ width: '100%' }} value={ruleForm.status} onChange={e => setRuleForm(p => ({ ...p, status: e.target.value }))}>
-                    <option value="active">Active</option><option value="inactive">Inactive</option>
+                    <option value="active">活跃</option><option value="inactive">停用</option>
                   </select></div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
@@ -2283,7 +2295,7 @@ export default function ThreatIntel() {
                 <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="每周威胁摘要" value={reportForm.name} onChange={e => setReportForm(p => ({ ...p, name: e.target.value }))} /></div>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>模板类型</div>
                 <select className="filter-select" style={{ width: '100%' }} value={reportForm.template_type} onChange={e => setReportForm(p => ({ ...p, template_type: e.target.value }))}>
-                  <option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="executive">Executive Summary</option><option value="custom">Custom</option>
+                  <option value="daily">每日</option><option value="weekly">每周</option><option value="monthly">每月</option><option value="executive">管理摘要</option><option value="custom">自定义</option>
                 </select></div>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>描述</div>
                 <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="简要描述..." value={reportForm.description} onChange={e => setReportForm(p => ({ ...p, description: e.target.value }))} /></div>

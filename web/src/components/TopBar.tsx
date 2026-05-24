@@ -4,6 +4,7 @@ import { useTheme } from '@/lib/theme'
 import { useLang, useT } from '@/lib/i18n'
 import { clearAuth, getSecondsToExpiry, getUser } from '@/lib/auth'
 import api from '@/lib/api'
+import { saveProfile } from '@/lib/userProfile'
 
 /* ── blink keyframe injected once ── */
 const blinkStyle = `
@@ -102,8 +103,19 @@ export default function TopBar() {
   injectBlink()
 
   const navigate = useNavigate()
-  const { theme, toggle: toggleTheme } = useTheme()
+  const { theme, toggle: _toggleTheme, setTheme } = useTheme()
   const { lang, setLang } = useLang()
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    saveProfile({ theme: next })
+  }
+
+  function setLangAndSave(l: 'zh' | 'en') {
+    setLang(l)
+    saveProfile({ lang: l })
+  }
   const t = useT()
   const user = getUser()
 
@@ -562,7 +574,7 @@ export default function TopBar() {
             {(['en', 'zh'] as const).map(l => (
               <button
                 key={l}
-                onClick={() => setLang(l)}
+                onClick={() => setLangAndSave(l)}
                 style={{
                   padding: '0 8px', height: 18, fontSize: 10, fontWeight: 600,
                   cursor: 'pointer', border: 'none', letterSpacing: .4,

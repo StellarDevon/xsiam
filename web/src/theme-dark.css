@@ -234,23 +234,30 @@
 /* ════════════════════════════════
    DATA TABLE (full-page scrollable)
    ════════════════════════════════ */
-.data-table-wrap { flex: 1; overflow-y: auto; }
+.data-table-wrap { flex: 1; overflow: auto; }
 .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .data-table th {
   position: sticky; top: 0; z-index: 2;
   background: var(--bg-card2);
-  padding: 0 16px; height: 36px; text-align: left;
+  padding: 0 4px 0 12px; height: 36px; text-align: left;
   font-size: 10.5px; font-weight: 600; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .45px;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 2px solid var(--border-light);
   cursor: pointer; white-space: nowrap; user-select: none;
   transition: color .15s;
-  overflow: hidden; text-overflow: ellipsis;
+  /* overflow visible so the resize-handle span is not clipped */
+  overflow: visible;
 }
 .data-table th:hover { color: var(--text-secondary); }
+/* Text label — clips overflowing text, leaves space for the 14px handle on the right */
+.data-table th > span.th-label {
+  display: block;
+  padding-right: 14px;   /* breathing room before the resize stripe */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .data-table td {
-  padding: 9px 16px; border-bottom: 1px solid var(--border);
-  font-size: 12.5px; color: var(--text-primary); vertical-align: middle;
+  padding: 7px 14px; border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--text-primary); vertical-align: middle;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   max-width: 0;
 }
@@ -371,12 +378,24 @@
 /* ════════════════════════════════
    DRAWER (slide-out detail panel)
    ════════════════════════════════ */
+@keyframes drawer-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes drawer-slide-in-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
 .drawer {
   position: fixed; top: 0; right: 0; bottom: 0;
   background: var(--bg-drawer);
   border-left: 1px solid var(--border-light);
   z-index: 300; display: flex; flex-direction: column; overflow: hidden;
+  animation: drawer-slide-in .12s ease-out;
 }
+/* Utility: apply to any inline-styled right-side panel for instant slide-in */
+.slide-in-right { animation: drawer-slide-in .12s ease-out; }
+.slide-in-left  { animation: drawer-slide-in-left .12s ease-out; }
 .drawer-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px; min-height: 48px;

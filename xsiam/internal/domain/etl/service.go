@@ -110,12 +110,19 @@ func (s *Service) Toggle(ctx context.Context, key string) (bool, error) {
 
 // TestResult is the response from a dry-run test of a rule against a sample event.
 type TestResult struct {
-	Matched      bool             `json:"matched"`
-	RawNgxIndex  string           `json:"raw_ngx_index"`
-	ETLNgxIndex  string           `json:"etl_ngx_index"`
-	WriteArango  bool             `json:"write_arango"`
-	Dropped      bool             `json:"dropped"`
-	OutputEntry  *model.LogEntry  `json:"output_entry,omitempty"`
+	Matched     bool            `json:"matched"`
+	RawNgxIndex string          `json:"raw_ngx_index"`
+	Sinks       []SinkSummary   `json:"sinks,omitempty"` // resolved output destinations
+	Dropped     bool            `json:"dropped"`
+	OutputEntry *model.LogEntry `json:"output_entry,omitempty"`
+}
+
+// SinkSummary is a human-readable summary of one resolved sink for the test UI.
+type SinkSummary struct {
+	NgxIndex         string `json:"ngx_index,omitempty"`
+	ArangoCollection string `json:"arango_collection,omitempty"`
+	TTLDays          int    `json:"ttl_days,omitempty"`
+	ConditionMet     bool   `json:"condition_met"` // true = sink condition was satisfied
 }
 
 // Test runs the ETL pipeline against a sample event and returns routing decisions.
@@ -139,12 +146,23 @@ func (s *Service) Test(ctx context.Context, key string, sample *model.LogEntry, 
 
 	res := s.pipeline.Process(ctx, sample, tag)
 
+	// Build sink summaries from the resolved sinks.
+	var sinkSummaries []SinkSummary
+	for _, s := range res.Sinks {
+		sinkSummaries = append(sinkSummaries, SinkSummary{
+			NgxIndex:         s.NgxIndex,
+			ArangoCollection: s.ArangoCollection,
+			TTLDays:          s.TTLDays,
+			ConditionMet:     s.Entry != nil,
+		})
+	}
+
+	dropped := res.ETLEntry == nil && len(res.Sinks) == 0 && res.RawNgxIndex == ""
 	result := &TestResult{
 		Matched:     res.Matched,
 		RawNgxIndex: res.RawNgxIndex,
-		ETLNgxIndex: res.ETLNgxIndex,
-		WriteArango: res.WriteArango,
-		Dropped:     res.ETLEntry == nil && res.ETLNgxIndex == "" && res.RawNgxIndex == "",
+		Sinks:       sinkSummaries,
+		Dropped:     dropped,
 		OutputEntry: res.ETLEntry,
 	}
 	return result, nil

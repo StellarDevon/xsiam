@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+﻿import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
@@ -63,93 +63,93 @@ const AGENT_STAT_KEY: Record<string, keyof DashboardStats> = {
 const AI_AGENTS = [
   {
     id: 'case-investigation',
-    name: 'Case Investigation Agent',
+    name: '案例调查智能体',
     category: 'Agentic',
     icon: '🔎',
     active: true,
-    desc: 'Autonomously queries telemetry and threat intelligence to produce comprehensive AI case summaries. Replaces 45-minute manual investigation with seconds.',
-    stats: [{ label: 'Today', value: '47 cases' }, { label: 'Avg time', value: '12s' }],
-    cta: 'View Activity',
+    desc: '自主查询遥测数据和威胁情报，生成全面的 AI 案例摘要。将原本45分钟的人工调查压缩到数秒完成。',
+    stats: [{ label: '今日', value: '47 个案例' }, { label: '平均耗时', value: '12秒' }],
+    cta: '查看活动',
   },
   {
     id: 'cloud-posture',
-    name: '云 Posture Agent',
+    name: '云安全态势智能体',
     category: 'cloud',
     icon: '☁',
     active: true,
-    desc: 'Instantly recognizes cloud misconfigurations and autonomously applies approved fixes. Closes security gaps before external scanners detect them.',
-    stats: [{ label: 'Remediations', value: '8 today' }, { label: 'MTTR', value: '23s' }],
-    cta: 'View Activity',
+    desc: '即时识别云端错误配置并自主应用已批准的修复措施，在外部扫描器发现之前关闭安全漏洞。',
+    stats: [{ label: '已修复', value: '今日8条' }, { label: 'MTTR', value: '23秒' }],
+    cta: '查看活动',
   },
   {
     id: 'automation-engineer',
-    name: 'Automation Engineer Agent',
+    name: '自动化工程师智能体',
     category: 'automation',
     icon: '⚙',
     active: true,
-    desc: 'Converts natural language requests into production-ready playbooks and automation scripts. "Build a workflow that isolates any host showing brute-force signs."',
-    stats: [{ label: 'Playbooks built', value: '3 today' }],
-    cta: 'Try It',
+    desc: '将自然语言请求转换为可投产的剧本和自动化脚本。"构建一个工作流，自动隔离任何出现暴力破解迹象的主机。"',
+    stats: [{ label: '已构建剧本', value: '今日3个' }],
+    cta: '立即体验',
   },
   {
     id: 'alert-triage',
-    name: 'Alert Triage Agent',
+    name: '告警分诊智能体',
     category: 'detection',
     icon: '🎯',
     active: true,
-    desc: 'Reviews 100% of alerts autonomously. Ensures low-priority signals — often the first signs of a sophisticated breach — are never ignored.',
-    stats: [{ label: 'Alerts reviewed', value: '19,847' }, { label: 'Auto-closed', value: '99.2%' }],
-    cta: 'View Activity',
+    desc: '自主审查100%的告警，确保低优先级信号（通常是高级威胁的早期迹象）不被忽视。',
+    stats: [{ label: '已审查告警', value: '19,847' }, { label: '自动关闭', value: '99.2%' }],
+    cta: '查看活动',
   },
   {
     id: 'identity-risk',
-    name: '身份 Risk Agent',
+    name: '身份风险智能体',
     category: 'identity',
     icon: '👤',
     active: false,
-    desc: 'Continuously monitors user behavior and identity signals. Automatically adjusts risk scores and triggers response actions for compromised accounts.',
-    stats: [{ label: 'Users monitored', value: '1,847' }],
+    desc: '持续监控用户行为和身份信号，自动调整风险评分并对受损账户触发响应操作。',
+    stats: [{ label: '已监控用户', value: '1,847' }],
     cta: 'Enable',
   },
 ]
 
 const MCP_INTEGRATIONS = [
-  { id: 'servicenow', name: 'ServiceNow ITSM', desc: 'Ticket creation & updates', icon: '🔗', connected: true },
-  { id: 'slack',      name: 'Slack',           desc: 'Alert notifications',       icon: '💬', connected: true },
-  { id: 'teams',      name: 'Microsoft Teams', desc: 'SOC channel integration',   icon: '📧', connected: true },
-  { id: 'jira',       name: 'Jira',            desc: 'Security issue tracking',   icon: '🐛', connected: false },
-  { id: 'aws',        name: 'AWS Security Hub',desc: '云 findings',            icon: '☁', connected: false },
+  { id: 'servicenow', name: 'ServiceNow ITSM', desc: '工单创建与更新', icon: '🔗', connected: true },
+  { id: 'slack',      name: 'Slack',           desc: '告警通知',       icon: '💬', connected: true },
+  { id: 'teams',      name: 'Microsoft Teams', desc: 'SOC 频道集成',   icon: '📧', connected: true },
+  { id: 'jira',       name: 'Jira',            desc: '安全问题跟踪',   icon: '🐛', connected: false },
+  { id: 'aws',        name: 'AWS Security Hub',desc: '云端发现结果',   icon: '☁', connected: false },
 ]
 
 const CHAT_DEMO = [
-  { role: 'Agent', text: "I'm your autonomous SOC AI. Unlike Copilot, I can take actions on your behalf — investigating incidents, running queries, and executing playbooks — with your approval. What would you like me to do?" },
-  { role: 'user',  text: 'Investigate INC-001 and tell me if the data exfiltration was successful' },
-  { role: 'Agent', text: "I'm investigating INC-001 now...\n\n**Actions taken:**\n✅ Queried XSIAM telemetry for rclone.exe activity\n✅ Cross-referenced 198.51.100.42 with threat intel (Unit 42: confirmed C2)\n✅ Analyzed network flows: 8.3 GB transferred in 4 minutes\n✅ Checked file system for staging location: C:\\Temp\\financial_data_2024.zip (8.3 GB)\n\n**Conclusion: Exfiltration was SUCCESSFUL.** 8.3 GB of data was transferred to a confirmed C2 server before the endpoint was isolated at 09:44:01 UTC.\n\nShall I draft an incident report and notify the security manager?" },
-  { role: 'user',  text: 'Yes, draft the report' },
-  { role: 'Agent', text: '⟳ Drafting incident report...', pending: true },
+  { role: 'Agent', text: "我是您的自主 SOC AI。与 Copilot 不同，我可以代您执行操作——调查事件、运行查询和执行剧本——均需您的批准。您希望我做什么？" },
+  { role: 'user',  text: '调查 INC-001 并告诉我数据泄露是否成功' },
+  { role: 'Agent', text: "我正在调查 INC-001...\n\n**已执行操作：**\n✅ 查询 XSIAM 遥测中的 rclone.exe 活动\n✅ 交叉比对 198.51.100.42 与威胁情报（Unit 42：已确认 C2）\n✅ 分析网络流量：4分钟内传输 8.3 GB\n✅ 检查文件系统暂存位置：C:\\Temp\\financial_data_2024.zip（8.3 GB）\n\n**结论：泄露成功。** 在端点于 09:44:01 UTC 被隔离之前，8.3 GB 数据已传输至已确认的 C2 服务器。\n\n需要我起草事件报告并通知安全经理吗？" },
+  { role: 'user',  text: '是，请起草报告' },
+  { role: 'Agent', text: '⟳ 正在起草事件报告...', pending: true },
 ]
 
 const QUICK_PROMPTS = [
-  'Summarize today\'s critical incidents',
-  'Find all lateral movement in last 24h',
-  'Run IOC hunt across all endpoints',
-  'Generate executive security brief',
-  'Identify unpatched critical CVEs',
+  '汇总今日严重事件',
+  '查找过去24小时内的所有横向移动',
+  '在所有端点进行 IOC 狩猎',
+  '生成管理层安全简报',
+  '识别未修复的严重 CVE',
 ]
 
 const ACTIONS_LIBRARY = [
-  { name: 'Isolate 终端',    icon: '🔒', category: '终端', desc: 'Quarantine a host from network' },
-  { name: 'Kill Process',        icon: '⛔', category: '终端', desc: 'Terminate a running process' },
-  { name: 'Run Script',          icon: '📜', category: '终端', desc: 'Execute PowerShell or shell script' },
-  { name: 'Collect Forensics',   icon: '🔬', category: '终端', desc: 'Gather memory and disk artifacts' },
-  { name: 'Block IP',            icon: '🚫', category: '网络',  desc: 'Add IP to block list via firewall' },
-  { name: 'Block Domain',        icon: '🌐', category: '网络',  desc: 'Sink-hole a malicious domain' },
-  { name: 'Block URL',           icon: '🔗', category: '网络',  desc: 'Block URL at proxy layer' },
-  { name: 'Disable AD Account',  icon: '👤', category: '身份', desc: 'Disable user in Active Directory' },
-  { name: 'Reset Password',      icon: '🔑', category: '身份', desc: 'Force password reset for user' },
-  { name: 'Revoke Session',      icon: '🎫', category: '身份', desc: 'Invalidate all active tokens' },
-  { name: 'Create ITSM Ticket',  icon: '📋', category: 'ITSM',     desc: 'Open ServiceNow/Jira incident' },
-  { name: 'Send Notification',   icon: '📣', category: 'ITSM',     desc: 'Slack/Teams/email alert' },
+  { name: '隔离终端',         icon: '🔒', category: '终端', desc: '将主机从网络中隔离' },
+  { name: '终止进程',         icon: '⛔', category: '终端', desc: '终止正在运行的进程' },
+  { name: '运行脚本',         icon: '📜', category: '终端', desc: '执行 PowerShell 或 Shell 脚本' },
+  { name: '采集取证数据',     icon: '🔬', category: '终端', desc: '收集内存和磁盘的取证数据' },
+  { name: '封锁 IP',          icon: '🚫', category: '网络', desc: '通过防火墙将 IP 加入封锁列表' },
+  { name: '封锁域名',         icon: '🌐', category: '网络', desc: '对恶意域名进行流量黑洞处理' },
+  { name: '封锁 URL',         icon: '🔗', category: '网络', desc: '在代理层封锁 URL' },
+  { name: '禁用 AD 账户',     icon: '👤', category: '身份', desc: '在 Active Directory 中禁用用户' },
+  { name: '重置密码',         icon: '🔑', category: '身份', desc: '强制用户重置密码' },
+  { name: '吊销会话',         icon: '🎫', category: '身份', desc: '使所有活跃令牌失效' },
+  { name: '创建 ITSM 工单',   icon: '📋', category: 'ITSM', desc: '在 ServiceNow/Jira 中创建事件' },
+  { name: '发送通知',         icon: '📣', category: 'ITSM', desc: 'Slack/Teams/邮件告警' },
 ]
 
 // ─── helpers ─────────────────────────────────────────────────
@@ -374,8 +374,8 @@ function AgentConfigPanel({ agentId }: AgentConfigPanelProps) {
           <div style={rowStyle}>
             <div style={labelStyle}>升级阈值 (escalation_threshold)</div>
             <select className="filter-input" style={selectStyle} value={triageEscalation} onChange={e => setTriageEscalation(e.target.value)}>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
+              <option value="high">高危</option>
+              <option value="critical">严重</option>
             </select>
           </div>
         </>
@@ -417,17 +417,17 @@ function AgentConfigPanel({ agentId }: AgentConfigPanelProps) {
           <div style={rowStyle}>
             <div style={labelStyle}>权重预设 (weight_preset)</div>
             <select className="filter-input" style={selectStyle} value={scorePreset} onChange={e => setScorePreset(e.target.value)}>
-              <option value="balanced">Balanced</option>
-              <option value="security-focused">Security-Focused</option>
-              <option value="compliance-focused">Compliance-Focused</option>
+              <option value="balanced">均衡</option>
+              <option value="security-focused">安全优先</option>
+              <option value="compliance-focused">合规优先</option>
             </select>
           </div>
           <div style={rowStyle}>
             <div style={labelStyle}>更新频率 (update_frequency)</div>
             <select className="filter-input" style={selectStyle} value={scoreUpdateFreq} onChange={e => setScoreUpdateFreq(e.target.value)}>
-              <option value="realtime">Realtime</option>
-              <option value="hourly">Hourly</option>
-              <option value="daily">Daily</option>
+              <option value="realtime">实时</option>
+              <option value="hourly">每小时</option>
+              <option value="daily">每日</option>
             </select>
           </div>
         </>
@@ -738,7 +738,7 @@ function ConfigModal({ device, policies, onClose }: ConfigModalProps) {
 
         {/* Agent ID */}
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Agent ID</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>代理 ID</div>
           <input
             className="filter-input"
             value={device._key}
@@ -878,7 +878,7 @@ function DeviceCard({ device, policies }: DeviceCardProps) {
             }} />
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3, display: 'flex', justifyContent: 'space-between' }}>
-            <span>Memory</span><span style={{ color: mem > 85 ? 'var(--critical)' : 'var(--text-secondary)' }}>{mem}%</span>
+            <span>内存</span><span style={{ color: mem > 85 ? 'var(--critical)' : 'var(--text-secondary)' }}>{mem}%</span>
           </div>
           <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{
@@ -919,11 +919,11 @@ function DeviceCard({ device, policies }: DeviceCardProps) {
 // ─── Detection Funnel ─────────────────────────────────────────
 
 const FUNNEL_STAGES = [
-  { label: 'Raw Events',    count: '1,234,567', unit: '/day', color: 'var(--accent-blue)' },
-  { label: 'After ETL',     count: '987,234',   unit: '',     color: 'var(--accent-green)' },
-  { label: 'Rule Matches',  count: '4,521',     unit: '',     color: 'var(--medium)' },
-  { label: 'Alerts',        count: '234',        unit: '',     color: 'var(--high)' },
-  { label: 'Incidents',     count: '18',         unit: '',     color: 'var(--critical)' },
+  { label: '原始事件',    count: '1,234,567', unit: '/天', color: 'var(--accent-blue)' },
+  { label: 'ETL 处理后',  count: '987,234',   unit: '',    color: 'var(--accent-green)' },
+  { label: '规则命中',    count: '4,521',     unit: '',    color: 'var(--medium)' },
+  { label: '告警',        count: '234',        unit: '',    color: 'var(--high)' },
+  { label: '事件',        count: '18',         unit: '',    color: 'var(--critical)' },
 ]
 
 const FUNNEL_REDUCTIONS = ['↓ 20%', '↓ 99.5%', '↓ 94.8%', '↓ 92.3%']
@@ -1206,17 +1206,17 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
       }}>
         <div style={{ fontSize: 22 }}>✦</div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-blue)' }}>Agentic AI Workforce Active</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-blue)' }}>智能 AI 工作力已激活</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            Your AI Agents reviewed <strong style={{ color: 'var(--text-primary)' }}>
-              {stats?.total_alerts != null ? (stats.total_alerts as number).toLocaleString() : '19,847'} alerts
-            </strong> today
-            · <strong style={{ color: 'var(--accent-blue)' }}>99.2% auto-resolved</strong>
-            · <strong style={{ color: 'var(--text-primary)' }}>4 Agents running</strong>
+            AI 智能体今日已审查 <strong style={{ color: 'var(--text-primary)' }}>
+              {stats?.total_alerts != null ? (stats.total_alerts as number).toLocaleString() : '19,847'} 条告警
+            </strong>
+            · <strong style={{ color: 'var(--accent-blue)' }}>99.2% 自动解决</strong>
+            · <strong style={{ color: 'var(--text-primary)' }}>4 个智能体运行中</strong>
           </div>
         </div>
         <div style={{ marginLeft: 'auto' }}>
-          <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => onSwitchTab('assistant')}>View Activity Log</button>
+          <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => onSwitchTab('assistant')}>查看活动日志</button>
         </div>
       </div>
 
@@ -1245,7 +1245,7 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
                     return (
                       <>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', background: 'var(--text-muted)' }} />
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Idle</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>空闲</span>
                       </>
                     )
                   }
@@ -1299,9 +1299,9 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
           alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: 200,
         }}>
           <div style={{ fontSize: 32, marginBottom: 10, color: 'var(--text-muted)' }}>+</div>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Build Custom Agent</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Use the Agent Builder to create<br />specialized AI Agents</div>
-          <button className="btn-primary" style={{ marginTop: 12, fontSize: 11 }} onClick={() => alert('Agent Builder\n\nDefine Agent purpose, data sources, decision rules, and action capabilities.\n(Agent Builder UI coming soon)')}>+ Build Agent</button>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>构建自定义 Agent</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>使用智能体构建器创建<br />专用 AI 智能体</div>
+          <button className="btn-primary" style={{ marginTop: 12, fontSize: 11 }} onClick={() => alert('智能体构建器\n\n定义智能体用途、数据源、决策规则和操作能力。\n（智能体构建器界面即将推出）')}>+ 构建智能体</button>
         </div>
       </div>
 
@@ -1435,7 +1435,7 @@ function AssistantTab() {
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10 }}>CAPABILITIES</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10 }}>能力</div>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.9 }}>
           {['Run XQL queries', 'Investigate incidents', 'Execute playbooks', 'Isolate endpoints', 'Block indicators', 'Generate reports', 'Correlate threat intel', 'Draft notifications'].map(c => (
             <div key={c}>— {c}</div>
@@ -1493,7 +1493,7 @@ function McpTab() {
           const name = prompt('MCP Integration name (e.g. PagerDuty, Zoom):')
           if (name) alert(`MCP Integration "${name}" added.\n\n配置 the endpoint URL and authentication in the integration settings.`)
         }}>+ Add MCP Integration</button>
-        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => alert('XSIAM MCP Server\n\nDownload and install the XSIAM MCP server package to enable Agent tool use against your internal systems.')}>Install XSIAM MCP Server</button>
+        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => alert('XSIAM MCP Server\n\nDownload and install the XSIAM MCP server package to enable Agent tool use against your internal systems.')}>安装 XSIAM MCP 服务</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {MCP_INTEGRATIONS.map(m => (
@@ -1530,11 +1530,11 @@ function ActionsLibraryTab() {
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Actions Agents can execute autonomously or with approval</div>
+        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>智能体可自主或经批准后执行的操作</div>
         <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => {
-          const name = prompt('Action name (e.g. Block User in Okta):')
-          if (name) alert(`Action "${name}" registered.\n\nDefine input parameters, execution logic, and approval requirements in the action editor.`)
-        }}>+ Register New Action</button>
+          const name = prompt('操作名称（例：在 Okta 中封锁用户）：')
+          if (name) alert(`操作 "${name}" 已注册。\n\n请在操作编辑器中定义输入参数、执行逻辑和审批要求。`)
+        }}>+ 注册新操作</button>
       </div>
       {categories.map(cat => (
         <div key={cat} style={{ marginBottom: 20 }}>
@@ -1565,10 +1565,10 @@ function ActionsLibraryTab() {
 type TabId = 'Agents' | 'assistant' | 'mcp' | 'actions'
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'Agents',    label: 'AI Agents' },
-  { id: 'assistant', label: 'AI Agent助手' },
-  { id: 'mcp',       label: 'MCP Integrations' },
-  { id: 'actions',   label: 'Actions Library' },
+  { id: 'Agents',    label: 'AI 智能体' },
+  { id: 'assistant', label: 'AI 助手' },
+  { id: 'mcp',       label: 'MCP 集成' },
+  { id: 'actions',   label: '操作库' },
 ]
 
 const REFRESH_INTERVAL = 30
@@ -1696,8 +1696,8 @@ export default function AgentsHub() {
               {onlineLabel}
             </span>
           )}
-          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setActiveTab('mcp')}>MCP Integrations</button>
-          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setActiveTab('actions')}>Manage Actions</button>
+          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setActiveTab('mcp')}>MCP 集成</button>
+          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setActiveTab('actions')}>管理动作</button>
           <button className="btn-primary" style={{ fontSize: 12 }} onClick={() => setActiveTab('Agents')}>+ Build Agent</button>
         </>}
       />

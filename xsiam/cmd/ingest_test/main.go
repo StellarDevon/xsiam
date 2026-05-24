@@ -46,7 +46,7 @@ func main() {
 	}
 
 	fmt.Println("Testing BulkCreate...")
-	if err := repo.BulkCreate(ctx, entries); err != nil {
+	if err := repo.BulkCreate(ctx, "log_entries", 0, entries); err != nil {
 		fmt.Fprintf(os.Stderr, "BulkCreate error: %v\n", err)
 		os.Exit(1)
 	}

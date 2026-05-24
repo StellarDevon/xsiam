@@ -74,6 +74,13 @@ func EnsureCollections(ctx context.Context, db arangodb.Database) {
 		"log_entries",
 		// ETL pipeline rules
 		"etl_rules",
+		// User preference profiles (lang, theme, display_name, email)
+		"user_profiles",
+		// Network Security domain
+		"network_connections", "dns_records", "network_detection_rules",
+		"network_alerts", "network_devices",
+		// Endpoint Security domain
+		"isolated_endpoints", "endpoint_summaries",
 	}
 	for _, name := range docCols {
 		ensureCollection(ctx, db, name, false)

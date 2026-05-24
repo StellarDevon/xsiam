@@ -1,31 +1,54 @@
-﻿@echo off
+@echo off
 setlocal enabledelayedexpansion
 set ROOT=%~dp0
+set ROOT=%ROOT:~0,-1%
 
-:: ensure npm global bin (pnpm) is on PATH
 set PATH=%APPDATA%\npm;%PATH%
-set WEB=%ROOT%web
-set XSIAM=%ROOT%xsiam
-set OUT=%XSIAM%\xsiam.exe
+set WEB=%ROOT%\web
+set XSIAM=%ROOT%\xsiam
+set OUTDIR=%ROOT%\output\bin
+set LOGDIR=%ROOT%\output\logs
+set OUT=%OUTDIR%\xsiam.exe
 
 echo ============================================================
 echo  XSIAM rebuild  %date% %time%
 echo ============================================================
 
-:: ---------- 1. frontend ----------
+if not exist "%OUTDIR%" mkdir "%OUTDIR%"
+if not exist "%LOGDIR%" mkdir "%LOGDIR%"
+
+:: ── 1. Frontend clean ─────────────────────────────────────────────────────
 echo.
-echo [1/3] Frontend: pnpm build
+echo [1/4] Frontend: clean
 cd /d "%WEB%"
+if exist "dist" (
+    rmdir /s /q dist
+    echo   [OK] web\dist\ removed
+) else (
+    echo   [--] web\dist\ not present
+)
+:: Also clean xsiam/dist (the embedded copy)
+if exist "%XSIAM%\dist" (
+    rmdir /s /q "%XSIAM%\dist"
+    echo   [OK] xsiam\dist\ removed
+)
+:: TypeScript incremental build cache
+if exist "tsconfig.tsbuildinfo" del /f /q tsconfig.tsbuildinfo
+if exist "tsconfig.app.tsbuildinfo" del /f /q tsconfig.app.tsbuildinfo
+
+:: ── 2. Frontend build ─────────────────────────────────────────────────────
+echo.
+echo [2/4] Frontend: pnpm build
 call pnpm build
 if errorlevel 1 (
     echo [FAIL] pnpm build failed
     exit /b 1
 )
-echo [OK] frontend built
+echo   [OK] frontend built  →  xsiam\dist\
 
-:: ---------- 2. Go compile ----------
+:: ── 3. Go binary ──────────────────────────────────────────────────────────
 echo.
-echo [2/3] Go: building xsiam.exe
+echo [3/4] Go: build xsiam.exe
 cd /d "%XSIAM%"
 set CGO_ENABLED=0
 go build -ldflags="-s -w" -o "%OUT%" ./cmd/xsiam
@@ -33,14 +56,23 @@ if errorlevel 1 (
     echo [FAIL] go build failed
     exit /b 1
 )
-echo [OK] %OUT%
+echo   [OK] %OUT%
 
-:: ---------- 3. show binary info ----------
+:: ── 4. Go: seed tool ──────────────────────────────────────────────────────
 echo.
-echo [3/3] Binary info
-for %%F in ("%OUT%") do echo  Size : %%~zF bytes  /  %%~tF
+echo [4/4] Go: build seed.exe
+go build -ldflags="-s -w" -o "%OUTDIR%\seed.exe" ./cmd/seed
+if errorlevel 1 (
+    echo   [WARN] seed build failed ^(non-fatal^)
+) else (
+    echo   [OK] %OUTDIR%\seed.exe
+)
+
+:: ── Summary ───────────────────────────────────────────────────────────────
+echo.
+for %%F in ("%OUT%") do echo  xsiam.exe  %%~zF bytes  %%~tF
 echo.
 echo ============================================================
-echo  Done. Run:  xxsiam\xsiam.exe
+echo  Done. Use output\restart.bat or output\start.bat to run.
 echo ============================================================
 endlocal

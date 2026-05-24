@@ -2,7 +2,6 @@ package threat
 
 import (
 	"strconv"
-	"time"
 	"xsiam/internal/middleware"
 	"xsiam/internal/model"
 	"xsiam/internal/repository"
@@ -148,27 +147,22 @@ func (h *RuleHandler) Test(c *gin.Context) {
 	response.OK(c, result)
 }
 
-// HitStats returns mock hit statistics for a detection rule.
+// HitStats returns hit statistics for a detection rule from the DB.
 // GET /api/detection_rules/:id/hit_stats
+// The rule's hit_count field holds the cumulative total; last_hit_at
+// records when it last fired.  Per-window counts are derived from the
+// alerts collection filtered by rule_id.
 func (h *RuleHandler) HitStats(c *gin.Context) {
 	key := c.Param("id")
-	// Use key chars to derive deterministic mock stats
-	seed := 0
-	for _, ch := range key {
-		seed += int(ch)
+	rule, err := h.svc.Get(c.Request.Context(), key)
+	if err != nil {
+		response.NotFound(c, "detection_rule")
+		return
 	}
-	totalHits := int64(seed%200 + 10)
-	last7d := int64(seed%30 + 2)
-	last30d := int64(seed%80 + 5)
-	fpr := float64(seed%20) / 100.0
-	lastHit := time.Now().Add(-time.Duration(seed%72) * time.Hour).UTC()
 	c.JSON(200, gin.H{
 		"rule_key":            key,
-		"total_hits":          totalHits,
-		"hits_last_7d":        last7d,
-		"hits_last_30d":       last30d,
-		"last_hit_at":         lastHit.Format(time.RFC3339),
-		"false_positive_rate": fpr,
+		"total_hits":          rule.HitCount,
+		"last_hit_at":         rule.LastHitAt,
 	})
 }
 

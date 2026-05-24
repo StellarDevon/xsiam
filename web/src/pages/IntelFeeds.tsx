@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import ResizableTh from '@/components/ResizableTh'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -576,7 +576,7 @@ export default function IntelFeeds() {
               <option value="">全部状态</option>
               <option value="active">活跃</option>
               <option value="inactive">停用</option>
-              <option value="error">Error</option>
+              <option value="error">异常</option>
             </select>
           </div>
 
@@ -595,7 +595,7 @@ export default function IntelFeeds() {
               </thead>
               <tbody>
                 {loading && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>}
-                {!loading && items.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>No intel feeds configured</td></tr>}
+                {!loading && items.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>暂无情报源</td></tr>}
                 {items.map(f => (
                   <tr
                     key={f._key}
@@ -1086,7 +1086,7 @@ function SampleAnalysisTab() {
           <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.5 }}>📂</div>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>拖放文件或点击上传</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>支持 EXE, DLL, PDF, DOC, ZIP 等格式 · 最大 50 MB</div>
-          <button className="btn-secondary" style={{ fontSize: 12 }}>Browse</button>
+          <button className="btn-secondary" style={{ fontSize: 12 }}>浏览文件</button>
         </div>
       </div>
 

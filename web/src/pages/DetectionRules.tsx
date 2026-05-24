@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import ResizableTh from '@/components/ResizableTh'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import api from '@/lib/api'
@@ -792,10 +792,10 @@ function RuleWizardModal({ onClose, onCreated }: { onClose: () => void; onCreate
             <div>
               <div style={labelSt}>严重程度</div>
               <select style={{ ...inputSt }} value={wiz.severity} onChange={e => setW('severity', e.target.value as WizardState['severity'])}>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                <option value="critical">严重</option>
+                <option value="high">高危</option>
+                <option value="medium">中危</option>
+                <option value="low">低危</option>
               </select>
             </div>
 
@@ -1165,7 +1165,7 @@ function RuleDetailPanel({ selected, onClose, onEdit, onDelete, onStatusChange }
   ]
 
   return (
-    <div style={{ width: 400, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
+    <div className="slide-in-right" style={{ width: 400, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
       {/* Header */}
       <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexShrink: 0 }}>
         <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
@@ -1259,7 +1259,7 @@ function RuleDetailPanel({ selected, onClose, onEdit, onDelete, onStatusChange }
                 <div className="card-title">MITRE ATT&amp;CK</div>
                 {(selected.mitre_tactics ?? []).length > 0 && (
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>TACTICS</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>战术</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {(selected.mitre_tactics ?? []).map(t => (
                         <span key={t} style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(250,88,45,.1)', color: 'var(--accent-orange)', border: '1px solid rgba(250,88,45,.2)', borderRadius: 3, fontFamily: 'monospace' }}>{t}</span>
@@ -1269,7 +1269,7 @@ function RuleDetailPanel({ selected, onClose, onEdit, onDelete, onStatusChange }
                 )}
                 {(selected.mitre_techniques ?? []).length > 0 && (
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>TECHNIQUES</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>技术</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {(selected.mitre_techniques ?? []).map(t => (
                         <span key={t} style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(79,163,224,.1)', color: 'var(--accent-blue)', border: '1px solid rgba(79,163,224,.2)', borderRadius: 3, fontFamily: 'monospace' }}>{t}</span>
@@ -1516,16 +1516,16 @@ export default function DetectionRules() {
             <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
               <option value="">全部类型</option>
               <option value="bioc">BIOC (Behavioral)</option>
-              <option value="ioc">IOC Match</option>
+              <option value="ioc">IOC 匹配</option>
               <option value="ueba">UEBA (Anomaly)</option>
               <option value="spl2">SPL2 (Custom)</option>
             </select>
             <select className="filter-select" value={severityFilter ?? ''} onChange={e => setSeverityFilter(e.target.value)}>
               <option value="">全部严重程度</option>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              <option value="critical">严重</option>
+              <option value="high">高危</option>
+              <option value="medium">中危</option>
+              <option value="low">低危</option>
             </select>
           </div>
 
@@ -1762,7 +1762,7 @@ export default function DetectionRules() {
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>类型</div>
                   <select className="filter-select" style={{ width: '100%' }} value={form.rule_type} onChange={e => setForm(p => ({ ...p, rule_type: e.target.value }))}>
                     <option value="bioc">BIOC</option>
-                    <option value="ioc">IOC Match</option>
+                    <option value="ioc">IOC 匹配</option>
                     <option value="ueba">UEBA</option>
                     <option value="spl2">SPL2</option>
                   </select>
@@ -1770,10 +1770,10 @@ export default function DetectionRules() {
                 <div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>严重程度</div>
                   <select className="filter-select" style={{ width: '100%' }} value={form.severity} onChange={e => setForm(p => ({ ...p, severity: e.target.value }))}>
-                    <option value="critical">Critical</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <option value="critical">严重</option>
+                    <option value="high">高危</option>
+                    <option value="medium">中危</option>
+                    <option value="low">低危</option>
                   </select>
                 </div>
                 <div>

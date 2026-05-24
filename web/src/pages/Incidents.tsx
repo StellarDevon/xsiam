@@ -3,7 +3,6 @@ import ResizableTh from '@/components/ResizableTh'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
-import PageHeader from '@/components/PageHeader'
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 
@@ -644,7 +643,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
         background: 'var(--bg-drawer)',
         borderLeft: '1px solid var(--border-light)',
         zIndex: 500,
-        transition: 'right .26s cubic-bezier(.4,0,.2,1)',
+        transition: 'right .12s cubic-bezier(.4,0,.2,1)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         boxShadow: open ? '-12px 0 40px rgba(0,0,0,.45)' : 'none',
       }}>
@@ -1712,24 +1711,26 @@ export default function Incidents() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      {/* ── Header ──────────────────────────────────────────── */}
-      <PageHeader
-        title="事件管理"
-        actions={<>
-          <button className="btn-secondary" style={{ fontSize: 11 }} onClick={exportCSV}>
-            ↓ 导出 CSV
-          </button>
-          <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => setShowNew(true)}>
+      {/* ── Slim inline toolbar (no PageHeader) ───────────── */}
+      <div style={{
+        flexShrink: 0, height: 40,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', gap: 12,
+      }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>事件管理</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button className="btn-secondary" style={{ fontSize: 11, height: 26, padding: '0 10px' }} onClick={exportCSV}>↓ 导出</button>
+          <button className="btn-primary" style={{ fontSize: 11, height: 26, padding: '0 10px' }} onClick={() => setShowNew(true)}>
             + 新建事件
           </button>
-        </>}
-      />
+        </div>
+      </div>
 
       {/* ── Stats strip ─────────────────────────────────────── */}
       {incidents.length > 0 && (
         <div style={{
           display: 'flex',
-          background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)',
+          background: 'var(--bg-card2)', borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>
           {[
@@ -1739,13 +1740,13 @@ export default function Incidents() {
             { label: '未分配', value: pageStats.unassigned, color: 'var(--high)' },
           ].map(({ label, value, color }) => (
             <div key={label} style={{
-              padding: '6px 18px', fontSize: 11.5, borderRight: '1px solid var(--border)',
+              padding: '5px 16px', fontSize: 11.5, borderRight: '1px solid var(--border)',
             }}>
               <span style={{ color: 'var(--text-muted)' }}>{label} </span>
               <span style={{ fontWeight: 700, color: value > 0 ? color : 'var(--text-muted)' }}>{value}</span>
             </div>
           ))}
-          <div style={{ padding: '6px 18px', fontSize: 11.5, color: 'var(--text-muted)', marginLeft: 'auto' }}>
+          <div style={{ padding: '5px 16px', fontSize: 11.5, color: 'var(--text-muted)', marginLeft: 'auto' }}>
             当前页 {incidents.length} 条 / 全局 {meta.total} 条
           </div>
         </div>

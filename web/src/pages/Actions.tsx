@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+﻿import { useEffect, useState, useRef, useCallback } from 'react'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import ResizableTh from '@/components/ResizableTh'
 
 interface Action {
   _key: string
@@ -37,18 +38,18 @@ function fmtDate(iso: string) {
 }
 
 const ACTION_TYPES = [
-  { value: 'isolate', label: 'Isolate 目标终端', category: 'endpoint' },
-  { value: 'unisolate', label: 'Unisolate 目标终端', category: 'endpoint' },
-  { value: 'kill_process', label: 'Kill Process', category: 'endpoint' },
-  { value: 'collect_file', label: 'Collect File', category: 'endpoint' },
-  { value: 'quarantine_file', label: 'Quarantine File', category: 'endpoint' },
-  { value: 'block_ip', label: 'Block IP', category: 'network' },
-  { value: 'unblock_ip', label: 'Unblock IP', category: 'network' },
-  { value: 'block_domain', label: 'Block Domain', category: 'network' },
-  { value: 'disable_user', label: 'Disable User', category: 'identity' },
-  { value: 'reset_password', label: 'Reset Password', category: 'identity' },
-  { value: 'revoke_session', label: 'Revoke Sessions', category: 'identity' },
-  { value: 'notify', label: 'Send Notification', category: 'other' },
+  { value: 'isolate', label: '隔离目标终端', category: 'endpoint' },
+  { value: 'unisolate', label: '取消隔离终端', category: 'endpoint' },
+  { value: 'kill_process', label: '终止进程', category: 'endpoint' },
+  { value: 'collect_file', label: '采集文件', category: 'endpoint' },
+  { value: 'quarantine_file', label: '隔离文件', category: 'endpoint' },
+  { value: 'block_ip', label: '封锁 IP', category: 'network' },
+  { value: 'unblock_ip', label: '解封 IP', category: 'network' },
+  { value: 'block_domain', label: '封锁域名', category: 'network' },
+  { value: 'disable_user', label: '禁用用户', category: 'identity' },
+  { value: 'reset_password', label: '重置密码', category: 'identity' },
+  { value: 'revoke_session', label: '吊销会话', category: 'identity' },
+  { value: 'notify', label: '发送通知', category: 'other' },
 ]
 
 // Map category names to tab labels
@@ -279,7 +280,7 @@ function LiveTerminalTab() {
   return (
     <div style={{ flex: 1, display: 'flex', gap: 16, overflow: 'hidden', padding: 20 }}>
       <div style={{ width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>SELECT ENDPOINT</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>选择终端</div>
         <input className="filter-input" placeholder="搜索终端..." value={epSearch} onChange={e => setEpSearch(e.target.value)} />
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
           {filteredEPs.map((ep, i) => (
@@ -334,13 +335,13 @@ function LiveTerminalTab() {
           <input
             className="filter-input"
             style={{ flex: 1, fontFamily: 'monospace', fontSize: 12 }}
-            placeholder={connected ? 'Enter command...' : 'Disconnected'}
+            placeholder={connected ? '输入命令...' : '未连接'}
             disabled={!connected}
             value={cmd}
             onChange={e => setCmd(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendCmd()}
           />
-          <button className="btn-primary" style={{ fontSize: 11, padding: '6px 14px' }} disabled={!connected} onClick={sendCmd}>Send</button>
+          <button className="btn-primary" style={{ fontSize: 11, padding: '6px 14px' }} disabled={!connected} onClick={sendCmd}>发送</button>
         </div>
       </div>
     </div>
@@ -350,12 +351,12 @@ function LiveTerminalTab() {
 // ─── Script Library ───────────────────────────────────────────────────────────
 
 const SCRIPTS = [
-  { name: 'Collect Forensic Artifacts', os: 'Windows', lang: 'Python', type: 'Built-in', desc: 'Collect memory dump, prefetch, event logs, registry hives' },
-  { name: 'Network Connection Snapshot', os: 'Windows, Linux', lang: 'Bash/PS', type: 'Built-in', desc: 'Enumerate all active network connections and listening ports' },
-  { name: 'Reset User Password', os: 'Windows', lang: 'PowerShell', type: 'Custom', desc: 'Force password reset via Active Directory for specified user' },
-  { name: 'List 执行中 Processes', os: 'Windows, Linux', lang: 'Bash/PS', type: 'Built-in', desc: 'Enumerate all running processes with parent PID and command line' },
-  { name: 'Collect Browser History', os: 'Windows', lang: 'Python', type: 'Custom', desc: 'Extract browser history from Chrome, Firefox, Edge for analysis' },
-  { name: 'Block Outbound IP', os: 'Windows, Linux', lang: 'PowerShell', type: 'Built-in', desc: 'Add Windows Firewall or iptables rule to block outbound IP' },
+  { name: '采集取证数据', os: 'Windows', lang: 'Python', type: '内置', desc: '采集内存转储、预读文件、事件日志及注册表配置' },
+  { name: '网络连接快照', os: 'Windows, Linux', lang: 'Bash/PS', type: '内置', desc: '枚举所有活跃网络连接及监听端口' },
+  { name: '重置用户密码', os: 'Windows', lang: 'PowerShell', type: '自定义', desc: '通过 Active Directory 强制重置指定用户密码' },
+  { name: '列举运行中进程', os: 'Windows, Linux', lang: 'Bash/PS', type: '内置', desc: '枚举所有运行进程（含父进程 PID 和命令行）' },
+  { name: '采集浏览器历史', os: 'Windows', lang: 'Python', type: '自定义', desc: '提取 Chrome、Firefox、Edge 浏览器历史记录供分析' },
+  { name: '封锁出站 IP', os: 'Windows, Linux', lang: 'PowerShell', type: '内置', desc: '添加 Windows 防火墙或 iptables 规则以封锁出站 IP' },
 ]
 
 function ScriptLibraryTab() {
@@ -371,15 +372,15 @@ function ScriptLibraryTab() {
       <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
         <input className="filter-input" style={{ width: 280 }} placeholder="Search scripts..." value={search} onChange={e => setSearch(e.target.value)} />
         <select className="filter-select" value={osFilter} onChange={e => setOsFilter(e.target.value)}>
-          <option value="">All OS</option>
+          <option value="">全部系统</option>
           <option value="windows">Windows</option>
           <option value="linux">Linux</option>
           <option value="macos">macOS</option>
         </select>
         <button className="btn-primary" style={{ marginLeft: 'auto', fontSize: 11 }} onClick={() => {
-          const name = prompt('Script name:')
+          const name = prompt('脚本名称:')
           if (name) alert(`Script "${name}" created.\n\nOpen the script editor to add content and configure metadata.`)
-        }}>+ New Script</button>
+        }}>+ 新建脚本</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {filtered.map(s => (
@@ -657,13 +658,13 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
   const approvedBy = selected.approved_by
 
   return (
-    <div style={{
+    <div className="slide-in-right" style={{
       width: 340, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)',
       display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
     }}>
       {/* Header */}
       <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>Action Detail</span>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>动作详情</span>
         <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={onClose}>&#x2715;</button>
       </div>
 
@@ -696,12 +697,12 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
               {selected.description && <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 12 }}>{selected.description}</div>}
               {[
                 ['类型', selected.type],
-                ['Target', (selected.target_value || selected.target_type) ? `${selected.target_type ?? ''}: ${selected.target_value ?? ''}` : '-'],
+                ['目标', (selected.target_value || selected.target_type) ? `${selected.target_type ?? ''}: ${selected.target_value ?? ''}` : '-'],
                 ['状态', (selected.status || 'pending').replace('_', ' ')],
-                ['Triggered By', selected.triggered_by || '-'],
-                ['Approved By', selected.approved_by || '-'],
+                ['触发人', selected.triggered_by || '-'],
+                ['审批人', selected.approved_by || '-'],
                 ['创建时间', fmtDate(selected.created_at)],
-                ['Updated', fmtDate(selected.updated_at)],
+                ['更新时间', fmtDate(selected.updated_at)],
               ].map(([k, v]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, borderBottom: '1px solid rgba(255,255,255,.04)', paddingBottom: 4, marginBottom: 4 }}>
                   <span style={{ color: 'var(--text-muted)', flexShrink: 0, marginRight: 8 }}>{k}</span>
@@ -711,7 +712,7 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
             </div>
             {selected.result && (
               <div className="card">
-                <div className="card-title">Result</div>
+                <div className="card-title">结果</div>
                 <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{selected.result}</div>
               </div>
             )}
@@ -721,7 +722,7 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
               </div>
             )}
             {selected.status === 'pending' && !selected.requires_approval && (
-              <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => onExecute(selected)}>&#9654; Execute Action</button>
+              <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => onExecute(selected)}>&#9654; 执行动作</button>
             )}
           </>
         )}
@@ -1321,11 +1322,11 @@ function SOARDashboardTab() {
           <table className="data-table" style={{ marginBottom: 0 }}>
             <thead>
               <tr>
-                <th>Adapter</th>
-                <th>类型</th>
-                <th>状态</th>
-                <th>最后使用</th>
-                <th>成功率</th>
+                <ResizableTh>适配器</ResizableTh>
+                <ResizableTh>类型</ResizableTh>
+                <ResizableTh>状态</ResizableTh>
+                <ResizableTh>最后使用</ResizableTh>
+                <ResizableTh>成功率</ResizableTh>
               </tr>
             </thead>
             <tbody>
@@ -1581,12 +1582,12 @@ export default function Actions() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="动作中心"
-        actions={<button className="btn-primary" onClick={() => setShowNew(true)}>+ New Action</button>}
+        actions={<button className="btn-primary" onClick={() => setShowNew(true)}>+ 新建动作</button>}
       />
 
       {/* Main tab bar */}
       <div className="tab-bar" style={{ flexShrink: 0 }}>
-        {([['actions', 'Action Log'], ['terminal', 'Live Terminal'], ['scripts', 'Script Library'], ['soar_dashboard', 'SOAR 仪表盘']] as [MainTab, string][]).map(([id, label]) => (
+        {([['actions', '动作日志'], ['terminal', '实时终端'], ['scripts', '脚本库'], ['soar_dashboard', 'SOAR 仪表盘']] as [MainTab, string][]).map(([id, label]) => (
           <button key={id} className={`tab${mainTab === id ? ' active' : ''}`} onClick={() => setMainTab(id)}>{label}</button>
         ))}
       </div>
@@ -1594,7 +1595,7 @@ export default function Actions() {
       {/* Status sub-tabs — only for action log */}
       {mainTab === 'actions' && (
         <div className="tab-bar" style={{ flexShrink: 0, borderTop: '1px solid var(--border)', background: 'var(--bg-primary)' }}>
-          {[['All', ''], ['待处理', 'pending'], ['Awaiting Approval', 'awaiting_approval'], ['Pending Approval', 'pending_approval'], ['Approved', 'approved'], ['执行中', 'running'], ['已完成', 'completed'], ['失败', 'failed']].map(([label, val]) => (
+          {[['全部', ''], ['待处理', 'pending'], ['待审批', 'awaiting_approval'], ['审批中', 'pending_approval'], ['已批准', 'approved'], ['执行中', 'running'], ['已完成', 'completed'], ['失败', 'failed']].map(([label, val]) => (
             <button key={label} className={`tab${statusFilter === val ? ' active' : ''}`} onClick={() => setStatusFilter(val as string)}>
               {label}
             </button>
@@ -1689,14 +1690,14 @@ export default function Actions() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ width: 32 }}></th>
-                  <th>Action</th>
-                  <th>Category</th>
-                  <th>Target</th>
-                  <th>状态</th>
-                  <th>Result</th>
-                  <th>创建时间</th>
-                  <th></th>
+                  <ResizableTh style={{ width: 32 }}></ResizableTh>
+                  <ResizableTh>动作</ResizableTh>
+                  <ResizableTh>分类</ResizableTh>
+                  <ResizableTh>目标</ResizableTh>
+                  <ResizableTh>状态</ResizableTh>
+                  <ResizableTh>结果</ResizableTh>
+                  <ResizableTh>创建时间</ResizableTh>
+                  <ResizableTh></ResizableTh>
                 </tr>
               </thead>
               <tbody>
@@ -1730,7 +1731,7 @@ export default function Actions() {
                             display: 'inline-flex', alignItems: 'center', gap: 4,
                           }}>
                             <span>{CATEGORY_ICON[cat] ?? '📋'}</span>
-                            {cat}
+                            { ({'endpoint':'终端','network':'网络','identity':'身份','notification':'通知','custom':'自定义','other':'其他'} as Record<string,string>)[cat] ?? cat }
                           </span>
                         )
                       })()}
@@ -1739,7 +1740,7 @@ export default function Actions() {
                     <td>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: statusColor[a.status] ?? 'var(--text-muted)' }}>
                         {a.status === 'running' && <span style={{ animation: 'pulse-dot 1s infinite' }}>●</span>}
-                        {(a.status || 'pending').replace('_', ' ')}
+                        { ({'pending':'待处理','running':'执行中','completed':'已完成','failed':'失败','awaiting_approval':'待审批','pending_approval':'审批中','approved':'已批准','rejected':'已拒绝','cancelled':'已取消'} as Record<string,string>)[a.status] ?? a.status ?? '待处理' }
                       </span>
                     </td>
                     <td style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1750,12 +1751,12 @@ export default function Actions() {
                       <div style={{ display: 'flex', gap: 5 }}>
                         {a.status === 'awaiting_approval' && (
                           <>
-                            <button className="btn-primary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => approve(a)}>Approve</button>
-                            <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px', color: 'var(--critical)' }} onClick={() => reject(a, '')}>Reject</button>
+                            <button className="btn-primary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => approve(a)}>批准</button>
+                            <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px', color: 'var(--critical)' }} onClick={() => reject(a, '')}>拒绝</button>
                           </>
                         )}
                         {a.status === 'pending' && (
-                          <button className="btn-primary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => execute(a)}>&#9654; Execute</button>
+                          <button className="btn-primary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => execute(a)}>&#9654; 执行</button>
                         )}
                       </div>
                     </td>
@@ -1808,7 +1809,7 @@ export default function Actions() {
               {[
                 ['名称', ACTION_TYPES.find(t => t.value === execTarget.type)?.label ?? execTarget.name],
                 ['类型', execTarget.type],
-                ['Target', execTarget.target_value || execTarget.target_type || '-'],
+                ['目标', execTarget.target_value || execTarget.target_type || '-'],
               ].map(([k, v]) => (
                 <div key={k} style={{ display: 'flex', gap: 10, fontSize: 12 }}>
                   <span style={{ color: 'var(--text-muted)', width: 60, flexShrink: 0 }}>{k}</span>
@@ -1933,7 +1934,7 @@ export default function Actions() {
             width: 440, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>New Action</div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>新建动作</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
                 <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>动作类型</div>
@@ -1972,7 +1973,7 @@ export default function Actions() {
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                 <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowNew(false)}>取消</button>
                 <button className="btn-primary" style={{ flex: 1 }} disabled={creating || !newTarget.trim()} onClick={createAction}>
-                  {creating ? '创建中...' : 'Create Action'}
+                  {creating ? '创建中...' : '创建动作'}
                 </button>
               </div>
             </div>

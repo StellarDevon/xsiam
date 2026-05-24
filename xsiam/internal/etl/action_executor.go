@@ -3,9 +3,15 @@ package etl
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/csv"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"maps"
+	"math/rand/v2"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"xsiam/internal/model"
@@ -18,14 +24,31 @@ import (
 type ActionExecutor struct {
 	assetRepo *repository.AssetRepo
 	iocRepo   *repository.IocRepo
+	geoipDB   *GeoIPDB     // optional — nil disables lookup_geoip
+	dedup     *Deduplicator // optional — nil disables dedup
+	luaEngine *LuaEngine   // optional — nil disables custom_lua
 	log       *zap.Logger
 }
 
 // NewActionExecutor constructs an ActionExecutor.
-// assetRepo and iocRepo may be nil — the corresponding lookup actions will
-// no-op silently rather than returning an error.
-func NewActionExecutor(assetRepo *repository.AssetRepo, iocRepo *repository.IocRepo, log *zap.Logger) *ActionExecutor {
-	return &ActionExecutor{assetRepo: assetRepo, iocRepo: iocRepo, log: log}
+// All repository/engine parameters may be nil — the corresponding actions
+// will no-op silently rather than returning an error.
+func NewActionExecutor(
+	assetRepo *repository.AssetRepo,
+	iocRepo *repository.IocRepo,
+	geoipDB *GeoIPDB,
+	dedup *Deduplicator,
+	luaEngine *LuaEngine,
+	log *zap.Logger,
+) *ActionExecutor {
+	return &ActionExecutor{
+		assetRepo: assetRepo,
+		iocRepo:   iocRepo,
+		geoipDB:   geoipDB,
+		dedup:     dedup,
+		luaEngine: luaEngine,
+		log:       log,
+	}
 }
 
 // ApplyActions executes all actions in order against entry.
@@ -91,9 +114,7 @@ func (ex *ActionExecutor) apply(ctx context.Context, e *model.LogEntry, a model.
 		}
 		var parsed map[string]any
 		if err := json.Unmarshal([]byte(raw), &parsed); err == nil {
-			for k, v := range parsed {
-				e.Fields[k] = v
-			}
+			maps.Copy(e.Fields, parsed)
 		}
 
 	case model.ETLActionGrok:
@@ -182,6 +203,478 @@ func (ex *ActionExecutor) apply(ctx context.Context, e *model.LogEntry, a model.
 
 	case model.ETLActionDropEvent:
 		return nil, true
+
+	// ── Field manipulation (new) ──────────────────────────────────────────────
+
+	case model.ETLActionCopyKey:
+		from, _ := a.Params["from"].(string)
+		to, _ := a.Params["to"].(string)
+		if from != "" && to != "" {
+			if v, ok := e.Fields[from]; ok {
+				e.Fields[to] = v
+			}
+		}
+
+	case model.ETLActionHashKey:
+		srcKey, _ := a.Params["src_key"].(string)
+		dstKey, _ := a.Params["dst_key"].(string)
+		if srcKey == "" || dstKey == "" {
+			break
+		}
+		raw := entryFieldStr(e, srcKey)
+		if raw == "" {
+			break
+		}
+		sum := sha256.Sum256([]byte(raw))
+		e.Fields[dstKey] = hex.EncodeToString(sum[:])
+
+	case model.ETLActionParseNumber:
+		key, _ := a.Params["key"].(string)
+		if key == "" {
+			break
+		}
+		raw := entryFieldStr(e, key)
+		if raw == "" {
+			break
+		}
+		if i, err := strconv.ParseInt(raw, 10, 64); err == nil {
+			e.Fields[key] = i
+		} else if f, err := strconv.ParseFloat(raw, 64); err == nil {
+			e.Fields[key] = f
+		}
+
+	// ── Field filtering (new) ─────────────────────────────────────────────────
+
+	case model.ETLActionAllowKeys:
+		pattern, _ := a.Params["regex"].(string)
+		if pattern == "" {
+			break
+		}
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			ex.log.Warn("etl allow_keys: invalid regex", zap.String("regex", pattern), zap.Error(err))
+			break
+		}
+		for k := range e.Fields {
+			if !re.MatchString(k) {
+				delete(e.Fields, k)
+			}
+		}
+
+	case model.ETLActionBlockKeys:
+		pattern, _ := a.Params["regex"].(string)
+		if pattern == "" {
+			break
+		}
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			ex.log.Warn("etl block_keys: invalid regex", zap.String("regex", pattern), zap.Error(err))
+			break
+		}
+		for k := range e.Fields {
+			if re.MatchString(k) {
+				delete(e.Fields, k)
+			}
+		}
+
+	// ── Record filtering (new) ────────────────────────────────────────────────
+
+	case model.ETLActionAllowRecords:
+		key, _ := a.Params["key"].(string)
+		pattern, _ := a.Params["regex"].(string)
+		if key == "" || pattern == "" {
+			break
+		}
+		matchCase, _ := a.Params["match_case"].(bool)
+		flags := ""
+		if !matchCase {
+			flags = "(?i)"
+		}
+		re, err := regexp.Compile(flags + pattern)
+		if err != nil {
+			ex.log.Warn("etl allow_records: invalid regex", zap.String("regex", pattern), zap.Error(err))
+			break
+		}
+		val := entryFieldStr(e, key)
+		if !re.MatchString(val) {
+			return nil, true // does not match → drop
+		}
+
+	case model.ETLActionBlockRecords:
+		key, _ := a.Params["key"].(string)
+		pattern, _ := a.Params["regex"].(string)
+		if key == "" || pattern == "" {
+			break
+		}
+		matchCase, _ := a.Params["match_case"].(bool)
+		flags := ""
+		if !matchCase {
+			flags = "(?i)"
+		}
+		re, err := regexp.Compile(flags + pattern)
+		if err != nil {
+			ex.log.Warn("etl block_records: invalid regex", zap.String("regex", pattern), zap.Error(err))
+			break
+		}
+		val := entryFieldStr(e, key)
+		if re.MatchString(val) {
+			return nil, true // matches → drop
+		}
+
+	// ── Value transformation (new) ────────────────────────────────────────────
+
+	case model.ETLActionRedactValue:
+		key, _ := a.Params["key"].(string)
+		pattern, _ := a.Params["regex"].(string)
+		replacement, _ := a.Params["replacement"].(string)
+		if key == "" || pattern == "" {
+			break
+		}
+		if replacement == "" {
+			replacement = "***"
+		}
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			ex.log.Warn("etl redact_value: invalid regex", zap.String("regex", pattern), zap.Error(err))
+			break
+		}
+		val := entryFieldStr(e, key)
+		if val == "" {
+			break
+		}
+		e.Fields[key] = re.ReplaceAllString(val, replacement)
+
+	case model.ETLActionSearchReplace:
+		key, _ := a.Params["key"].(string)
+		pattern, _ := a.Params["regex"].(string)
+		replacement, _ := a.Params["replacement"].(string)
+		if key == "" || pattern == "" {
+			break
+		}
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			ex.log.Warn("etl search_replace: invalid regex", zap.String("regex", pattern), zap.Error(err))
+			break
+		}
+		val := entryFieldStr(e, key)
+		if val == "" {
+			break
+		}
+		e.Fields[key] = re.ReplaceAllString(val, replacement)
+
+	// ── Structural transformations (new) ──────────────────────────────────────
+
+	case model.ETLActionFlattenSubrecord:
+		key, _ := a.Params["key"].(string)
+		prefix, _ := a.Params["prefix"].(string)
+		if key == "" {
+			break
+		}
+		sub, ok := e.Fields[key].(map[string]any)
+		if !ok {
+			break
+		}
+		delete(e.Fields, key)
+		for k, v := range sub {
+			e.Fields[prefix+k] = v
+		}
+
+	case model.ETLActionNestKeys:
+		keyPrefix, _ := a.Params["key_prefix"].(string)
+		destKey, _ := a.Params["dest_key"].(string)
+		if keyPrefix == "" || destKey == "" {
+			break
+		}
+		nested := map[string]any{}
+		var toDelete []string
+		for k, v := range e.Fields {
+			if subKey, ok := strings.CutPrefix(k, keyPrefix); ok {
+				nested[subKey] = v
+				toDelete = append(toDelete, k)
+			}
+		}
+		for _, k := range toDelete {
+			delete(e.Fields, k)
+		}
+		if len(nested) > 0 {
+			e.Fields[destKey] = nested
+		}
+
+	case model.ETLActionDecodeCSV:
+		srcKey, _ := a.Params["src_key"].(string)
+		if srcKey == "" {
+			break
+		}
+		raw := entryFieldStr(e, srcKey)
+		if raw == "" {
+			break
+		}
+		headersRaw, _ := a.Params["headers"].(string)
+		var headers []string
+		if headersRaw != "" {
+			for h := range strings.SplitSeq(headersRaw, ",") {
+				headers = append(headers, strings.TrimSpace(h))
+			}
+		}
+		r := csv.NewReader(strings.NewReader(raw))
+		records, err := r.Read()
+		if err != nil {
+			ex.log.Warn("etl decode_csv: parse error", zap.Error(err))
+			break
+		}
+		for i, val := range records {
+			k := fmt.Sprintf("col_%d", i)
+			if i < len(headers) && headers[i] != "" {
+				k = headers[i]
+			}
+			e.Fields[k] = val
+		}
+
+	case model.ETLActionEncodeJSON:
+		srcKey, _ := a.Params["src_key"].(string)
+		dstKey, _ := a.Params["dst_key"].(string)
+		if dstKey == "" {
+			break
+		}
+		var toEncode any
+		if srcKey != "" {
+			toEncode = e.Fields[srcKey]
+		} else {
+			toEncode = e.Fields
+		}
+		b, err := json.Marshal(toEncode)
+		if err != nil {
+			ex.log.Warn("etl encode_json: marshal error", zap.Error(err))
+			break
+		}
+		e.Fields[dstKey] = string(b)
+
+	case model.ETLActionEncodeCSV:
+		headersRaw, _ := a.Params["headers"].(string)
+		if headersRaw == "" {
+			break
+		}
+		headers := strings.Split(headersRaw, ",")
+		for i, h := range headers {
+			headers[i] = strings.TrimSpace(h)
+		}
+		srcKey, _ := a.Params["src_key"].(string)
+		dstKey, _ := a.Params["dst_key"].(string)
+		if dstKey == "" {
+			dstKey = "csv_output"
+		}
+		var source map[string]any
+		if srcKey != "" {
+			sub, ok := e.Fields[srcKey].(map[string]any)
+			if !ok {
+				break
+			}
+			source = sub
+		} else {
+			source = e.Fields
+		}
+		row := make([]string, len(headers))
+		for i, h := range headers {
+			if v, ok := source[h]; ok {
+				row[i] = fmt.Sprintf("%v", v)
+			}
+		}
+		var buf bytes.Buffer
+		w := csv.NewWriter(&buf)
+		if err := w.Write(row); err != nil {
+			ex.log.Warn("etl encode_csv: write error", zap.Error(err))
+			break
+		}
+		w.Flush()
+		e.Fields[dstKey] = strings.TrimRight(buf.String(), "\n")
+
+	case model.ETLActionMultilineJoin:
+		srcKey, _ := a.Params["src_key"].(string)
+		if srcKey == "" {
+			break
+		}
+		sep, _ := a.Params["separator"].(string)
+		if sep == "" {
+			sep = "\n"
+		}
+		val, ok := e.Fields[srcKey]
+		if !ok {
+			break
+		}
+		switch v := val.(type) {
+		case string:
+			// already a string — nothing to do
+		case []string:
+			e.Fields[srcKey] = strings.Join(v, sep)
+		case []any:
+			parts := make([]string, len(v))
+			for i, item := range v {
+				parts[i] = fmt.Sprintf("%v", item)
+			}
+			e.Fields[srcKey] = strings.Join(parts, sep)
+		default:
+			_ = v // other types: no-op
+		}
+
+	case model.ETLActionSplitRecord:
+		srcKey, _ := a.Params["src_key"].(string)
+		if srcKey == "" {
+			break
+		}
+		sep, _ := a.Params["separator"].(string)
+		if sep == "" {
+			sep = ","
+		}
+		raw := entryFieldStr(e, srcKey)
+		if raw == "" {
+			break
+		}
+		segments := strings.Split(raw, sep)
+		parts := make([]any, len(segments))
+		for i, s := range segments {
+			parts[i] = s
+		}
+		e.Fields[srcKey+"_parts"] = parts
+		e.Fields[srcKey] = segments[0]
+
+	case model.ETLActionLiftSubmap:
+		srcKey, _ := a.Params["src_key"].(string)
+		if srcKey == "" {
+			break
+		}
+		sub, ok := e.Fields[srcKey].(map[string]any)
+		if !ok {
+			break
+		}
+		prefix, _ := a.Params["prefix"].(string)
+		keepSrc, _ := a.Params["keep_src"].(string)
+		for k, v := range sub {
+			e.Fields[prefix+k] = v
+		}
+		if keepSrc != "true" {
+			delete(e.Fields, srcKey)
+		}
+
+	case model.ETLActionJoinRecords:
+		srcKey, _ := a.Params["src_key"].(string)
+		fieldsRaw, _ := a.Params["fields"].(string)
+		if srcKey == "" || fieldsRaw == "" {
+			break
+		}
+		sep, _ := a.Params["separator"].(string)
+		if sep == "" {
+			sep = ","
+		}
+		dstKey, _ := a.Params["dst_key"].(string)
+		arr, ok := e.Fields[srcKey].([]any)
+		if !ok {
+			break
+		}
+		fieldNames := strings.Fields(strings.ReplaceAll(fieldsRaw, ",", " "))
+		for _, fieldName := range fieldNames {
+			var joinParts []string
+			for _, item := range arr {
+				if m, ok := item.(map[string]any); ok {
+					joinParts = append(joinParts, fmt.Sprintf("%v", m[fieldName]))
+				}
+			}
+			if len(joinParts) > 0 {
+				outKey := fieldName
+				if dstKey != "" {
+					outKey = dstKey
+				}
+				e.Fields[outKey] = strings.Join(joinParts, sep)
+			}
+		}
+
+	// ── Sampling (new) ────────────────────────────────────────────────────────
+
+	case model.ETLActionRandomSample:
+		pctRaw, _ := a.Params["percent"]
+		var percent float64
+		switch v := pctRaw.(type) {
+		case float64:
+			percent = v
+		case int:
+			percent = float64(v)
+		case string:
+			percent, _ = strconv.ParseFloat(v, 64)
+		}
+		// Keep 'percent'% of records; drop the rest.
+		if rand.Float64()*100 >= percent {
+			return nil, true
+		}
+
+	// ── Deduplication (new, stateful) ─────────────────────────────────────────
+
+	case model.ETLActionDedup:
+		if ex.dedup == nil {
+			break
+		}
+		key, _ := a.Params["key"].(string)
+		if key == "" {
+			break
+		}
+		windowSec := 60 // default window
+		switch v := a.Params["window_seconds"].(type) {
+		case float64:
+			windowSec = int(v)
+		case int:
+			windowSec = v
+		}
+		keyVal := entryFieldStr(e, key)
+		if ex.dedup.IsDuplicate(e.TenantID, keyVal, windowSec) {
+			return nil, true
+		}
+
+	// ── GeoIP enrichment (new) ────────────────────────────────────────────────
+
+	case model.ETLActionLookupGeoIP:
+		if ex.geoipDB == nil {
+			break
+		}
+		srcKey, _ := a.Params["src_key"].(string)
+		if srcKey == "" {
+			srcKey = "src_ip"
+		}
+		ip := entryFieldStr(e, srcKey)
+		if ip == "" {
+			break
+		}
+		rec := ex.geoipDB.Lookup(ip)
+		if rec.Country != "" {
+			e.Fields["geo_country"] = rec.Country
+		}
+		if rec.City != "" {
+			e.Fields["geo_city"] = rec.City
+		}
+		if rec.ASN > 0 {
+			e.Fields["geo_asn"] = rec.ASN
+			e.Fields["geo_asn_org"] = rec.ASNOrg
+		}
+
+	// ── Custom Lua script (new) ───────────────────────────────────────────────
+
+	case model.ETLActionCustomLua:
+		if ex.luaEngine == nil {
+			break
+		}
+		script, _ := a.Params["script"].(string)
+		if script == "" {
+			break
+		}
+		tag, _ := a.Params["_tag"].(string) // injected by pipeline before calling ApplyActions
+		result, drop, err := ex.luaEngine.Run(script, e, tag)
+		if err != nil {
+			ex.log.Warn("etl custom_lua: script error", zap.Error(err))
+			break // non-fatal: keep original entry
+		}
+		if drop {
+			return nil, true
+		}
+		if result != nil {
+			e = result
+		}
 	}
 
 	return e, false
@@ -221,9 +714,7 @@ func renderTmpl(tmpl *template.Template, e *model.LogEntry) (string, error) {
 		"kind_name":  model.KindName(e.Kind),
 		"tenant_id":  e.TenantID,
 	}
-	for k, v := range e.Fields {
-		ctx[k] = v
-	}
+	maps.Copy(ctx, e.Fields)
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, ctx); err != nil {
 		return "", err

@@ -10,10 +10,12 @@ import (
 	copilotdomain "xsiam/internal/domain/copilot"
 	"xsiam/internal/domain/dashboard"
 	"xsiam/internal/domain/device"
+	endpointdomain "xsiam/internal/domain/endpoint"
 	etldomain "xsiam/internal/domain/etl"
 	"xsiam/internal/domain/identity"
 	"xsiam/internal/ingest"
 	"xsiam/internal/domain/incident"
+	networkdomain "xsiam/internal/domain/network"
 	"xsiam/internal/domain/query"
 	"xsiam/internal/domain/report"
 	"xsiam/internal/domain/response"
@@ -61,6 +63,8 @@ type Handlers struct {
 	Privilege     *identity.PrivilegeHandler
 	Audit         *audit.Handler
 	Notify        *notify.PublicHandler
+	Network       *networkdomain.Handler
+	Endpoint      *endpointdomain.Handler
 }
 
 // InternalHandlers aggregates handlers for the internal-only engine.
@@ -277,6 +281,8 @@ func NewWebEngine(h Handlers, svcClient svcclient.Caller, jwtSecret string, log 
 			users.GET("", h.User.List)
 			users.POST("", h.User.Create)
 			users.GET("/me", h.User.Me)
+			users.GET("/me/profile", h.User.GetProfile)
+			users.PATCH("/me/profile", h.User.UpdateProfile)
 			users.POST("/bulk", h.User.Bulk)
 			users.GET("/:id", h.User.Get)
 			users.PATCH("/:id", h.User.Update)
@@ -381,6 +387,50 @@ func NewWebEngine(h Handlers, svcClient svcclient.Caller, jwtSecret string, log 
 		// Notify test (admin) — send a test notification on any configured channel
 		if h.Notify != nil {
 			api.POST("/notify/test", h.Notify.Test)
+		}
+
+		// Network Security — traffic, DNS, asset inventory, network detection rules
+		if h.Network != nil {
+			api.GET("/network/stats", h.Network.Stats)
+			api.GET("/network/traffic/timeline", h.Network.TrafficTimeline)
+
+			netConns := api.Group("/network/connections")
+			{
+				netConns.GET("", h.Network.ListConnections)
+				netConns.POST("/block", h.Network.BlockConnection)
+			}
+
+			netDNS := api.Group("/network/dns")
+			{
+				netDNS.GET("", h.Network.ListDNS)
+				netDNS.POST("/blocklist", h.Network.AddDNSBlocklist)
+			}
+
+			netRules := api.Group("/network/detection_rules")
+			{
+				netRules.GET("", h.Network.ListNetworkRules)
+				netRules.PATCH("/:id", h.Network.UpdateNetworkRule)
+			}
+
+			netAlerts := api.Group("/network/alerts")
+			{
+				netAlerts.GET("", h.Network.ListNetworkAlerts)
+				netAlerts.PATCH("/:id", h.Network.UpdateNetworkAlert)
+			}
+
+			api.GET("/network/devices", h.Network.ListNetworkDevices)
+		}
+
+		// Endpoint Security — overview stats, isolation management
+		if h.Endpoint != nil {
+			api.GET("/endpoint/stats", h.Endpoint.Stats)
+
+			endpointIso := api.Group("/endpoint/isolated")
+			{
+				endpointIso.GET("", h.Endpoint.ListIsolated)
+				endpointIso.POST("", h.Endpoint.IsolateEndpoint)
+				endpointIso.PUT("/:id/release", h.Endpoint.ReleaseIsolation)
+			}
 		}
 	}
 

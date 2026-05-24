@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+﻿import { useState, useRef, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import type { PageMeta } from '@/lib/api'
 import api from '@/lib/api'
@@ -1145,14 +1145,14 @@ export default function XSIAMCases() {
         <>
           {/* Top bar */}
           <PageHeader
-            title="XSIAM Cases"
+            title="案件"
             subtitle={selectedCaseData ? `${selectedCaseData.displayId} ${selectedCaseData.name}` : undefined}
             actions={<>
               <span style={{
                 fontSize: 10.5, color: 'var(--text-muted)',
                 border: '1px solid var(--border-light)',
                 padding: '2px 8px', borderRadius: 3,
-              }}>Managed by Unit42 Managed Services</span>
+              }}>由 Unit42 托管服务管理</span>
               <button
                 onClick={() => { setAgentix开放(true); setAgentixSteps([{ type: 'greeting' }]) }}
                 style={{
@@ -1171,7 +1171,7 @@ export default function XSIAMCases() {
                   background: 'var(--bg-card)', border: '1px solid var(--border-light)',
                   color: 'var(--text-muted)', borderRadius: 4, padding: '4px 10px',
                   fontSize: 12, cursor: 'pointer',
-                }}>Policy Management</button>
+                }}>策略管理</button>
               <button
                 onClick={() => {
                   const name = prompt('Case name:')
@@ -1242,7 +1242,7 @@ export default function XSIAMCases() {
             }}>
               <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>Cases</div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>案例</div>
                   {/* View toggle: 列表视图 | 优先队列 */}
                   <div style={{
                     display: 'flex', background: 'var(--bg-card2)',
@@ -1290,7 +1290,7 @@ export default function XSIAMCases() {
                     background: 'var(--bg-card)', border: '1px solid var(--border-light)',
                     color: 'var(--text-muted)', borderRadius: 4, padding: '2px 7px',
                     fontSize: 10.5, cursor: 'pointer',
-                  }}>Revert</button>
+                  }}>撤销</button>
               </div>
               {/* Priority filter bar */}
               <div style={{
@@ -1453,7 +1453,7 @@ export default function XSIAMCases() {
                   <span style={{
                     fontSize: 11, color: 'var(--text-muted)',
                     border: '1px solid var(--border-light)', padding: '2px 7px', borderRadius: 3,
-                  }}>Security</span>
+                  }}>安全</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-orange)', fontFamily: 'monospace' }}>{selectedCaseData?.displayId ?? 'ID-5254'}</span>
                   <span style={{ fontSize: 16, fontWeight: 700 }}>{selectedCaseData?.name ?? 'Volume Shadow Deletion Attempt'}</span>
                   <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -1503,7 +1503,7 @@ export default function XSIAMCases() {
                       background: 'var(--bg-card)', border: '1px solid var(--border-light)',
                       color: 'var(--text-muted)', borderRadius: 4, padding: '4px 10px',
                       cursor: 'pointer',
-                    }}>View MDR Thread</button>
+                    }}>查看 MDR 线程</button>
                 </div>
 
                 {/* MITRE ATT&CK bar */}
@@ -1601,7 +1601,7 @@ export default function XSIAMCases() {
                         <span style={{ fontSize: 10, color: 'var(--accent-blue)', cursor: 'pointer' }}>See all ›</span>
                       </div>
                       <div style={{ fontSize: 36, fontWeight: 700, lineHeight: 1, color: 'var(--text-primary)' }}>17</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Total Issues</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>问题总数</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {[
                           { label: 'High', pct: 40, val: 4, color: 'var(--high)' },
@@ -1847,7 +1847,7 @@ export default function XSIAMCases() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                           <thead>
                             <tr>
-                              <th style={thStyle}>File Name</th>
+                              <th style={thStyle}>文件名</th>
                               <th style={thStyle}>SHA256</th>
                               <th style={thStyle}>WF</th>
                               <th style={thStyle}>Verdict</th>
@@ -2041,7 +2041,7 @@ export default function XSIAMCases() {
                         style={{
                           background: 'var(--accent-orange)', border: 'none', color: 'white',
                           borderRadius: 4, padding: '5px 14px', fontSize: 12, cursor: 'pointer',
-                        }}>Send</button>
+                        }}>发送</button>
                     </div>
                   </div>
                 )}
@@ -2066,14 +2066,14 @@ export default function XSIAMCases() {
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                         <thead>
                           <tr>
-                            <th style={thStyle}>Execution ID</th>
-                            <th style={thStyle}>Playbook</th>
-                            <th style={thStyle}>Trigger</th>
+                            <th style={thStyle}>执行 ID</th>
+                            <th style={thStyle}>剧本</th>
+                            <th style={thStyle}>触发器</th>
                             <th style={thStyle}>状态</th>
-                            <th style={thStyle}>Started At</th>
-                            <th style={thStyle}>Duration</th>
-                            <th style={thStyle}>Actor</th>
-                            <th style={thStyle}>Steps</th>
+                            <th style={thStyle}>开始时间</th>
+                            <th style={thStyle}>耗时</th>
+                            <th style={thStyle}>操作人</th>
+                            <th style={thStyle}>步骤</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -2228,7 +2228,7 @@ export default function XSIAMCases() {
                 fontSize: 10.5, color: 'var(--text-muted)',
                 border: '1px solid var(--border-light)',
                 padding: '2px 8px', borderRadius: 3,
-              }}>Managed by Unit42 Managed Services</span>
+              }}>由 Unit42 托管服务管理</span>
               <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setMainView('cases')}>← Cases</button>
             </>}
           />
@@ -2240,7 +2240,7 @@ export default function XSIAMCases() {
             flexShrink: 0, background: 'var(--bg-sidebar)',
           }}>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>Prevention Policy Rules</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>防护策略规则</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Found 33 results</div>
             </div>
             <button
@@ -2284,7 +2284,7 @@ export default function XSIAMCases() {
                       {group.expanded ? '▼' : '▶'}
                     </span>
                     <span>{group.icon} {group.label}</span>
-                    <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--accent-blue)' }}>View</span>
+                    <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--accent-blue)' }}>查看</span>
                   </div>
                   {group.expanded && group.items.map((item, idx) => (
                     <div
@@ -2310,7 +2310,7 @@ export default function XSIAMCases() {
             {/* Right: policy detail */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '18px 24px' }}>
               <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{selectedPolicy}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>Windows Default</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>Windows 默认</div>
 
               {/* Policy fields */}
               {[
@@ -2357,7 +2357,7 @@ export default function XSIAMCases() {
                 For agent version 7.4.x action on Benign LC verdict is the same as the action for files with Unknown verdict.
                 <br />
                 To enable this capability, ensure that WildFire analysis scoring is enabled in your{' '}
-                <span style={{ color: 'var(--accent-blue)', cursor: 'pointer' }}>Global Agent Settings</span>.
+                <span style={{ color: 'var(--accent-blue)', cursor: 'pointer' }}>全局 Agent 设置</span>.
               </div>
 
               {/* More fields */}
@@ -2449,7 +2449,7 @@ export default function XSIAMCases() {
               background: 'var(--bg-card2)',
               flexShrink: 0, minHeight: 48,
             }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Endpoint Investigation Agent</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>终端调查 Agent</span>
               <button
                 onClick={() => setAgentix开放(false)}
                 style={{
@@ -2483,7 +2483,7 @@ export default function XSIAMCases() {
                       fontSize: 12.5, color: 'var(--text-secondary)',
                     }}>
                       {step.text.toLowerCase().includes('block') ? (
-                        <>Block this file<br /><code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)', wordBreak: 'break-all' }}>{fileHash}</code></>
+                        <>封锁此文件<br /><code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)', wordBreak: 'break-all' }}>{fileHash}</code></>
                       ) : step.text}
                     </div>
                   )
@@ -2501,7 +2501,7 @@ export default function XSIAMCases() {
                         borderRadius: 6, padding: '10px 12px', fontSize: 12, marginBottom: 8,
                       }}>
                         <span style={{ color: 'var(--accent-blue)' }}>{h.slice(0, 8)}...{h.slice(-4)}</span> is a SHA256 identified as{' '}
-                        <span style={{ color: 'var(--critical)', fontWeight: 600 }}>Malware</span> by WildFire
+                        <span style={{ color: 'var(--critical)', fontWeight: 600 }}>恶意软件</span> by WildFire
                       </div>
                     </div>
                   )
@@ -2554,14 +2554,14 @@ export default function XSIAMCases() {
                             background: 'white', color: 'var(--bg-primary)',
                             border: 'none', borderRadius: 4, padding: '5px 18px',
                             fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                          }}>Yes</button>
+                          }}>是</button>
                         <button
                           onClick={() => setAgentixSteps(prev => [...prev, { type: 'declined' }])}
                           style={{
                             background: 'none', color: 'var(--text-muted)',
                             border: '1px solid var(--border-light)', borderRadius: 4, padding: '5px 14px',
                             fontSize: 12, cursor: 'pointer',
-                          }}>No</button>
+                          }}>否</button>
                       </div>
                     </div>
                   )
@@ -2580,7 +2580,7 @@ export default function XSIAMCases() {
                       </div>
                       <div style={{ height: 10 }} />
                       <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', paddingLeft: 14 }}>
-                        <b style={{ color: 'var(--accent-green)' }}>Request Completion</b>
+                        <b style={{ color: 'var(--accent-green)' }}>请求完成</b>
                       </div>
                       <div style={{ fontSize: 12.5, color: 'var(--text-muted)', paddingLeft: 14 }}>
                         Your request was successfully fulfilled — the specified file hash has been blocked.

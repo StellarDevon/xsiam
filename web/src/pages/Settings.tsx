@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import api from '@/lib/api'
 import { getUser, clearAuth } from '@/lib/auth'
+import { useTheme } from '@/lib/theme'
+import { useLang, type Lang } from '@/lib/i18n'
+import { fetchProfile, saveProfile } from '@/lib/userProfile'
 import PageHeader from '@/components/PageHeader'
+import ResizableTh from '@/components/ResizableTh'
 
 interface User {
   _key: string
@@ -14,16 +18,6 @@ interface User {
   status: string
   created_at: string
   last_login: string
-}
-
-interface Tenant {
-  _key: string
-  name: string
-  domain: string
-  status: string
-  plan: string
-  user_count: number
-  created_at: string
 }
 
 interface Rbac角色 {
@@ -104,7 +98,7 @@ const ACTION_COLOR: Record<string, { bg: string; color: string }> = {
   login:   { bg: 'rgba(106,80,168,.12)', color: 'var(--accent-blue)' },
 }
 
-type Tab = 'profile' | 'users' | 'tenants' | 'roles' | 'datasources' | 'auditlogs' | 'notify' | 'notifyrules' | 'webhooks' | 'soar' | 'dsconfig' | 'apikeys' | 'syshealth' | 'socperf'
+type Tab = 'profile' | 'users' | 'roles' | 'datasources' | 'auditlogs' | 'notify' | 'notifyrules' | 'webhooks' | 'soar' | 'dsconfig' | 'apikeys' | 'syshealth' | 'socperf'
 type NotifyChannel = 'email' | 'dingtalk' | 'slack' | 'webhook'
 
 // ─── Notify Rule types ───────────────────────────────────────────────────────
@@ -153,7 +147,44 @@ const WEBHOOK_EVENT_TYPES = [
 export default function Settings() {
   const user = getUser()
   const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
+  const { lang, setLang } = useLang()
   const [tab, setTab] = useState<Tab>('profile')
+
+  // ── Profile edit state ────────────────────────────────────────────────────
+  const [profileDisplayName, setProfileDisplayName] = useState(user?.display_name ?? '')
+  const [profileEmail, setProfileEmail] = useState(user?.email ?? '')
+  const [profileLang, setProfileLang] = useState<Lang>(lang)
+  const [profileTheme, setProfileTheme] = useState<'dark' | 'light'>(theme)
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileSaved, setProfileSaved] = useState(false)
+
+  // Load saved profile on mount
+  useEffect(() => {
+    fetchProfile().then(p => {
+      if (!p) return
+      if (p.display_name) setProfileDisplayName(p.display_name)
+      if (p.email) setProfileEmail(p.email)
+      if (p.lang === 'zh' || p.lang === 'en') setProfileLang(p.lang as Lang)
+      if (p.theme === 'dark' || p.theme === 'light') setProfileTheme(p.theme as 'dark' | 'light')
+    })
+  }, [])
+
+  async function saveProfileSettings() {
+    setProfileSaving(true)
+    await saveProfile({
+      display_name: profileDisplayName,
+      email: profileEmail,
+      lang: profileLang,
+      theme: profileTheme,
+    })
+    // Apply immediately
+    setLang(profileLang)
+    setTheme(profileTheme)
+    setProfileSaving(false)
+    setProfileSaved(true)
+    setTimeout(() => setProfileSaved(false), 2500)
+  }
 
   const [users, set用户管理] = useState<User[]>([])
   const [usersTotal, setUsersTotal] = useState(0)
@@ -179,22 +210,12 @@ export default function Settings() {
   const [resetPwdValue, setResetPwdValue] = useState('')
   const [resettingPwd, setResettingPwd] = useState(false)
 
-  const [tenants, set租户] = useState<Tenant[]>([])
-  const [tenantsLoading, set租户Loading] = useState(false)
-
   const [roles, set角色] = useState<Rbac角色[]>([])
   const [rolesLoading, set角色Loading] = useState(false)
 
 
   const [datasources, setDatasources] = useState<DataSource[]>([])
   const [dsLoading, setDsLoading] = useState(false)
-
-  // Tenant create
-  const [showNewTenant, setShowNewTenant] = useState(false)
-  const [newTenantName, setNewTenantName] = useState('')
-  const [newTenant域名, setNewTenant域名] = useState('')
-  const [newTenantPlan, setNewTenantPlan] = useState('standard')
-  const [creatingTenant, setCreatingTenant] = useState(false)
 
   // 角色 create
   const [showNew角色, setShowNew角色] = useState(false)
@@ -330,12 +351,6 @@ export default function Settings() {
           setUsersTotal(r.data.data?.total ?? r.data.data?.items?.length ?? 0)
         })
         .finally(() => set用户管理Loading(false))
-    }
-    if (tab === 'tenants' && tenants.length === 0) {
-      set租户Loading(true)
-      api.get('/tenants', { params: { page: 1, page_size: 50 } })
-        .then(r => set租户(r.data.data?.items ?? []))
-        .finally(() => set租户Loading(false))
     }
     if (tab === 'roles' && roles.length === 0) {
       set角色Loading(true)
@@ -488,26 +503,6 @@ export default function Settings() {
         set用户管理(prev => prev.filter(x => x._key !== u._key))
         setUsersTotal(prev => Math.max(0, prev - 1))
       })
-  }
-
-  function createTenant() {
-    if (!newTenantName.trim()) return
-    setCreatingTenant(true)
-    api.post('/tenants', { name: newTenantName, domain: newTenant域名, plan: newTenantPlan, status: 'active' })
-      .then(() => {
-        setShowNewTenant(false); setNewTenantName(''); setNewTenant域名(''); setNewTenantPlan('standard')
-        set租户Loading(true)
-        api.get('/tenants', { params: { page: 1, page_size: 50 } })
-          .then(r => set租户(r.data.data?.items ?? []))
-          .finally(() => set租户Loading(false))
-      })
-      .finally(() => setCreatingTenant(false))
-  }
-
-  function deleteTenant(t: Tenant) {
-    if (!confirm(`Delete tenant "${t.name}"? This cannot be undone.`)) return
-    api.delete(`/tenants/${t._key}`)
-      .then(() => set租户(prev => prev.filter(x => x._key !== t._key)))
   }
 
   function create角色() {
@@ -851,13 +846,12 @@ export default function Settings() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <PageHeader title="Settings" />
+      <PageHeader title="系统设置" />
 
       <div className="tab-bar">
         {([
           ['profile', '个人信息'],
           ['users', '用户管理'],
-          ['tenants', '租户'],
           ['roles', 'RBAC 角色'],
           ['datasources', '数据源'],
           ['dsconfig', '数据源配置'],
@@ -880,6 +874,8 @@ export default function Settings() {
           <>
             <div className="card">
               <div className="card-title">个人信息</div>
+
+              {/* Avatar + basic info */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
                 <div style={{
                   width: 52, height: 52,
@@ -887,47 +883,115 @@ export default function Settings() {
                   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16, fontWeight: 700, color: 'white', flexShrink: 0,
                 }}>
-                  {user?.display_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? 'U'}
+                  {(profileDisplayName || user?.display_name || 'U').slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>{user?.display_name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{user?.email}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>{profileDisplayName || user?.display_name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{profileEmail || user?.email}</div>
                   <div style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(63,160,224,.12)', color: 'var(--accent-blue)', borderRadius: 3, display: 'inline-block', marginTop: 4, textTransform: 'capitalize' }}>{user?.role}</div>
                 </div>
               </div>
-              {[
-                { label: '用户名', value: user?.username ?? '-' },
-                { label: '邮箱', value: user?.email ?? '-' },
-                { label: '角色', value: user?.role ?? '-' },
-                { label: '租户', value: user?.tenant_id ?? '-' },
-              ].map(row => (
-                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border, rgba(0,0,0,.06))' }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-muted, #888)', fontWeight: 400 }}>{row.label}</span>
-                  <span style={{ fontSize: 13, color: 'var(--text-primary, #1a1a1a)', fontWeight: 500 }}>{row.value}</span>
-                </div>
-              ))}
-            </div>
 
-            <div className="card">
-              <div className="card-title">外观</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border, rgba(0,0,0,.06))' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-muted, #888)', fontWeight: 400 }}>主题</span>
-                <span style={{ fontSize: 13, color: 'var(--text-primary, #1a1a1a)', fontWeight: 500, padding: '3px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border-light)', borderRadius: 3 }}>深色 (XSIAM)</span>
+              {/* Editable: display_name */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 80 }}>昵称</span>
+                <input
+                  className="filter-input"
+                  style={{ width: 220, fontSize: 12, textAlign: 'right' }}
+                  value={profileDisplayName}
+                  onChange={e => setProfileDisplayName(e.target.value)}
+                  placeholder="请输入昵称"
+                />
+              </div>
+
+              {/* Editable: email */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 80 }}>邮箱</span>
+                <input
+                  className="filter-input"
+                  style={{ width: 220, fontSize: 12, textAlign: 'right' }}
+                  value={profileEmail}
+                  onChange={e => setProfileEmail(e.target.value)}
+                  placeholder="请输入邮箱"
+                />
+              </div>
+
+              {/* Read-only: username */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>用户名</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{user?.username ?? '-'}</span>
+              </div>
+
+              {/* Read-only: role */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>角色</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{user?.role ?? '-'}</span>
+              </div>
+
+              {/* Read-only: tenant_id */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>租户 ID</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{user?.tenant_id ?? '-'}</span>
               </div>
             </div>
 
+            {/* Preferences: lang + theme */}
             <div className="card">
-              <div className="card-title">平台</div>
-              {[
-                { label: '产品', value: 'XSIAM Console' },
-                { label: 'API 版本', value: 'v1' },
-                { label: '后端', value: 'Go · ArangoDB' },
-              ].map(row => (
-                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border, rgba(0,0,0,.06))' }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-muted, #888)', fontWeight: 400 }}>{row.label}</span>
-                  <span style={{ fontSize: 13, color: 'var(--text-primary, #1a1a1a)', fontWeight: 500 }}>{row.value}</span>
+              <div className="card-title">偏好设置</div>
+
+              {/* Language */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>默认语言</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {([['zh', '中文'], ['en', 'English']] as [Lang, string][]).map(([l, label]) => (
+                    <button
+                      key={l}
+                      onClick={() => setProfileLang(l)}
+                      style={{
+                        padding: '4px 14px', fontSize: 12, borderRadius: 4, cursor: 'pointer',
+                        border: profileLang === l ? '1px solid var(--accent-blue)' : '1px solid var(--border)',
+                        background: profileLang === l ? 'rgba(79,163,224,.18)' : 'var(--bg-card2)',
+                        color: profileLang === l ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                        fontWeight: profileLang === l ? 600 : 400,
+                      }}
+                    >{label}</button>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Theme */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>默认外观</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {([['dark', '🌙 深色'], ['light', '☀️ 浅色']] as ['dark' | 'light', string][]).map(([t, label]) => (
+                    <button
+                      key={t}
+                      onClick={() => setProfileTheme(t)}
+                      style={{
+                        padding: '4px 14px', fontSize: 12, borderRadius: 4, cursor: 'pointer',
+                        border: profileTheme === t ? '1px solid var(--accent-blue)' : '1px solid var(--border)',
+                        background: profileTheme === t ? 'rgba(79,163,224,.18)' : 'var(--bg-card2)',
+                        color: profileTheme === t ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                        fontWeight: profileTheme === t ? 600 : 400,
+                      }}
+                    >{label}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Save button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                className="btn-primary"
+                onClick={saveProfileSettings}
+                disabled={profileSaving}
+              >
+                {profileSaving ? '保存中...' : '保存设置'}
+              </button>
+              {profileSaved && (
+                <span style={{ fontSize: 12, color: 'var(--accent-green)' }}>✓ 已保存</span>
+              )}
             </div>
 
             <div className="card" style={{ borderColor: 'rgba(229,57,53,.2)' }}>
@@ -977,12 +1041,12 @@ export default function Settings() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>用户名</th>
-                  <th>邮箱</th>
-                  <th>角色</th>
-                  <th>状态</th>
-                  <th>最后登录</th>
-                  <th></th>
+                  <ResizableTh>用户名</ResizableTh>
+                  <ResizableTh>邮箱</ResizableTh>
+                  <ResizableTh>角色</ResizableTh>
+                  <ResizableTh>状态</ResizableTh>
+                  <ResizableTh>最后登录</ResizableTh>
+                  <ResizableTh></ResizableTh>
                 </tr>
               </thead>
               <tbody>
@@ -1064,53 +1128,6 @@ export default function Settings() {
           </div>
         )}
 
-        {tab === 'tenants' && (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>租户 ({tenants.length})</div>
-              <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => setShowNewTenant(true)}>+ Add Tenant</button>
-            </div>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Tenant</th>
-                  <th>域名</th>
-                  <th>Plan</th>
-                  <th>用户管理</th>
-                  <th>状态</th>
-                  <th>创建时间</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {tenantsLoading && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>}
-                {!tenantsLoading && tenants.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>No tenants</td></tr>}
-                {tenants.map(t => (
-                  <tr key={t._key}>
-                    <td style={{ fontSize: 12.5, fontWeight: 500 }}>{t.name}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--text-secondary)' }}>{t.domain || '-'}</td>
-                    <td>
-                      <span style={{ fontSize: 10.5, padding: '2px 7px', background: 'var(--bg-card2)', border: '1px solid var(--border-light)', borderRadius: 3, textTransform: 'capitalize' }}>
-                        {t.plan || 'standard'}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.user_count ?? '-'}</td>
-                    <td>
-                      <span style={{ fontSize: 11.5, color: t.status === 'active' ? 'var(--accent-green)' : 'var(--text-muted)', textTransform: 'capitalize' }}>
-                        {t.status || 'active'}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDate(t.created_at)}</td>
-                    <td>
-                      <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: 'var(--critical)' }} onClick={() => deleteTenant(t)}>删</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
         {tab === 'roles' && (
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
@@ -1120,12 +1137,12 @@ export default function Settings() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>角色名称</th>
-                  <th>描述</th>
-                  <th>成员数</th>
-                  <th>权限</th>
-                  <th>创建时间</th>
-                  <th></th>
+                  <ResizableTh>角色名称</ResizableTh>
+                  <ResizableTh>描述</ResizableTh>
+                  <ResizableTh>成员数</ResizableTh>
+                  <ResizableTh>权限</ResizableTh>
+                  <ResizableTh>创建时间</ResizableTh>
+                  <ResizableTh></ResizableTh>
                 </tr>
               </thead>
               <tbody>
@@ -1245,19 +1262,19 @@ export default function Settings() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>数据源</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Syslog / CEF / API integrations for log ingestion</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Syslog / CEF / API 日志采集集成</div>
                 </div>
-                <button className="btn-primary" style={{ fontSize: 11 }} onClick={openAddDs}>+ Add Source</button>
+                <button className="btn-primary" style={{ fontSize: 11 }} onClick={openAddDs}>+ 新增数据源</button>
               </div>
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>名称</th>
-                    <th>类型</th>
-                    <th>状态</th>
-                    <th>Last Received</th>
-                    <th>Daily Volume</th>
-                    <th></th>
+                    <ResizableTh>名称</ResizableTh>
+                    <ResizableTh>类型</ResizableTh>
+                    <ResizableTh>状态</ResizableTh>
+                    <ResizableTh>最近接收</ResizableTh>
+                    <ResizableTh>日均流量</ResizableTh>
+                    <ResizableTh></ResizableTh>
                   </tr>
                 </thead>
                 <tbody>
@@ -1293,7 +1310,7 @@ export default function Settings() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 5 }}>
-                          <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => openConfigureDs(ds)}>Configure</button>
+                          <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => openConfigureDs(ds)}>配置</button>
                           <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: 'var(--critical)' }} onClick={() => deleteDs(ds)}>删</button>
                         </div>
                       </td>
@@ -1304,7 +1321,7 @@ export default function Settings() {
             </div>
 
             <div className="card">
-              <div className="card-title">Supported Integrations</div>
+              <div className="card-title">支持的集成</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {[
                   { name: 'NGFW / Firewall', desc: 'Syslog CEF/LEEF' },
@@ -1315,7 +1332,7 @@ export default function Settings() {
                   { name: 'AWS CloudTrail', desc: 'S3 / API' },
                   { name: '邮箱 安全', desc: 'Syslog / API' },
                   { name: 'SIEM / 3rd party', desc: 'Syslog / REST' },
-                  { name: 'EDR Agent', desc: 'Built-in collector' },
+                  { name: 'EDR 代理', desc: '内置采集器' },
                 ].map(i => (
                   <div key={i.name} style={{ padding: '10px 12px', background: 'var(--bg-card2)', borderRadius: 5, border: '1px solid var(--border)' }}>
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3 }}>{i.name}</div>
@@ -1407,12 +1424,12 @@ export default function Settings() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>时间</th>
-                      <th>操作人</th>
-                      <th>操作</th>
-                      <th>对象类型</th>
-                      <th>对象ID</th>
-                      <th>结果</th>
+                      <ResizableTh>时间</ResizableTh>
+                      <ResizableTh>操作人</ResizableTh>
+                      <ResizableTh>操作</ResizableTh>
+                      <ResizableTh>对象类型</ResizableTh>
+                      <ResizableTh>对象ID</ResizableTh>
+                      <ResizableTh>结果</ResizableTh>
                     </tr>
                   </thead>
                   <tbody>
@@ -1707,12 +1724,12 @@ export default function Settings() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>规则名称</th>
-                      <th>触发条件</th>
-                      <th>通知渠道</th>
-                      <th>接收方</th>
-                      <th>启用</th>
-                      <th></th>
+                      <ResizableTh>规则名称</ResizableTh>
+                      <ResizableTh>触发条件</ResizableTh>
+                      <ResizableTh>通知渠道</ResizableTh>
+                      <ResizableTh>接收方</ResizableTh>
+                      <ResizableTh>启用</ResizableTh>
+                      <ResizableTh></ResizableTh>
                     </tr>
                   </thead>
                   <tbody>
@@ -1971,10 +1988,10 @@ export default function Settings() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>KPI 指标</th>
-                      <th>说明</th>
-                      <th>目标值</th>
-                      <th>单位</th>
+                      <ResizableTh>KPI 指标</ResizableTh>
+                      <ResizableTh>说明</ResizableTh>
+                      <ResizableTh>目标值</ResizableTh>
+                      <ResizableTh>单位</ResizableTh>
                     </tr>
                   </thead>
                   <tbody>
@@ -2136,12 +2153,12 @@ export default function Settings() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>名称</th>
-                    <th>URL</th>
-                    <th>事件类型</th>
-                    <th>状态</th>
-                    <th>最后触发</th>
-                    <th></th>
+                    <ResizableTh>名称</ResizableTh>
+                    <ResizableTh>URL</ResizableTh>
+                    <ResizableTh>事件类型</ResizableTh>
+                    <ResizableTh>状态</ResizableTh>
+                    <ResizableTh>最后触发</ResizableTh>
+                    <ResizableTh></ResizableTh>
                   </tr>
                 </thead>
                 <tbody>
@@ -2231,7 +2248,7 @@ export default function Settings() {
 
                 {/* Base URL */}
                 <div>
-                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>SOAR Base URL</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>SOAR 基础地址</div>
                   <input
                     className="filter-input"
                     style={{ width: '100%', boxSizing: 'border-box' }}
@@ -2243,7 +2260,7 @@ export default function Settings() {
 
                 {/* API Key */}
                 <div>
-                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>API Key</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>API 密钥</div>
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <input
                       className="filter-input"
@@ -2429,12 +2446,12 @@ export default function Settings() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>名称</th>
-                    <th>类型</th>
-                    <th>状态</th>
-                    <th>上次同步</th>
-                    <th>事件数</th>
-                    <th></th>
+                    <ResizableTh>名称</ResizableTh>
+                    <ResizableTh>类型</ResizableTh>
+                    <ResizableTh>状态</ResizableTh>
+                    <ResizableTh>上次同步</ResizableTh>
+                    <ResizableTh>事件数</ResizableTh>
+                    <ResizableTh></ResizableTh>
                   </tr>
                 </thead>
                 <tbody>
@@ -2704,7 +2721,7 @@ export default function Settings() {
               {/* Recipients */}
               <div>
                 <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>
-                  {nrChannel === 'email' || nrChannel === 'sms' ? '接收方（逗号分隔邮箱/手机号）' : 'Webhook URL'}
+                  {nrChannel === 'email' || nrChannel === 'sms' ? '接收方（逗号分隔邮箱/手机号）' : 'Webhook 地址'}
                 </div>
                 <input
                   className="filter-input"
@@ -2719,44 +2736,6 @@ export default function Settings() {
                 <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowNewNotifyRule(false)}>取消</button>
                 <button className="btn-primary" style={{ flex: 1 }} disabled={!nrName.trim()} onClick={createNotifyRule}>
                   创建规则
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* New Tenant Modal */}
-      {showNewTenant && (
-        <>
-          <div onClick={() => setShowNewTenant(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
-          <div style={{
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 400, background: 'var(--bg-modal)', border: '1px solid var(--border)',
-            borderRadius: 8, zIndex: 500, padding: 24,
-          }}>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Add Tenant</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>Name *</div>
-                <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="Acme Corp" value={newTenantName} onChange={e => setNewTenantName(e.target.value)} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>域名</div>
-                <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="acme.com" value={newTenant域名} onChange={e => setNewTenant域名(e.target.value)} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>Plan</div>
-                <select className="filter-select" style={{ width: '100%' }} value={newTenantPlan} onChange={e => setNewTenantPlan(e.target.value)}>
-                  <option value="standard">Standard</option>
-                  <option value="professional">Professional</option>
-                  <option value="enterprise">Enterprise</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowNewTenant(false)}>取消</button>
-                <button className="btn-primary" style={{ flex: 1 }} disabled={creatingTenant || !newTenantName.trim()} onClick={createTenant}>
-                  {creatingTenant ? '创建中...' : '创建租户'}
                 </button>
               </div>
             </div>
@@ -2906,10 +2885,10 @@ export default function Settings() {
             width: 400, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editDs ? 'Configure Data Source' : 'Add Data Source'}</div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editDs ? '配置数据源' : '新增数据源'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>Name *</div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>名称 *</div>
                 <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} placeholder="Firewall-01" value={dsForm.name} onChange={e => setDsForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
@@ -2926,15 +2905,15 @@ export default function Settings() {
               <div>
                 <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>状态</div>
                 <select className="filter-select" style={{ width: '100%' }} value={dsForm.status} onChange={e => setDsForm(f => ({ ...f, status: e.target.value }))}>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="error">Error</option>
+                  <option value="active">活跃</option>
+                  <option value="inactive">停用</option>
+                  <option value="error">异常</option>
                 </select>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                 <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowDsModal(false)}>取消</button>
                 <button className="btn-primary" style={{ flex: 1 }} disabled={savingDs || !dsForm.name.trim()} onClick={saveDs}>
-                  {savingDs ? '保存中...' : editDs ? '保存修改' : 'Add Source'}
+                  {savingDs ? '保存中...' : editDs ? '保存修改' : '添加数据源'}
                 </button>
               </div>
             </div>

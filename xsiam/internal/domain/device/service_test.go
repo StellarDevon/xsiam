@@ -12,7 +12,7 @@ import (
 // methods delegate directly to devRepo/policyRepo/dsRepo/agentCtrl.
 
 func TestGenerateEnrollmentToken_ReturnsHex64(t *testing.T) {
-	svc := device.NewService(nil, nil, nil, nil, nil)
+	svc := device.NewService(nil, nil, nil, nil, nil, nil)
 
 	token, err := svc.GenerateEnrollmentToken(context.Background(), "t-1")
 	if err != nil {
@@ -27,7 +27,7 @@ func TestGenerateEnrollmentToken_ReturnsHex64(t *testing.T) {
 }
 
 func TestGenerateEnrollmentToken_UniqueEachCall(t *testing.T) {
-	svc := device.NewService(nil, nil, nil, nil, nil)
+	svc := device.NewService(nil, nil, nil, nil, nil, nil)
 
 	t1, _ := svc.GenerateEnrollmentToken(context.Background(), "t-1")
 	t2, _ := svc.GenerateEnrollmentToken(context.Background(), "t-1")

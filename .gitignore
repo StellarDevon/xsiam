@@ -17,7 +17,14 @@ node_modules/
 /web/dist/
 /xsiam/dist/
 
-# ── Go build artifacts ────────────────────────────────────────────────────────
+# ── output/ — most content is generated/runtime, but launchers and config are committed ──
+/output/bin/
+/output/logs/
+/output/data/
+/output/screenshots/
+# config.yaml, *.bat, README.md in output/ are intentionally committed
+
+# ── Go build artifacts left in source tree (legacy; now go to output/bin/) ────
 *.exe
 *.exe~
 /xsiam/*.exe
@@ -27,14 +34,20 @@ node_modules/
 /xsiam/default.etcd/
 default.etcd/
 
-# ── Runtime logs & temp ───────────────────────────────────────────────────────
+# ── Redis runtime data & legacy xdr/ dir ─────────────────────────────────────
+# xdr/ is empty and pending deletion (locked by a process CWD); ignored here.
+/xdr/
+dump.rdb
+
+# ── Runtime logs & temp (legacy locations; now in output/logs/) ───────────────
 *.log
 *.log~
-xsiam_err.log
-xsiam_err.txt
-xsiam_out.txt
+*.txt.log
 /xsiam/agent-sim.log
 /xsiam/agent-sim.err
+/xsiam/xsiam-out.txt
+/xsiam/xsiam-err.txt
+/web/dev.log
 
 # ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
@@ -47,11 +60,10 @@ desktop.ini
 *.swp
 *.swo
 
+# ── GeoIP databases (large binary files; download separately from MaxMind) ────
+/third_party/geoip/*.mmdb
+
 # ── Playwright runtime artifacts ──────────────────────────────────────────────
 /web/playwright-report/
 /web/test-results/
 /web/tests/playwright/auth-state.json
-
-# ── xsiam runtime output logs ─────────────────────────────────────────────────
-/xsiam/xsiam-out.txt
-/xsiam/xsiam-err.txt

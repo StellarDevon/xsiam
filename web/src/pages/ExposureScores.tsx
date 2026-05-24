@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+﻿import { useEffect, useRef, useState, useCallback } from 'react'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
+import ResizableTh from '@/components/ResizableTh'
 
 interface Exposure {
   _key: string
@@ -1181,7 +1182,7 @@ function DetailPanel({ item, onClose, onSaved }: DetailPanelProps) {
   }
 
   return (
-    <div style={{
+    <div className="slide-in-right" style={{
       position: 'fixed',
       top: 0,
       right: 0,
@@ -2268,23 +2269,23 @@ export default function ExposureScores() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: 32 }}>
+                    <ResizableTh style={{ width: 32 }}>
                       <input
                         type="checkbox"
                         checked={allSelected}
                         onChange={toggleSelectAll}
                         style={{ cursor: 'pointer' }}
                       />
-                    </th>
-                    <th>CVE编号</th>
-                    <th>受影响资产</th>
-                    <th>CVSS</th>
-                    <th>可达性</th>
-                    <th>在野利用</th>
-                    <th>优先级评分</th>
-                    <th>状态</th>
-                    <th>截止日期</th>
-                    <th></th>
+                    </ResizableTh>
+                    <ResizableTh>CVE编号</ResizableTh>
+                    <ResizableTh>受影响资产</ResizableTh>
+                    <ResizableTh>CVSS</ResizableTh>
+                    <ResizableTh>可达性</ResizableTh>
+                    <ResizableTh>在野利用</ResizableTh>
+                    <ResizableTh>优先级评分</ResizableTh>
+                    <ResizableTh>状态</ResizableTh>
+                    <ResizableTh>截止日期</ResizableTh>
+                    <ResizableTh></ResizableTh>
                   </tr>
                 </thead>
                 <tbody>

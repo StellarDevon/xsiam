@@ -22,6 +22,7 @@ import (
 	"xsiam/db"
 	"xsiam/internal/cache"
 	"xsiam/internal/cron"
+	"xsiam/pkg/statscache"
 	"xsiam/internal/datalake"
 	alertdomain "xsiam/internal/domain/alert"
 	assetdomain "xsiam/internal/domain/asset"
@@ -29,9 +30,11 @@ import (
 	copilotdomain "xsiam/internal/domain/copilot"
 	"xsiam/internal/domain/dashboard"
 	devicedomain "xsiam/internal/domain/device"
+	endpointdomain "xsiam/internal/domain/endpoint"
 	identitydomain "xsiam/internal/domain/identity"
 	incidentdomain "xsiam/internal/domain/incident"
 	etldomain "xsiam/internal/domain/etl"
+	networkdomain "xsiam/internal/domain/network"
 	querydomain "xsiam/internal/domain/query"
 	reportdomain "xsiam/internal/domain/report"
 	responsedomain "xsiam/internal/domain/response"
@@ -134,6 +137,8 @@ func main() {
 	devRepo := devicedomain.NewRepo(arangoDB)
 	policyRepo := devicedomain.NewPolicyRepo(arangoDB)
 	dsRepo := devicedomain.NewDataSourceRepo(arangoDB)
+	networkRepo := repository.NewNetworkRepo(arangoDB)
+	endpointRepo := repository.NewEndpointRepo(arangoDB)
 
 	alertRepo.EnsureIndexes(bgCtx)
 
@@ -153,18 +158,20 @@ func main() {
 	ruleSvc := threatdomain.NewRuleService(domainRuleRepo, lakeClient, lakeWriter, auditRepo, cfg)
 	actionSvc := responsedomain.NewActionService(actionRepo, execClient, auditRepo)
 	pbSvc := responsedomain.NewPlaybookService(pbRepo, execClient, auditRepo)
-	devSvc := devicedomain.NewService(devRepo, policyRepo, dsRepo, agentCtrl, auditRepo)
 
-	// ── Presence registry (Redis-backed distributed online state) ─────────
+	// ── Redis: presence registry + stats cache ────────────────────────────
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
 		DB:       0,
 	})
 	presenceReg := presence.New(rdb)
+	statsCache := statscache.New(rdb)
+
+	devSvc := devicedomain.NewService(devRepo, policyRepo, dsRepo, agentCtrl, auditRepo, statsCache)
 	if err := presenceReg.Ping(bgCtx); err != nil {
-		log.Warn("redis not available — presence registry degraded", zap.Error(err))
-		// Non-fatal: liveness queries will return empty; GC won't run
+		log.Warn("redis not available — presence/statscache degraded", zap.Error(err))
+		// Non-fatal: liveness queries will return empty; stats always computed live
 	} else {
 		log.Info("redis connected", zap.String("addr", cfg.RedisAddr))
 		// Start presence GC sweep every 15 seconds
@@ -181,6 +188,7 @@ func main() {
 		repository.NewIocRepo(arangoDB),
 		identityRiskRepo,
 		reportRepo,
+		statsCache,
 	)
 	reportSvc := reportdomain.NewService(reportRepo, dashSvc)
 	authConsoleSvc := authdomain.NewAuthService(caller, userRepo)
@@ -196,12 +204,16 @@ func main() {
 	)
 	logSvc := querydomain.NewServiceWithRepo(lakeClient, arangoDB)
 
+	networkSvc := networkdomain.NewService(networkRepo, statsCache)
+	endpointSvc := endpointdomain.NewService(endpointRepo, repository.NewAlertRepo(arangoDB), statsCache)
+
 	_ = identityRiskSvc.Restore(bgCtx)
 	identityRiskSvc.StartFlusher(bgCtx)
 
 	// ── Cron ──────────────────────────────────────────────────────────────
 	mgr := cron.New(bgCtx, log)
 	registerCronTasks(mgr, log, alertRepo, ruleSvc, causalitySvc, smartScoreSvc, exposureSvc, reportSvc)
+	registerStatsCronTasks(mgr, log, tenantRepo, dashSvc, networkSvc, endpointSvc, devSvc, statsCache)
 	mgr.Start()
 	log.Info("cron started")
 
@@ -211,10 +223,29 @@ func main() {
 	// Either way the Pipeline object is always non-nil so ingest can call Process().
 	var etlPipeline *etl.Pipeline
 	{
+		// Optional GeoIP database (disabled when path is empty).
+		var geoipDB *etl.GeoIPDB
+		if cfg.GeoIP.CityDBPath != "" {
+			var gErr error
+			geoipDB, gErr = etl.OpenGeoIPDB(cfg.GeoIP.CityDBPath, cfg.GeoIP.ASNDBPath)
+			if gErr != nil {
+				log.Warn("geoip db open failed — lookup_geoip actions will no-op", zap.Error(gErr))
+				geoipDB = nil
+			} else {
+				log.Info("geoip db loaded", zap.String("city_db", cfg.GeoIP.CityDBPath))
+			}
+		}
+
+		etlDedup := etl.NewDeduplicator()
+		etlLua := etl.NewLuaEngine()
+
 		etlRuleRepo := repository.NewETLRuleRepo(arangoDB)
 		etlExecutor := etl.NewActionExecutor(
 			repository.NewAssetRepo(arangoDB),
 			repository.NewIocRepo(arangoDB),
+			geoipDB,
+			etlDedup,
+			etlLua,
 			log,
 		)
 		etlPipeline = etl.NewPipeline(etlExecutor)
@@ -253,7 +284,7 @@ func main() {
 		Exposure:      identitydomain.NewExposureHandler(exposureSvc),
 		Report:        reportdomain.NewHandler(reportSvc),
 		Auth:          authdomain.NewHandler(authConsoleSvc),
-		User:          authdomain.NewUserHandler(userSvc),
+		User:          authdomain.NewUserHandlerWithProfile(userSvc, repository.NewUserProfileRepo(arangoDB)),
 		Tenant:        authdomain.NewTenantHandler(tenantSvc),
 		RBAC:          authdomain.NewRBACHandler(rbacConsoleSvc),
 		LogEntry:      querydomain.NewHandler(logSvc),
@@ -263,6 +294,8 @@ func main() {
 		Privilege:     identitydomain.NewPrivilegeHandler(privRepo),
 		Audit:         audit.NewHandler(auditSvc),
 		Notify:        notify.NewPublicHandler(notifySvc),
+		Network:       networkdomain.NewHandler(networkSvc),
+		Endpoint:      endpointdomain.NewHandler(endpointSvc),
 	}
 	webEngine := router.NewWebEngine(webHandlers, caller, cfg.Auth.JWTSecret, log, xsiamroot.StaticFiles)
 	webSrv := &http.Server{Addr: ":" + cfg.WebPort, Handler: webEngine}
@@ -409,6 +442,83 @@ func registerCronTasks(
 		Name: "smart_score_recalc_nightly",
 		Fn: func(ctx context.Context) {
 			_ = smartScoreSvc.RecalcForTenant(ctx, "t-super")
+		},
+	})
+}
+
+// registerStatsCronTasks registers per-tenant stats precomputation jobs.
+// These populate the Redis stats cache so dashboards read from cache, not
+// from live AQL queries, under normal operating conditions.
+func registerStatsCronTasks(
+	mgr *cron.Manager,
+	log *zap.Logger,
+	tenantRepo *repository.TenantRepo,
+	dashSvc *dashboard.Service,
+	networkSvc *networkdomain.Service,
+	endpointSvc *endpointdomain.Service,
+	devSvc *devicedomain.Service,
+	_ *statscache.Client,
+) {
+	// Helper: iterate all tenant IDs from the tenant repo.
+	allTenants := func(ctx context.Context) []string {
+		tenants, _, _ := tenantRepo.List(ctx, 1, 1000)
+		ids := make([]string, 0, len(tenants))
+		for _, t := range tenants {
+			ids = append(ids, t.TenantID)
+		}
+		return ids
+	}
+
+	// Dashboard stats — refresh every 5 minutes.
+	_ = mgr.RegisterCron("0 */5 * * * *", cron.Task{
+		Name: "stats_precompute_dashboard",
+		Fn: func(ctx context.Context) {
+			for _, tid := range allTenants(ctx) {
+				if _, err := dashSvc.GetStats(ctx, tid); err != nil {
+					log.Warn("dashboard stats precompute failed",
+						zap.String("tenant", tid), zap.Error(err))
+				}
+			}
+		},
+	})
+
+	// Network stats — refresh every 15 minutes.
+	_ = mgr.RegisterCron("0 */15 * * * *", cron.Task{
+		Name: "stats_precompute_network",
+		Fn: func(ctx context.Context) {
+			for _, tid := range allTenants(ctx) {
+				networkSvc.InvalidateStatsCache(ctx, tid)
+				if _, err := networkSvc.Stats(ctx, tid); err != nil {
+					log.Warn("network stats precompute failed",
+						zap.String("tenant", tid), zap.Error(err))
+				}
+			}
+		},
+	})
+
+	// Endpoint stats — refresh every 15 minutes.
+	_ = mgr.RegisterCron("0 */15 * * * *", cron.Task{
+		Name: "stats_precompute_endpoint",
+		Fn: func(ctx context.Context) {
+			for _, tid := range allTenants(ctx) {
+				if _, err := endpointSvc.Stats(ctx, tid); err != nil {
+					log.Warn("endpoint stats precompute failed",
+						zap.String("tenant", tid), zap.Error(err))
+				}
+			}
+		},
+	})
+
+	// Datasource stats — refresh every 30 minutes.
+	_ = mgr.RegisterCron("0 */30 * * * *", cron.Task{
+		Name: "stats_precompute_datasource",
+		Fn: func(ctx context.Context) {
+			for _, tid := range allTenants(ctx) {
+				if _, err := devSvc.GetDataSourceStats(ctx, tid); err != nil {
+					log.Warn("datasource stats precompute failed",
+						zap.String("tenant", tid), zap.Error(err))
+				}
+			}
 		},
 	})
 }

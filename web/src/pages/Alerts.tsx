@@ -3,7 +3,6 @@ import ResizableTh from '@/components/ResizableTh'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
-import PageHeader from '@/components/PageHeader'
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 
@@ -750,7 +749,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
   const currentStep = statusFlowStep(a.status)
 
   return (
-    <div style={{
+    <div className="slide-in-right" style={{
       width: 460, flexShrink: 0,
       background: 'var(--bg-drawer)',
       borderLeft: '1px solid var(--border)',
@@ -1602,20 +1601,20 @@ function AlertStatsPanel({ stats, loading }: AlertStatsPanelProps) {
 
   return (
     <div style={{
-      display: 'flex', gap: 12, padding: '12px 20px',
+      display: 'flex', gap: 10, padding: '8px 16px',
       background: 'var(--bg-card2)',
       borderBottom: '1px solid var(--border)',
       flexShrink: 0, flexWrap: 'wrap',
     }}>
       {tiles.map(tile => (
         <div key={tile.label} style={{
-          flex: '1 1 120px', minWidth: 100,
-          padding: '10px 14px',
+          flex: '1 1 100px', minWidth: 90,
+          padding: '8px 12px',
           background: 'var(--bg-card)',
-          border: `1px solid 'var(--border)'`,
+          border: `1px solid var(--border)`,
           borderLeft: `3px solid ${tile.color}`,
-          borderRadius: 5,
-          display: 'flex', flexDirection: 'column', gap: 4,
+          borderRadius: 4,
+          display: 'flex', flexDirection: 'column', gap: 3,
         }}>
           <div style={{
             fontSize: 22, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
@@ -1958,23 +1957,27 @@ export default function Alerts() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      {/* ── Header ──────────────────────────────────────── */}
-      <PageHeader
-        title="告警管理"
-        actions={<>
-          <button className="btn-secondary" style={{ fontSize: 11 }} onClick={exportCSV}>↓ 导出 CSV</button>
-          <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => navigate('/detection-rules?new=1')}>
-            + 新建检测规则
+      {/* ── Slim inline toolbar (no PageHeader) ───────── */}
+      <div style={{
+        flexShrink: 0, height: 40,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', gap: 12,
+      }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>告警管理</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button className="btn-secondary" style={{ fontSize: 11, height: 26, padding: '0 10px' }} onClick={exportCSV}>↓ 导出</button>
+          <button className="btn-primary" style={{ fontSize: 11, height: 26, padding: '0 10px' }} onClick={() => navigate('/detection-rules?new=1')}>
+            + 新建规则
           </button>
-        </>}
-      />
+        </div>
+      </div>
 
       {/* ── Alert stats panel ───────────────────────────── */}
       <AlertStatsPanel stats={stats} loading={statsLoading} />
 
       {/* ── Severity + stats strip ───────────────────────── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 10, padding: '7px 20px',
+        display: 'flex', alignItems: 'center', gap: 8, padding: '5px 16px',
         borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0,
         flexWrap: 'wrap',
       }}>

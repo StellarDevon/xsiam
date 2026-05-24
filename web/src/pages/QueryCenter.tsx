@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+﻿import { useState, useRef, useEffect, useCallback } from 'react'
 import api from '@/lib/api'
+import ResizableTh from '@/components/ResizableTh'
 
 interface QueryTab {
   id: string
@@ -184,23 +185,23 @@ function isISODate(val: unknown): boolean {
 
 const SAMPLE_QUERIES = [
   {
-    name: 'All Endpoint Events', tag: 'Endpoint',
+    name: '所有端点事件', tag: 'Endpoint',
     query: 'dataset = xdr_data\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'Process Events Only', tag: 'Process',
+    name: '仅进程事件', tag: 'Process',
     query: 'dataset = xdr_data\n| filter kind = "process"\n| fields hostname, process_name, cmdline, user, event_timestamp\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'File Events Only', tag: 'File',
+    name: '仅文件事件', tag: 'File',
     query: 'dataset = xdr_data\n| filter kind = "file"\n| fields hostname, action, src_ip, event_timestamp\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'Auth Events', tag: 'Auth',
+    name: '认证事件', tag: 'Auth',
     query: 'dataset = xdr_data\n| filter kind = "auth"\n| fields hostname, user, auth_type, result, src_ip, event_timestamp\n| sort desc event_timestamp',
   },
   {
-    name: 'Network Connections', tag: 'Network',
+    name: '网络连接', tag: 'Network',
     query: 'dataset = xdr_data\n| filter kind = "network"\n| fields hostname, src_ip, dst_ip, dst_port, proto, bytes_out, process_name, event_timestamp\n| sort desc event_timestamp',
   },
   {
@@ -208,11 +209,11 @@ const SAMPLE_QUERIES = [
     query: 'dataset = xdr_data\n| filter kind = "dns"\n| fields hostname, query, query_type, response_ip, entropy, event_timestamp\n| sort desc event_timestamp',
   },
   {
-    name: 'Registry Changes', tag: 'Registry',
+    name: '注册表变更', tag: 'Registry',
     query: 'dataset = xdr_data\n| filter kind = "registry"\n| fields hostname, action, key, value_name, value_data, process_name, event_timestamp\n| sort desc event_timestamp',
   },
   {
-    name: 'FIM Changes', tag: 'Integrity',
+    name: 'FIM 变更', tag: 'Integrity',
     query: 'dataset = xdr_data\n| filter kind = "integrity"\n| fields hostname, action, path, new_hash, changed_fields, event_timestamp\n| sort desc event_timestamp',
   },
   {
@@ -224,11 +225,11 @@ const SAMPLE_QUERIES = [
     query: 'dataset = syslog_raw\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'NGFW Traffic', tag: 'Firewall',
+    name: 'NGFW 流量', tag: 'Firewall',
     query: 'dataset = ngfw_traffic\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'Cloud Audit', tag: 'Cloud',
+    name: '云端审计', tag: 'Cloud',
     query: 'dataset = cloud_audit_log\n| sort desc event_timestamp\n| limit 50',
   },
   {
@@ -240,11 +241,11 @@ const SAMPLE_QUERIES = [
     query: 'dataset = identity_analytics\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'Email Events', tag: 'Email',
+    name: '邮件事件', tag: 'Email',
     query: 'dataset = email_story\n| sort desc event_timestamp\n| limit 50',
   },
   {
-    name: 'Asset Inventory', tag: 'Asset',
+    name: '资产清单', tag: 'Asset',
     query: 'dataset = asset_inventory\n| sort desc event_timestamp\n| limit 20',
   },
 ]
@@ -661,7 +662,7 @@ export default function QueryCenter() {
       setHistory(newHistory)
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: { message?: string } } }; message?: string }
-      setError(err.response?.data?.error?.message ?? err.message ?? 'Query failed')
+      setError(err.response?.data?.error?.message ?? err.message ?? '查询失败')
     } finally {
       setLoading(false)
       setIsRunning(false)
@@ -1444,7 +1445,7 @@ export default function QueryCenter() {
           {/* Sample Queries */}
           <div style={{ flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px 6px' }}>
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Sample Queries</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>示例查询</span>
               <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, lineHeight: 1 }} onClick={addTab}>+</button>
             </div>
             <input
@@ -1729,9 +1730,9 @@ export default function QueryCenter() {
             borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0,
           }}>
             <select className="filter-select" style={{ fontSize: 11 }} value={timeRange} onChange={e => setTimeRange(e.target.value)}>
-              <option value="24h">Last 24H</option>
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
+              <option value="24h">近 24 小时</option>
+              <option value="7d">近 7 天</option>
+              <option value="30d">近 30 天</option>
             </select>
 
             {/* History dropdown */}
@@ -2076,9 +2077,9 @@ export default function QueryCenter() {
                   <thead>
                     <tr>
                       {/* expand toggle column */}
-                      <th style={{ width: 28, padding: '0 6px', textAlign: 'center', userSelect: 'none' }} title="展开/折叠行">⊕</th>
+                      <ResizableTh style={{ width: 28, padding: '0 6px', textAlign: 'center', userSelect: 'none' }} title="展开/折叠行">⊕</ResizableTh>
                       {orderedColumns.map(c => (
-                        <th
+                        <ResizableTh
                           key={c}
                           onContextMenu={e => handleColHeaderContextMenu(e, c)}
                           onClick={() => handleColHeaderClick(c)}
@@ -2099,7 +2100,7 @@ export default function QueryCenter() {
                               {sortDir === 'asc' ? '▲' : '▼'}
                             </span>
                           )}
-                        </th>
+                        </ResizableTh>
                       ))}
                     </tr>
                   </thead>
@@ -2215,7 +2216,7 @@ export default function QueryCenter() {
             <div style={{ height: 1, background: 'var(--border)', margin: '2px 14px 6px' }} />
 
             {/* Stages */}
-            <div style={{ padding: '4px 14px 4px', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>Stages</div>
+            <div style={{ padding: '4px 14px 4px', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>处理阶段</div>
             {XQL_STAGES.map(s => (
               <div key={s} style={{
                 padding: '4px 14px', fontSize: 12, fontFamily: 'Consolas,"JetBrains Mono",monospace',
@@ -2230,7 +2231,7 @@ export default function QueryCenter() {
             <div style={{ height: 1, background: 'var(--border)', margin: '8px 14px' }} />
 
             {/* Functions */}
-            <div style={{ padding: '4px 14px 4px', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>Functions</div>
+            <div style={{ padding: '4px 14px 4px', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>函数</div>
             {XQL_FUNCTIONS.map(f => (
               <div key={f} style={{
                 padding: '4px 14px', fontSize: 12, fontFamily: 'Consolas,"JetBrains Mono",monospace',
@@ -2244,7 +2245,7 @@ export default function QueryCenter() {
             <div style={{ height: 1, background: 'var(--border)', margin: '8px 14px' }} />
 
             {/* Operators */}
-            <div style={{ padding: '4px 14px 4px', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>Operators</div>
+            <div style={{ padding: '4px 14px 4px', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>运算符</div>
             <div style={{ padding: '4px 14px', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
               {XQL_OPERATORS.map(op => (
                 <span key={op} style={{
@@ -2266,7 +2267,7 @@ export default function QueryCenter() {
               <code style={{ display: 'block', fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.8, background: 'rgba(0,0,0,.2)', padding: 8, borderRadius: 4, color: 'var(--text-primary)' }}>
                 dataset = xdr_data{'\n'}| filter kind = "process"{'\n'}| fields hostname, process_name,{'\n'}{'  '}cmdline, event_timestamp{'\n'}| sort desc event_timestamp{'\n'}| limit 50
               </code>
-              <div style={{ marginTop: 6 }}>Press <code style={{ background: 'rgba(255,255,255,.08)', padding: '1px 4px', borderRadius: 3, fontSize: 10.5 }}>Ctrl+Enter</code> to run.</div>
+              <div style={{ marginTop: 6 }}>按 <code style={{ background: 'rgba(255,255,255,.08)', padding: '1px 4px', borderRadius: 3, fontSize: 10.5 }}>Ctrl+Enter</code> 执行查询。</div>
             </div>
           </div>
         </div>

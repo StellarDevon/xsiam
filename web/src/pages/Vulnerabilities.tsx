@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+﻿import { useEffect, useRef, useState, useCallback } from 'react'
 import ResizableTh from '@/components/ResizableTh'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
@@ -1435,7 +1435,7 @@ export default function Vulnerabilities() {
                       <span style={{
                         fontSize: 11.5, textTransform: 'capitalize',
                         color: v.status === 'open' ? 'var(--critical)' : v.status === 'patched' ? 'var(--accent-green)' : v.status === 'in_progress' ? 'var(--accent-blue)' : 'var(--text-muted)',
-                      }}>{(v.status || 'open').replace('_', ' ')}</span>
+                      }}>{ {'open':'未修复','in_progress':'处理中','patched':'已修复','accepted_risk':'接受风险'}[v.status] ?? v.status }</span>
                     </td>
                     <td onClick={e => e.stopPropagation()}>
                       {assetCount > 0 ? (
@@ -1480,7 +1480,7 @@ export default function Vulnerabilities() {
                   {selected.cve_id} ↗
                 </a>
               ) : (
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>No CVE ID</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>无 CVE 编号</span>
               )}
               <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => { setSelected(null); setShowAssets(false) }}>✕</button>
             </div>
@@ -1521,7 +1521,7 @@ export default function Vulnerabilities() {
                   </div>
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>CVSS Score</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>CVSS 评分</span>
                       <span style={{ fontSize: 14, fontWeight: 700, color: cvssColor(selected.cvss_score ?? 0) }}>
                         {(selected.cvss_score ?? 0) > 0 ? (selected.cvss_score).toFixed(1) : 'N/A'}
                       </span>
@@ -1542,7 +1542,7 @@ export default function Vulnerabilities() {
                   <span style={{
                     fontSize: 11.5, textTransform: 'capitalize',
                     color: selected.status === 'open' ? 'var(--critical)' : selected.status === 'patched' ? 'var(--accent-green)' : selected.status === 'in_progress' ? 'var(--accent-blue)' : 'var(--text-muted)',
-                  }}>{(selected.status || 'open').replace('_', ' ')}</span>
+                  }}>{ {'open':'未修复','in_progress':'处理中','patched':'已修复','accepted_risk':'接受风险'}[selected.status] ?? selected.status }</span>
                 </div>
 
                 {selected.description && (
@@ -1597,13 +1597,13 @@ export default function Vulnerabilities() {
 
                 <div style={{ display: 'flex', gap: 8 }}>
                   {selected.status !== 'in_progress' && (
-                    <button className="btn-primary" style={{ flex: 1, fontSize: 11 }} onClick={() => patchStatus(selected, 'in_progress')}>Mark In Progress</button>
+                    <button className="btn-primary" style={{ flex: 1, fontSize: 11 }} onClick={() => patchStatus(selected, 'in_progress')}>标记处理中</button>
                   )}
                   {selected.status !== 'accepted' && (
-                    <button className="btn-secondary" style={{ flex: 1, fontSize: 11 }} onClick={() => patchStatus(selected, 'accepted')}>Accept Risk</button>
+                    <button className="btn-secondary" style={{ flex: 1, fontSize: 11 }} onClick={() => patchStatus(selected, 'accepted')}>接受风险</button>
                   )}
                   {selected.status !== 'patched' && (
-                    <button className="btn-secondary" style={{ flex: 1, fontSize: 11, color: 'var(--accent-green)' }} onClick={() => patchStatus(selected, 'patched')}>Mark Patched</button>
+                    <button className="btn-secondary" style={{ flex: 1, fontSize: 11, color: 'var(--accent-green)' }} onClick={() => patchStatus(selected, 'patched')}>标记已修复</button>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -1705,7 +1705,7 @@ export default function Vulnerabilities() {
                   onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Remediation / Fix</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>修复建议</div>
                 <textarea className="filter-input" style={{ width: '100%', boxSizing: 'border-box', minHeight: 60, resize: 'vertical' }}
                   placeholder="应用补丁KB..." value={form.fix}
                   onChange={e => setForm(p => ({ ...p, fix: e.target.value }))} />

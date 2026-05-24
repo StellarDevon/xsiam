@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
+import ResizableTh from '@/components/ResizableTh'
 
 interface Report {
   _key: string
@@ -69,22 +70,22 @@ function computeNextRun(scheduleType: string, time: string): string {
 }
 
 const REPORT_TYPES = [
-  { value: 'soc_daily', label: 'SOC Daily' },
-  { value: 'soc_weekly', label: 'SOC Weekly' },
-  { value: 'soc_monthly', label: 'SOC Monthly' },
-  { value: 'executive', label: 'Executive Brief' },
-  { value: 'asset_security', label: 'Asset Security' },
-  { value: 'vuln_remediation', label: 'Vuln Remediation' },
-  { value: 'threat_intel', label: 'Threat Intel Activity' },
-  { value: 'compliance_audit', label: 'Compliance Audit' },
-  { value: 'mitre_coverage', label: 'MITRE ATT&CK Coverage' },
+  { value: 'soc_daily', label: 'SOC 日报' },
+  { value: 'soc_weekly', label: 'SOC 周报' },
+  { value: 'soc_monthly', label: 'SOC 月报' },
+  { value: 'executive', label: '执行摘要' },
+  { value: 'asset_security', label: '资产安全' },
+  { value: 'vuln_remediation', label: '漏洞修复' },
+  { value: 'threat_intel', label: '威胁情报活动' },
+  { value: 'compliance_audit', label: '合规审计' },
+  { value: 'mitre_coverage', label: 'MITRE ATT&CK 覆盖率' },
 ]
 
 const PERIOD_OPTIONS = [
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '90d', label: 'Last 90 days' },
-  { value: 'custom', label: 'Custom' },
+  { value: '7d', label: '最近7天' },
+  { value: '30d', label: '最近30天' },
+  { value: '90d', label: '最近90天' },
+  { value: 'custom', label: '自定义' },
 ]
 
 const FORMAT_OPTIONS = [
@@ -869,9 +870,9 @@ export default function Reports() {
             </select>
             <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="">全部状态</option>
-              <option value="ready">Ready</option>
-              <option value="generating">Generating</option>
-              <option value="failed">Failed</option>
+              <option value="ready">就绪</option>
+              <option value="generating">生成中</option>
+              <option value="failed">失败</option>
             </select>
           </div>
 
@@ -881,18 +882,18 @@ export default function Reports() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>报表名称</th>
-                    <th>类型</th>
-                    <th>时间段</th>
-                    <th>状态</th>
-                    <th>Format</th>
-                    <th>Generated</th>
-                    <th>操作</th>
+                    <ResizableTh>报表名称</ResizableTh>
+                    <ResizableTh>类型</ResizableTh>
+                    <ResizableTh>时间段</ResizableTh>
+                    <ResizableTh>状态</ResizableTh>
+                    <ResizableTh>格式</ResizableTh>
+                    <ResizableTh>生成时间</ResizableTh>
+                    <ResizableTh>操作</ResizableTh>
                   </tr>
                 </thead>
                 <tbody>
                   {loading && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>}
-                  {!loading && items.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>No reports generated yet</td></tr>}
+                  {!loading && items.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>暂无报表</td></tr>}
                   {items.map(r => (
                     <tr
                       key={r._key}
@@ -1183,7 +1184,7 @@ export default function Reports() {
                 />
               </div>
               <div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>Report Type</div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>报表类型</div>
                 <select className="filter-select" style={{ width: '100%' }} value={newType} onChange={e => setNewType(e.target.value)}>
                   {REPORT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>

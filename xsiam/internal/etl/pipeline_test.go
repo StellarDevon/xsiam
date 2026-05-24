@@ -127,11 +127,12 @@ func TestPipeline_NoMatch_DefaultRouting(t *testing.T) {
 	if res.RawNgxIndex != "raw_winevent.security" {
 		t.Errorf("expected raw_winevent.security, got %q", res.RawNgxIndex)
 	}
-	if res.ETLEntry == nil {
-		t.Error("default: ETLEntry should not be nil")
+	// No rule matched: no ArangoDB write, no ETL entry — raw ngx only.
+	if res.ETLEntry != nil {
+		t.Error("default: ETLEntry should be nil (no ArangoDB fallback)")
 	}
-	if res.WriteArango != true {
-		t.Error("default: WriteArango should be true")
+	if res.ArangoCollection != "" {
+		t.Errorf("default: ArangoCollection should be empty, got %q", res.ArangoCollection)
 	}
 }
 
@@ -196,7 +197,7 @@ func TestPipeline_Both_WritesBothPaths(t *testing.T) {
 			Actions: []model.ETLAction{
 				{Type: "set_field", Params: map[string]any{"field": "etl_version", "value": "2.0"}},
 			},
-			Output: model.ETLOutput{NgxIndex: "proc_enriched", WriteArango: true},
+			Output: model.ETLOutput{NgxIndex: "proc_enriched", ArangoCollection: "proc_events", TTLDays: 90},
 		},
 	})
 	entry := &model.LogEntry{Kind: model.LogKindProcess, Dataset: "xdr_data", Fields: map[string]any{}}
@@ -213,8 +214,11 @@ func TestPipeline_Both_WritesBothPaths(t *testing.T) {
 	if res.ETLEntry == nil {
 		t.Error("both: ETLEntry should not be nil")
 	}
-	if res.WriteArango != true {
-		t.Error("both: WriteArango should be true")
+	if res.ArangoCollection != "proc_events" {
+		t.Errorf("both: ArangoCollection should be proc_events, got %q", res.ArangoCollection)
+	}
+	if res.TTLDays != 90 {
+		t.Errorf("both: TTLDays should be 90, got %d", res.TTLDays)
 	}
 	// Note: set_field is not applied in nil-executor mode (test stub).
 	// The action_executor unit tests verify field transformation.
@@ -225,7 +229,7 @@ func nopLog() *zap.Logger { return zap.NewNop() }
 
 // TestActionExecutor_SetField verifies set_field action modifies the entry.
 func TestActionExecutor_SetField(t *testing.T) {
-	ex := NewActionExecutor(nil, nil, nopLog())
+	ex := NewActionExecutor(nil, nil, nil, nil, nil, nopLog())
 	entry := &model.LogEntry{Fields: map[string]any{}}
 	actions := []model.ETLAction{
 		{Type: model.ETLActionSetField, Params: map[string]any{"field": "env", "value": "prod"}},
@@ -244,7 +248,7 @@ func TestActionExecutor_SetField(t *testing.T) {
 
 // TestActionExecutor_DropEvent verifies drop_event discards the entry.
 func TestActionExecutor_DropEvent(t *testing.T) {
-	ex := NewActionExecutor(nil, nil, nopLog())
+	ex := NewActionExecutor(nil, nil, nil, nil, nil, nopLog())
 	entry := &model.LogEntry{Fields: map[string]any{}}
 	actions := []model.ETLAction{{Type: model.ETLActionDropEvent}}
 	out, drop := ex.ApplyActions(context.Background(), entry, actions)
@@ -256,7 +260,7 @@ func TestActionExecutor_DropEvent(t *testing.T) {
 
 // TestActionExecutor_RenameField verifies rename_field action.
 func TestActionExecutor_RenameField(t *testing.T) {
-	ex := NewActionExecutor(nil, nil, nopLog())
+	ex := NewActionExecutor(nil, nil, nil, nil, nil, nopLog())
 	entry := &model.LogEntry{Fields: map[string]any{"old_name": "hello"}}
 	actions := []model.ETLAction{
 		{Type: model.ETLActionRenameField, Params: map[string]any{"from": "old_name", "to": "new_name"}},
@@ -275,7 +279,7 @@ func TestActionExecutor_RenameField(t *testing.T) {
 
 // TestActionExecutor_DeleteField verifies delete_field action.
 func TestActionExecutor_DeleteField(t *testing.T) {
-	ex := NewActionExecutor(nil, nil, nopLog())
+	ex := NewActionExecutor(nil, nil, nil, nil, nil, nopLog())
 	entry := &model.LogEntry{Fields: map[string]any{"tmp": "remove_me", "keep": "yes"}}
 	actions := []model.ETLAction{
 		{Type: model.ETLActionDeleteField, Params: map[string]any{"field": "tmp"}},
@@ -323,18 +327,91 @@ func TestParseFilterExpr_Empty(t *testing.T) {
 }
 
 func TestParseFilterExpr_Single(t *testing.T) {
-	pairs := parseFilterExpr(`agent_id = "scanner-01"`)
-	if len(pairs) != 1 {
-		t.Fatalf("expected 1 pair, got %d", len(pairs))
+	conds := parseFilterExpr(`agent_id = "scanner-01"`)
+	if len(conds) != 1 {
+		t.Fatalf("expected 1 condition, got %d", len(conds))
 	}
-	if pairs[0][0] != "agent_id" || pairs[0][1] != "scanner-01" {
-		t.Errorf("wrong pair: %v", pairs[0])
+	if conds[0].field != "agent_id" || conds[0].value != "scanner-01" || conds[0].op != opEqual {
+		t.Errorf("wrong condition: %+v", conds[0])
 	}
 }
 
 func TestParseFilterExpr_MultipleAND(t *testing.T) {
-	pairs := parseFilterExpr(`hostname = "host01" AND agent_id = "agent01"`)
-	if len(pairs) != 2 {
-		t.Fatalf("expected 2 pairs, got %d", len(pairs))
+	conds := parseFilterExpr(`hostname = "host01" AND agent_id = "agent01"`)
+	if len(conds) != 2 {
+		t.Fatalf("expected 2 conditions, got %d", len(conds))
+	}
+}
+
+func TestParseFilterExpr_Operators(t *testing.T) {
+	tests := []struct {
+		expr  string
+		op    filterOp
+		field string
+		value string
+	}{
+		{`severity != "low"`, opNotEqual, "severity", "low"},
+		{`level~=^(error|warn)$`, opRegex, "level", `^(error|warn)$`},
+		{`score > 90`, opGreater, "score", "90"},
+		{`score < 50`, opLess, "score", "50"},
+		{`score >= 70`, opGreaterEqual, "score", "70"},
+		{`score <= 30`, opLessEqual, "score", "30"},
+	}
+	for _, tt := range tests {
+		conds := parseFilterExpr(tt.expr)
+		if len(conds) != 1 {
+			t.Errorf("%q: expected 1 condition, got %d", tt.expr, len(conds))
+			continue
+		}
+		c := conds[0]
+		if c.op != tt.op || c.field != tt.field || c.value != tt.value {
+			t.Errorf("%q: got op=%q field=%q value=%q", tt.expr, c.op, c.field, c.value)
+		}
+		if tt.op == opRegex && c.compiled == nil {
+			t.Errorf("%q: regex not compiled", tt.expr)
+		}
+	}
+}
+
+func TestMatchesEntry_FilterExprOR(t *testing.T) {
+	rule := compileRule(model.ETLRule{
+		RuleID: "or-test", IsEnabled: true, Priority: 1,
+		Match: model.ETLMatchCriteria{
+			FilterExpr: `dataset = "network_story" AND dataset = "syslog_raw"`,
+			FilterMode: "or",
+		},
+		RawWriteMode: model.RawWriteBoth,
+		Output:       model.ETLOutput{NgxIndex: "out"},
+	})
+	netEntry := &model.LogEntry{Dataset: "network_story"}
+	sysEntry := &model.LogEntry{Dataset: "syslog_raw"}
+	noneEntry := &model.LogEntry{Dataset: "xdr_data"}
+	if !matchesEntry(rule, netEntry, "net") {
+		t.Error("OR: network_story should match")
+	}
+	if !matchesEntry(rule, sysEntry, "sys") {
+		t.Error("OR: syslog_raw should match")
+	}
+	if matchesEntry(rule, noneEntry, "x") {
+		t.Error("OR: xdr_data should not match either condition")
+	}
+}
+
+func TestMatchesEntry_FilterExprRegex(t *testing.T) {
+	rule := compileRule(model.ETLRule{
+		RuleID: "regex-test", IsEnabled: true, Priority: 1,
+		Match: model.ETLMatchCriteria{
+			FilterExpr: `hostname~=^web-\d+$`,
+		},
+		RawWriteMode: model.RawWriteBoth,
+		Output:       model.ETLOutput{NgxIndex: "out"},
+	})
+	match := &model.LogEntry{Hostname: "web-42"}
+	noMatch := &model.LogEntry{Hostname: "db-01"}
+	if !matchesEntry(rule, match, "tag") {
+		t.Error("regex: web-42 should match ^web-\\d+$")
+	}
+	if matchesEntry(rule, noMatch, "tag") {
+		t.Error("regex: db-01 should not match ^web-\\d+$")
 	}
 }

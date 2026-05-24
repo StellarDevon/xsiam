@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+﻿import { useEffect, useRef, useState, useCallback } from 'react'
 import ResizableTh from '@/components/ResizableTh'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -1210,7 +1210,7 @@ function DetailPanel({ d, liveness, onClose, onAction }: {
   ]
 
   return (
-    <div style={{
+    <div className="slide-in-right" style={{
       width: 340, flexShrink: 0, borderLeft: '1px solid var(--border)',
       background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column',
       overflow: 'hidden',

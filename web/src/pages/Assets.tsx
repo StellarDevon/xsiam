@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import ResizableTh from '@/components/ResizableTh'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -823,17 +823,17 @@ export default function Assets() {
         <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => load(1)}>搜索</button>
         <select className="filter-select" value={typeFilter} onChange={e => set类型Filter(e.target.value)}>
           <option value="">全部类型</option>
-          <option value="workstation">Workstation</option>
-          <option value="server">Server</option>
-          <option value="network">Network Device</option>
-          <option value="cloud">Cloud Instance</option>
+          <option value="workstation">工作站</option>
+          <option value="server">服务器</option>
+          <option value="network">网络设备</option>
+          <option value="cloud">云实例</option>
           <option value="iot">IoT</option>
         </select>
         <select className="filter-select" value={statusFilter} onChange={e => set状态Filter(e.target.value)}>
           <option value="">全部状态</option>
-          <option value="online">Online</option>
-          <option value="offline">Offline</option>
-          <option value="isolated">Isolated</option>
+          <option value="online">在线</option>
+          <option value="offline">离线</option>
+          <option value="isolated">已隔离</option>
         </select>
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <input
@@ -919,7 +919,7 @@ export default function Assets() {
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <ResizableTh>CVE</ResizableTh><ResizableTh>CVSS</ResizableTh><ResizableTh>描述</ResizableTh><ResizableTh>Affected</ResizableTh><ResizableTh>状态</ResizableTh>
+                        <ResizableTh>CVE</ResizableTh><ResizableTh>CVSS</ResizableTh><ResizableTh>描述</ResizableTh><ResizableTh>受影响</ResizableTh><ResizableTh>状态</ResizableTh>
                       </tr>
                     </thead>
                     <tbody>
@@ -1041,7 +1041,7 @@ export default function Assets() {
 
         {/* Detail panel */}
         {selected && (
-          <div style={{
+          <div className="slide-in-right" style={{
             width: 360, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
           }}>
@@ -1140,7 +1140,7 @@ export default function Assets() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                       <thead>
                         <tr style={{ background: 'var(--bg-secondary)' }}>
-                          <ResizableTh style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVE ID</ResizableTh>
+                          <ResizableTh style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVE 编号</ResizableTh>
                           <ResizableTh style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>危险度</ResizableTh>
                           <ResizableTh style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVSS</ResizableTh>
                           <ResizableTh style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>修复</ResizableTh>
@@ -1306,19 +1306,19 @@ export default function Assets() {
                 <div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>类型</div>
                   <select className="filter-select" style={{ width: '100%' }} value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
-                    <option value="workstation">Workstation</option>
-                    <option value="server">Server</option>
-                    <option value="network">Network Device</option>
-                    <option value="cloud">Cloud Instance</option>
+                    <option value="workstation">工作站</option>
+                    <option value="server">服务器</option>
+                    <option value="network">网络设备</option>
+                    <option value="cloud">云实例</option>
                     <option value="iot">IoT</option>
                   </select>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>状态</div>
                   <select className="filter-select" style={{ width: '100%' }} value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
-                    <option value="online">Online</option>
-                    <option value="offline">Offline</option>
-                    <option value="isolated">Isolated</option>
+                    <option value="online">在线</option>
+                    <option value="offline">离线</option>
+                    <option value="isolated">已隔离</option>
                   </select>
                 </div>
               </div>

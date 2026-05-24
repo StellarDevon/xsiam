@@ -2,6 +2,9 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
 import { useState, useEffect, useCallback } from 'react'
+import { useTheme } from '@/lib/theme'
+import { useLang } from '@/lib/i18n'
+import { fetchProfile } from '@/lib/userProfile'
 
 // Navigable nav items in order (matching Sidebar navItems, dividers excluded)
 const NAV_ROUTES = [
@@ -17,7 +20,6 @@ const NAV_ROUTES = [
   '/vulnerabilities',
   '/exposure',
   '/threat-intel',
-  '/iocs',
   '/agentix',
   '/xsiam-cases',
   '/devices',
@@ -29,6 +31,18 @@ const NAV_ROUTES = [
 
 export default function Layout() {
   const navigate = useNavigate()
+  const { setTheme } = useTheme()
+  const { setLang } = useLang()
+
+  // ── Load user profile once on mount and apply lang/theme preferences ──────
+  useEffect(() => {
+    fetchProfile().then(p => {
+      if (!p) return
+      if (p.theme === 'light' || p.theme === 'dark') setTheme(p.theme)
+      if (p.lang === 'zh' || p.lang === 'en') setLang(p.lang)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Sidebar collapsed state — persisted in localStorage ──────────────────
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
@@ -148,7 +162,6 @@ const CMD_ITEMS: CmdItem[] = [
   { label: '漏洞', route: '/vulnerabilities', hint: '' },
   { label: '暴露面管理', route: '/exposure', hint: '' },
   { label: '威胁情报', route: '/threat-intel', hint: '' },
-  { label: 'IOC 管理', route: '/iocs', hint: '' },
   { label: 'Agentix', route: '/agentix', hint: '' },
   { label: '案例', route: '/xsiam-cases', hint: '' },
   { label: '设备', route: '/devices', hint: '' },

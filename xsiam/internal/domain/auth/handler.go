@@ -6,6 +6,7 @@ import (
 	"time"
 	"xsiam/internal/middleware"
 	"xsiam/internal/model"
+	"xsiam/internal/repository"
 	"xsiam/pkg/response"
 
 	alertdomain "xsiam/internal/domain/alert"
@@ -39,11 +40,16 @@ func (h *Handler) Login(c *gin.Context) {
 }
 
 type UserHandler struct {
-	svc *UserService
+	svc         *UserService
+	profileRepo *repository.UserProfileRepo
 }
 
 func NewUserHandler(svc *UserService) *UserHandler {
 	return &UserHandler{svc: svc}
+}
+
+func NewUserHandlerWithProfile(svc *UserService, profileRepo *repository.UserProfileRepo) *UserHandler {
+	return &UserHandler{svc: svc, profileRepo: profileRepo}
 }
 
 func (h *UserHandler) List(c *gin.Context) {
@@ -187,6 +193,65 @@ func (h *UserHandler) Bulk(c *gin.Context) {
 		}
 	}
 	response.OK(c, gin.H{"updated": count})
+}
+
+// GetProfile returns the current user's profile (lang, theme, display_name, email).
+func (h *UserHandler) GetProfile(c *gin.Context) {
+	userID := c.GetString(middleware.CtxUserID)
+	if userID == "" || h.profileRepo == nil {
+		response.OK(c, model.UserProfile{Lang: "zh", Theme: "dark"})
+		return
+	}
+	p, err := h.profileRepo.Get(c.Request.Context(), userID)
+	if err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	response.OK(c, p)
+}
+
+// UpdateProfile saves the current user's profile preferences.
+func (h *UserHandler) UpdateProfile(c *gin.Context) {
+	userID := c.GetString(middleware.CtxUserID)
+	tenantID := c.GetString(middleware.CtxTenantID)
+	if userID == "" || h.profileRepo == nil {
+		response.OK(c, gin.H{"ok": true})
+		return
+	}
+	var body struct {
+		DisplayName string `json:"display_name"`
+		Email       string `json:"email"`
+		Lang        string `json:"lang"`
+		Theme       string `json:"theme"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	p := &model.UserProfile{
+		UserID:      userID,
+		TenantID:    tenantID,
+		DisplayName: body.DisplayName,
+		Email:       body.Email,
+		Lang:        body.Lang,
+		Theme:       body.Theme,
+	}
+	if err := h.profileRepo.Upsert(c.Request.Context(), p); err != nil {
+		response.InternalError(c, err)
+		return
+	}
+	// If display_name or email changed, also patch the user record.
+	patch := map[string]any{}
+	if body.DisplayName != "" {
+		patch["display_name"] = body.DisplayName
+	}
+	if body.Email != "" {
+		patch["email"] = body.Email
+	}
+	if len(patch) > 0 {
+		_ = h.svc.Update(c.Request.Context(), userID, patch)
+	}
+	response.OK(c, p)
 }
 
 type TenantHandler struct {

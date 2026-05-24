@@ -4,27 +4,27 @@ import (
 	"context"
 	"time"
 	"xsiam/internal/repository"
+	"xsiam/pkg/statscache"
 )
 
 type Stats struct {
-	TotalAlerts           int64            `json:"total_alerts"`
-	OpenAlerts            int64            `json:"open_alerts"`
-	TotalIncidents        int64            `json:"total_incidents"`
-	OpenIncidents         int64            `json:"open_incidents"`
-	TotalAssets           int64            `json:"total_assets"`
-	TotalVulns            int64            `json:"total_vulns"`
-	// TotalVulnerabilities is an alias for TotalVulns for frontend compatibility.
-	TotalVulnerabilities  int64            `json:"total_vulnerabilities"`
-	CriticalVulns         int64            `json:"critical_vulns"`
-	TotalIOCs             int64            `json:"total_iocs"`
-	TotalRisks            int64            `json:"total_risks"`
-	TotalReports          int64            `json:"total_reports"`
-	AlertsByDay           []DayCount       `json:"alerts_by_day"`
-	AlertsBySeverity      map[string]int64 `json:"alerts_by_severity"`
-	IncidentsByStatus     map[string]int64 `json:"incidents_by_status"`
-	TopTactics            []TacticCount    `json:"top_tactics"`
-	RecentAlerts          []AlertSummary   `json:"recent_alerts"`
-	MttrHours             float64          `json:"mttr_hours"`
+	TotalAlerts          int64            `json:"total_alerts"`
+	OpenAlerts           int64            `json:"open_alerts"`
+	TotalIncidents       int64            `json:"total_incidents"`
+	OpenIncidents        int64            `json:"open_incidents"`
+	TotalAssets          int64            `json:"total_assets"`
+	TotalVulns           int64            `json:"total_vulns"`
+	TotalVulnerabilities int64            `json:"total_vulnerabilities"`
+	CriticalVulns        int64            `json:"critical_vulns"`
+	TotalIOCs            int64            `json:"total_iocs"`
+	TotalRisks           int64            `json:"total_risks"`
+	TotalReports         int64            `json:"total_reports"`
+	AlertsByDay          []DayCount       `json:"alerts_by_day"`
+	AlertsBySeverity     map[string]int64 `json:"alerts_by_severity"`
+	IncidentsByStatus    map[string]int64 `json:"incidents_by_status"`
+	TopTactics           []TacticCount    `json:"top_tactics"`
+	RecentAlerts         []AlertSummary   `json:"recent_alerts"`
+	MttrHours            float64          `json:"mttr_hours"`
 }
 
 type DayCount struct {
@@ -54,6 +54,7 @@ type Service struct {
 	iocRepo          *repository.IocRepo
 	identityRiskRepo *repository.IdentityRiskRepo
 	reportRepo       *repository.ReportRepo
+	cache            *statscache.Client
 }
 
 func NewService(
@@ -65,6 +66,7 @@ func NewService(
 	iocRepo *repository.IocRepo,
 	identityRiskRepo *repository.IdentityRiskRepo,
 	reportRepo *repository.ReportRepo,
+	cache *statscache.Client,
 ) *Service {
 	return &Service{
 		alertRepo:        alertRepo,
@@ -75,10 +77,25 @@ func NewService(
 		iocRepo:          iocRepo,
 		identityRiskRepo: identityRiskRepo,
 		reportRepo:       reportRepo,
+		cache:            cache,
 	}
 }
 
 func (s *Service) GetStats(ctx context.Context, tenantID string) (*Stats, error) {
+	key := statscache.Key(statscache.PfxDashboardStats, tenantID)
+	if cached, ok := statscache.Get[Stats](ctx, s.cache, key); ok {
+		return &cached, nil
+	}
+
+	stats, err := s.computeStats(ctx, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	statscache.Set(ctx, s.cache, key, stats, statscache.TTLFast)
+	return stats, nil
+}
+
+func (s *Service) computeStats(ctx context.Context, tenantID string) (*Stats, error) {
 	stats := &Stats{
 		AlertsBySeverity:  make(map[string]int64),
 		IncidentsByStatus: make(map[string]int64),

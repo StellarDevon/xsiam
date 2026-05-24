@@ -1,0 +1,94 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  XSIAM — Runtime Configuration                                          ║
+# ║                                                                          ║
+# ║  Copy this file to output/ alongside the binaries.                       ║
+# ║  All values can be overridden by environment variables of the same name. ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+# ── Server ports ────────────────────────────────────────────────────────────
+# SERVER_PORT      : user-facing  — React SPA + business APIs
+# INTERNAL_PORT    : internal-only — auth/RBAC/audit svc + agent webhook
+SERVER_PORT: "18080"
+INTERNAL_PORT: "18090"
+
+# Release mode disables Gin's debug output and coloured request logs.
+# Use "debug" during development, "release" in production.
+SERVER_MODE: "debug"
+
+# ── ArangoDB ─────────────────────────────────────────────────────────────────
+ARANGO_ENDPOINTS:
+  - "http://127.0.0.1:8529"
+ARANGO_USERNAME: "root"
+ARANGO_PASSWORD: "changeme"
+ARANGO_DATABASE: "xsiamdb"
+
+# ── Redis ────────────────────────────────────────────────────────────────────
+# Used for: presence registry (agent online/offline), stats cache.
+REDIS_ADDR: "localhost:6379"
+REDIS_PASSWORD: ""
+
+# ── Auth / JWT ───────────────────────────────────────────────────────────────
+# Change JWT_SECRET to a long random string before any real deployment.
+JWT_SECRET: "change-me-in-production"
+JWT_EXPIRE_HR: 24
+
+# ── Internal service URL ─────────────────────────────────────────────────────
+# Console calls this address for auth, RBAC, notify, audit.
+# In the all-in-one binary (xsiam.exe) this is served on INTERNAL_PORT.
+SVC_URL: "http://localhost:18090"
+
+# Restrict the internal port to loopback only (comma-separated CIDRs).
+INTERNAL_ALLOWED_CIDR: "127.0.0.1/8"
+
+# Alert callback from the datalake → internal port webhook endpoint.
+INTERNAL_ALERT_CALLBACK_URL: "http://localhost:18080/api/internal/alerts"
+
+# ── Data Lake (ngx / fluent-bit) ─────────────────────────────────────────────
+# Set DATALAKE_ENABLED: true when the fluent-bit gateway is running.
+DATALAKE_ENABLED: false
+DATALAKE_QUERY_URL: "http://localhost:8080"
+DATALAKE_HEC_URL: "http://localhost:18088"
+DATALAKE_HEC_TOKEN: "changeme-hec-token"
+
+# ── Stubs ────────────────────────────────────────────────────────────────────
+# true  = use no-op stub (safe for dev / CI with no external services)
+# false = call the real external service
+STUB_EXECUTION: true    # remote endpoint isolation / block executor
+STUB_ETL: false         # ETL rule engine (set true to skip DB rule load)
+STUB_DATALAKE: true     # data lake query client
+STUB_AI_ENGINE: true    # AI correlation / smart-score engine
+
+# ── Copilot (AI assistant) ───────────────────────────────────────────────────
+# Set ANTHROPIC_API_KEY environment variable to enable real responses.
+# Leaving blank uses the stub that returns canned answers.
+copilot_api_key: ""
+
+# ── Outbound notifications ───────────────────────────────────────────────────
+NOTIFY_EMAIL_ENABLED: false
+NOTIFY_EMAIL_HOST: ""
+NOTIFY_EMAIL_PORT: 587
+NOTIFY_EMAIL_USERNAME: ""
+NOTIFY_EMAIL_PASSWORD: ""
+NOTIFY_EMAIL_FROM: "xsiam@example.com"
+
+NOTIFY_DINGTALK_ENABLED: false
+NOTIFY_DINGTALK_WEBHOOK_URL: ""
+
+NOTIFY_SLACK_ENABLED: false
+NOTIFY_SLACK_WEBHOOK_URL: ""
+
+# ── GeoIP enrichment (ETL lookup_geoip action) ───────────────────────────────
+# Download GeoLite2 databases from https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
+# Requires a free MaxMind account. Place the .mmdb files in third_party/geoip/.
+# Leave blank to disable GeoIP enrichment (lookup_geoip actions will no-op).
+GEOIP_CITY_DB: ""    # e.g. "../third_party/geoip/GeoLite2-City.mmdb"
+GEOIP_ASN_DB:  ""    # e.g. "../third_party/geoip/GeoLite2-ASN.mmdb"
+
+NOTIFY_WEBHOOK_ENABLED: false
+NOTIFY_WEBHOOK_URLS: []
+
+# ── Incident webhook dispatch ────────────────────────────────────────────────
+# POST to these URLs when an incident is created or escalated.
+webhook:
+  endpoints: []
+  secret: ""

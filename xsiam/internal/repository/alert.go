@@ -228,6 +228,23 @@ func (r *AlertRepo) FindByUser(ctx context.Context, username *string, since time
 	return results, nil
 }
 
+// CountSince returns the number of alerts for a tenant created on or after the given time.
+func (r *AlertRepo) CountSince(ctx context.Context, tenantID string, since time.Time) (int64, error) {
+	q := `FOR doc IN alerts FILTER doc.tenant_id == @tid AND doc.triggered_at >= @since COLLECT WITH COUNT INTO n RETURN n`
+	cursor, err := r.db.Query(ctx, q, &arangodb.QueryOptions{
+		BindVars: map[string]any{"tid": tenantID, "since": since},
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer cursor.Close()
+	var n int64
+	if cursor.HasMore() {
+		_, _ = cursor.ReadDocument(ctx, &n)
+	}
+	return n, nil
+}
+
 func (r *AlertRepo) FindByTimeRange(ctx context.Context, from, to time.Time) ([]model.Alert, error) {
 	query := `FOR doc IN alerts FILTER doc.triggered_at >= @from AND doc.triggered_at <= @to RETURN doc`
 	cursor, err := r.db.Query(ctx, query, &arangodb.QueryOptions{

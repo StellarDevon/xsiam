@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, Tooltip as ReTooltip, Legend, ResponsiveContainer } from 'recharts'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
+import ResizableTh from '@/components/ResizableTh'
 
 // ─── Seeded PRNG (mulberry32) ────────────────────────────────────────────────
 
@@ -1821,7 +1822,7 @@ function DetailPanel({
         padding: '12px 16px', borderBottom: '1px solid var(--border)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>User Risk Detail</span>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>用户风险详情</span>
         <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={onClose}>✕</button>
       </div>
 
@@ -1884,8 +1885,8 @@ function DetailPanel({
                 {[
                   ['域', selected.domain || '-'],
                   ['风险等级', lvl],
-                  ['Active Alerts/Incidents', String(selActiveAlerts)],
-                  ['Last Updated', fmtDate(selected.updated_at)],
+                  ['活跃告警/事件', String(selActiveAlerts)],
+                  ['最后更新', fmtDate(selected.updated_at)],
                   ['登录时段 P95', selected.baseline ? `${selected.baseline.login_hours_p95[0]}:00 – ${selected.baseline.login_hours_p95[1]}:00` : '-'],
                   ['典型城市', (selected.baseline?.typical_cities ?? []).join(', ') || '-'],
                 ].map(([k, v]) => (
@@ -2024,12 +2025,12 @@ export default function IdentityRisks() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>用户</th>
-                <th>风险评分</th>
-                <th>Level</th>
-                <th>Signals</th>
-                <th>Active Alerts</th>
-                <th>Last Activity</th>
+                <ResizableTh>用户</ResizableTh>
+                <ResizableTh>风险评分</ResizableTh>
+                <ResizableTh>风险等级</ResizableTh>
+                <ResizableTh>信号数</ResizableTh>
+                <ResizableTh>活跃告警</ResizableTh>
+                <ResizableTh>最近活动</ResizableTh>
               </tr>
             </thead>
             <tbody>
@@ -2037,7 +2038,7 @@ export default function IdentityRisks() {
                 <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>加载中...</td></tr>
               )}
               {!loading && items.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>No identity risks found</td></tr>
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 24 }}>暂无身份风险</td></tr>
               )}
               {items.map(r => {
                 const lvl = riskLevel(r.risk_score ?? 0)

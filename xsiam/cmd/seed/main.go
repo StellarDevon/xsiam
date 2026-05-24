@@ -1874,7 +1874,8 @@ func main() {
 				{Type: model.ETLActionLookupThreat},
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "platform", "value": "windows"}},
 			},
-			output: model.ETLOutput{NgxIndex: "endpoint_enriched", WriteArango: true},
+			// ngx: endpoint_enriched; ArangoDB: endpoint_events (90d TTL)
+			output: model.ETLOutput{NgxIndex: "endpoint_enriched", ArangoCollection: "endpoint_events", TTLDays: 90},
 		},
 		// Priority 110: enrich Linux endpoint events similarly
 		{
@@ -1891,7 +1892,8 @@ func main() {
 				{Type: model.ETLActionLookupThreat},
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "platform", "value": "linux"}},
 			},
-			output: model.ETLOutput{NgxIndex: "endpoint_enriched", WriteArango: true},
+			// Same sink as Windows: endpoint_events (both platforms share one collection)
+			output: model.ETLOutput{NgxIndex: "endpoint_enriched", ArangoCollection: "endpoint_events", TTLDays: 90},
 		},
 		// Priority 200: parse PAN-OS CEF syslog into structured fields
 		{
@@ -1912,13 +1914,14 @@ func main() {
 				{Type: model.ETLActionLookupAsset},
 				{Type: model.ETLActionSetDataset, Params: map[string]any{"dataset": string(model.DatasetNetwork)}},
 			},
-			output: model.ETLOutput{NgxIndex: "network_panos", WriteArango: true},
+			// ngx: network_panos; ArangoDB: network_events (90d TTL)
+			output: model.ETLOutput{NgxIndex: "network_panos", ArangoCollection: "network_events", TTLDays: 90},
 		},
-		// Priority 210: enrich Cisco NetFlow with asset lookup, route to network index
+		// Priority 210: enrich Cisco NetFlow with asset lookup, route to network index (ngx only, no ArangoDB)
 		{
 			ruleID: "netflow-enrich", priority: 210, isEnabled: true,
 			name:         "NetFlow Asset Enrichment",
-			desc:         "Enrich NetFlow v9 records with src/dst asset context from the asset inventory.",
+			desc:         "Enrich NetFlow v9 records with src/dst asset context. Raw suppressed (etl_only); ngx only — high volume, no ArangoDB sink.",
 			rawWriteMode: model.RawWriteETLOnly,
 			match: model.ETLMatchCriteria{
 				TagPattern: "netflow.*",
@@ -1928,7 +1931,8 @@ func main() {
 				{Type: model.ETLActionLookupAsset},
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "source_type", "value": "netflow"}},
 			},
-			output: model.ETLOutput{NgxIndex: "network_flows", WriteArango: false},
+			// ngx only — no ArangoDB (high volume; query via ngx SPL2)
+			output: model.ETLOutput{NgxIndex: "network_flows"},
 		},
 		// Priority 300: normalise Okta identity events into standard identity schema
 		{
@@ -1947,7 +1951,8 @@ func main() {
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "provider", "value": "okta"}},
 				{Type: model.ETLActionSetDataset, Params: map[string]any{"dataset": string(model.DatasetIdentity)}},
 			},
-			output: model.ETLOutput{NgxIndex: "identity_okta", WriteArango: true},
+			// ngx: identity_okta; ArangoDB: identity_events (180d TTL — compliance retention)
+			output: model.ETLOutput{NgxIndex: "identity_okta", ArangoCollection: "identity_events", TTLDays: 180},
 		},
 		// Priority 310: normalise AWS CloudTrail events
 		{
@@ -1966,7 +1971,8 @@ func main() {
 				{Type: model.ETLActionRenameField, Params: map[string]any{"from": "eventName", "to": "action"}},
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "provider", "value": "aws"}},
 			},
-			output: model.ETLOutput{NgxIndex: "cloud_aws", WriteArango: true},
+			// ngx: cloud_aws; ArangoDB: cloud_events (365d TTL — audit/compliance)
+			output: model.ETLOutput{NgxIndex: "cloud_aws", ArangoCollection: "cloud_events", TTLDays: 365},
 		},
 		// Priority 400: drop noisy health-check and heartbeat events
 		{
@@ -1981,7 +1987,8 @@ func main() {
 			actions: []model.ETLAction{
 				{Type: model.ETLActionDropEvent},
 			},
-			output: model.ETLOutput{NgxIndex: "", WriteArango: false},
+			// raw_only + drop_event: nothing written to ngx ETL index or ArangoDB
+			output: model.ETLOutput{},
 		},
 		// Priority 500: enrich email events with threat intel, route to email index
 		{
@@ -1996,7 +2003,8 @@ func main() {
 				{Type: model.ETLActionLookupThreat},
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "source_type", "value": "email"}},
 			},
-			output: model.ETLOutput{NgxIndex: "email_events", WriteArango: true},
+			// ngx: email_events; ArangoDB: email_events (90d TTL)
+			output: model.ETLOutput{NgxIndex: "email_events", ArangoCollection: "email_events", TTLDays: 90},
 		},
 		// Priority 600: Wazuh syslog — parse JSON body, rename fields, enrich
 		{
@@ -2016,7 +2024,8 @@ func main() {
 				{Type: model.ETLActionLookupAsset},
 				{Type: model.ETLActionSetField, Params: map[string]any{"field": "platform", "value": "linux"}},
 			},
-			output: model.ETLOutput{NgxIndex: "endpoint_wazuh", WriteArango: true},
+			// ngx: endpoint_wazuh; ArangoDB: endpoint_events (same collection as win/linux enrichment, 90d TTL)
+			output: model.ETLOutput{NgxIndex: "endpoint_wazuh", ArangoCollection: "endpoint_events", TTLDays: 90},
 		},
 		// Priority 900: catch-all — enrich remaining events with asset lookup only (disabled by default)
 		{
@@ -2028,7 +2037,8 @@ func main() {
 			actions: []model.ETLAction{
 				{Type: model.ETLActionLookupAsset},
 			},
-			output: model.ETLOutput{NgxIndex: "events_raw_enriched", WriteArango: false},
+			// ngx only — no ArangoDB sink (catch-all volume is unpredictable)
+			output: model.ETLOutput{NgxIndex: "events_raw_enriched"},
 		},
 	}
 	etlCount := 0
@@ -2053,13 +2063,214 @@ func main() {
 	}
 	fmt.Printf("seeded %d etl_rules (%d enabled)\n", etlCount, etlCount-1) // catch-all is disabled
 
+	// ── Network Security collections ──────────────────────────────────────
+	truncate(ctx, database,
+		"network_connections", "dns_records", "network_detection_rules",
+		"network_alerts", "network_devices",
+		"isolated_endpoints",
+	)
+	networkRepo := repository.NewNetworkRepo(database)
+	endpointRepo := repository.NewEndpointRepo(database)
+
+	// Network devices
+	type netDevSpec struct {
+		ip, mac, hostname string
+		devType           model.NetworkDeviceType
+		risk              model.ConnSeverity
+		isNew, isUnknown  bool
+		hoursAgo          float64
+	}
+	netDevSpecs := []netDevSpec{
+		{"10.0.0.1", "AA:BB:CC:00:01:01", "core-router-01", model.NetDevRouter, "low", false, false, 720},
+		{"10.0.0.100", "DE:AD:BE:EF:00:01", "prod-server-web", model.NetDevServer, "none", false, false, 1440},
+		{"192.168.1.45", "FA:CE:B0:0C:00:01", "analyst-ws-04", model.NetDevWorkstation, "high", false, false, 500},
+		{"10.0.1.88", "C0:FF:EE:00:01:02", "db-server-01", model.NetDevServer, "medium", false, false, 720},
+		{"10.0.2.55", "B8:27:EB:AB:CD:EF", "rpi-sensor-01", model.NetDevIoT, "low", false, false, 200},
+		{"192.168.5.201", "00:00:00:00:AB:CD", "", model.NetDevUnknown, "critical", true, true, 3},
+		{"10.0.3.22", "44:38:39:FF:01:01", "backup-nas-01", model.NetDevServer, "low", false, false, 600},
+		{"10.1.0.10", "EC:A8:6B:FF:00:01", "mgmt-switch-01", model.NetDevSwitch, "none", false, false, 1000},
+	}
+	for _, s := range netDevSpecs {
+		dev := &model.NetworkDevice{
+			TenantID:   tenantID,
+			IP:         s.ip,
+			MAC:        s.mac,
+			Hostname:   s.hostname,
+			DeviceType: s.devType,
+			Risk:       s.risk,
+			IsNew:      s.isNew,
+			IsUnknown:  s.isUnknown,
+			FirstSeen:  now.Add(-time.Duration(s.hoursAgo) * time.Hour),
+			LastActive: now.Add(-time.Duration(s.hoursAgo/10) * time.Hour),
+		}
+		must("network_device "+s.ip, networkRepo.CreateNetworkDevice(ctx, dev))
+	}
+	fmt.Printf("seeded %d network_devices\n", len(netDevSpecs))
+
+	// Network connections (suspicious/blocked)
+	type connSpec struct {
+		srcIP, dstIP, protocol, threatType string
+		port                               int
+		bytesIn, bytesOut                  int64
+		severity                           model.ConnSeverity
+		status                             model.ConnStatus
+		hoursAgo                           float64
+	}
+	connSpecs := []connSpec{
+		{"192.168.1.45", "185.220.101.47", "TCP", "C2通信", 443, 102400, 2516582, model.ConnSeverityCritical, model.ConnStatusAlerting, 0.08},
+		{"10.0.1.23", "198.51.100.22", "HTTP", "数据外传", 80, 148480, 1024, model.ConnSeverityHigh, model.ConnStatusMonitoring, 0.17},
+		{"172.16.5.102", "93.184.216.34", "TCP", "IRC隧道", 6667, 911360, 4096, model.ConnSeverityHigh, model.ConnStatusBlocked, 0.25},
+		{"10.0.2.87", "104.21.77.88", "TCP", "反弹Shell", 4444, 327680, 8192, model.ConnSeverityCritical, model.ConnStatusBlocked, 0.33},
+		{"192.168.10.34", "185.199.108.153", "HTTPS", "可疑外联", 443, 79872, 2048, model.ConnSeverityMedium, model.ConnStatusMonitoring, 0.5},
+		{"10.0.0.55", "8.8.8.8", "UDP", "", 53, 512, 256, "none", model.ConnStatusNormal, 1.0},
+		{"10.0.1.88", "104.21.0.10", "TCP", "数据外传", 8443, 5242880, 1048576, model.ConnSeverityHigh, model.ConnStatusMonitoring, 2.0},
+		{"192.168.5.201", "10.0.0.100", "TCP", "横向移动", 445, 8192, 65536, model.ConnSeverityCritical, model.ConnStatusAlerting, 3.0},
+	}
+	for _, s := range connSpecs {
+		conn := &model.NetworkConnection{
+			TenantID:       tenantID,
+			SrcIP:          s.srcIP,
+			DstIP:          s.dstIP,
+			Port:           s.port,
+			Protocol:       s.protocol,
+			ThreatType:     s.threatType,
+			Severity:       s.severity,
+			Status:         s.status,
+			BytesInbound:   s.bytesIn,
+			BytesOutbound:  s.bytesOut,
+			BytesTransferred: s.bytesIn + s.bytesOut,
+			DetectedAt:     now.Add(-time.Duration(s.hoursAgo * float64(time.Hour))),
+		}
+		must("network_connection "+s.srcIP+"→"+s.dstIP, networkRepo.CreateConnection(ctx, conn))
+	}
+	fmt.Printf("seeded %d network_connections\n", len(connSpecs))
+
+	// DNS records
+	type dnsSpec struct {
+		domain, resolvedIP, category string
+		queryCount                   int64
+		risk                         model.DNSRiskLevel
+		blocklisted                  bool
+		hoursAgoFirst, hoursAgoLast  float64
+	}
+	dnsSpecs := []dnsSpec{
+		{"evil-domain.ru", "185.220.101.47", "C2服务器", 847, model.DNSRiskCritical, true, 24, 0},
+		{"update-service.top", "104.21.67.90", "恶意下载", 312, model.DNSRiskHigh, true, 12, 0.5},
+		{"cdn-data-exfil.xyz", "198.51.100.5", "数据外传", 134, model.DNSRiskCritical, true, 6, 1},
+		{"xvzqmpbwkjhfrt.cdn-stats24.net", "0.0.0.0", "DGA域名", 3, model.DNSRiskHigh, false, 14, 14},
+		{"telemetry.microsoft.com", "20.54.37.64", "系统更新", 23841, model.DNSRiskClean, false, 720, 0.1},
+		{"api.github.com", "140.82.112.6", "开发工具", 8920, model.DNSRiskClean, false, 720, 0.05},
+		{"fonts.googleapis.com", "172.217.16.100", "CDN", 4521, model.DNSRiskClean, false, 720, 0.02},
+		{"suspicious-tracker.info", "91.241.19.55", "追踪器", 47, "medium", false, 48, 2},
+	}
+	for _, s := range dnsSpecs {
+		rec := &model.DNSRecord{
+			TenantID:    tenantID,
+			Domain:      s.domain,
+			ResolvedIP:  s.resolvedIP,
+			Category:    s.category,
+			QueryCount:  s.queryCount,
+			RiskLevel:   s.risk,
+			IsBlocklisted: s.blocklisted,
+			FirstSeen:   now.Add(-time.Duration(s.hoursAgoFirst * float64(time.Hour))),
+			LastSeen:    now.Add(-time.Duration(s.hoursAgoLast * float64(time.Hour))),
+		}
+		must("dns_record "+s.domain, networkRepo.CreateDNSRecord(ctx, rec))
+	}
+	fmt.Printf("seeded %d dns_records\n", len(dnsSpecs))
+
+	// Network detection rules
+	type netRuleSpec struct {
+		name, category string
+		active         bool
+		hitsToday      int64
+	}
+	netRuleSpecs := []netRuleSpec{
+		{"端口扫描检测", "侦察", true, 3},
+		{"DNS隧道检测", "C2", true, 1},
+		{"异常出站流量", "数据外传", true, 8},
+		{"ARP欺骗检测", "中间人", true, 0},
+		{"大量连接异常", "DDoS", false, 0},
+		{"横向移动检测", "横向移动", true, 2},
+		{"IRC协议检测", "C2", true, 1},
+		{"反弹Shell特征", "执行", true, 4},
+	}
+	for _, s := range netRuleSpecs {
+		rule := &model.NetworkDetectionRule{
+			TenantID:  tenantID,
+			Name:      s.name,
+			Category:  s.category,
+			Active:    s.active,
+			HitsToday: s.hitsToday,
+		}
+		must("network_rule "+s.name, networkRepo.CreateNetworkRule(ctx, rule))
+	}
+	fmt.Printf("seeded %d network_detection_rules\n", len(netRuleSpecs))
+
+	// Network threat alerts
+	type netAlertSpec struct {
+		threatType, srcIP, target string
+		severity                  model.ConnSeverity
+		status                    model.NetAlertStatus
+		hoursAgo                  float64
+	}
+	netAlertSpecs := []netAlertSpec{
+		{"端口扫描", "192.168.5.201", "10.0.0.0/24", model.ConnSeverityHigh, model.NetAlertActive, 1.5},
+		{"DNS隧道", "172.16.0.56", "evil-domain.ru", model.ConnSeverityCritical, model.NetAlertInvestigate, 2},
+		{"ARP欺骗", "192.168.1.45", "192.168.1.0/24", model.ConnSeverityHigh, model.NetAlertActive, 3},
+		{"横向移动", "10.0.1.88", "10.0.0.100", model.ConnSeverityCritical, model.NetAlertInvestigate, 5},
+		{"暴力破解", "45.142.212.100", "ssh:22", model.ConnSeverityMedium, model.NetAlertResolved, 8},
+		{"数据外传", "192.168.1.45", "185.220.101.47:443", model.ConnSeverityCritical, model.NetAlertActive, 0.08},
+	}
+	for _, s := range netAlertSpecs {
+		alert := &model.NetworkThreatAlert{
+			TenantID:   tenantID,
+			ThreatType: s.threatType,
+			SrcIP:      s.srcIP,
+			Target:     s.target,
+			Severity:   s.severity,
+			Status:     s.status,
+			DetectedAt: now.Add(-time.Duration(s.hoursAgo * float64(time.Hour))),
+		}
+		must("network_alert "+s.threatType, networkRepo.CreateNetworkAlert(ctx, alert))
+	}
+	fmt.Printf("seeded %d network_alerts\n", len(netAlertSpecs))
+
+	// Isolated endpoints
+	type isoSpec struct {
+		hostname, ip, reason, operator string
+		status                         model.IsolationStatus
+		hoursAgo                       float64
+	}
+	isoSpecs := []isoSpec{
+		{"ENDPOINT-042", "192.168.1.142", "发现勒索软件", "admin", model.IsolationActive, 3},
+		{"ENDPOINT-001", "192.168.1.101", "C2通信检测", "soc-analyst1", model.IsolationActive, 0.5},
+		{"ENDPOINT-023", "192.168.1.123", "横向移动尝试", "admin", model.IsolationActive, 24},
+		{"ENDPOINT-007", "192.168.1.107", "凭证转储行为", "soc-analyst2", model.IsolationActive, 48},
+		{"ENDPOINT-055", "192.168.1.155", "测试隔离", "admin", model.IsolationReleased, 72},
+	}
+	for _, s := range isoSpecs {
+		iso := &model.IsolatedEndpoint{
+			TenantID:   tenantID,
+			Hostname:   s.hostname,
+			IP:         s.ip,
+			Reason:     s.reason,
+			Operator:   s.operator,
+			Status:     s.status,
+			IsolatedAt: now.Add(-time.Duration(s.hoursAgo * float64(time.Hour))),
+		}
+		must("isolation "+s.hostname, endpointRepo.CreateIsolation(ctx, iso))
+	}
+	fmt.Printf("seeded %d isolated_endpoints\n", len(isoSpecs))
+
 	// Summary
 	_ = ruleKeys
 	fmt.Printf("\n✓ seed complete\n")
-	fmt.Printf("  assets=%d vulns=%d iocs=%d feeds=%d rules=%d alerts=%d incidents=%d devices=%d playbooks=%d actions=%d logs=%d identity_risks=%d exposure_scores=%d causality_graphs=%d reports=%d policies=%d datasources=%d etl_rules=%d\n",
+	fmt.Printf("  assets=%d vulns=%d iocs=%d feeds=%d rules=%d alerts=%d incidents=%d devices=%d playbooks=%d actions=%d logs=%d identity_risks=%d exposure_scores=%d causality_graphs=%d reports=%d policies=%d datasources=%d etl_rules=%d net_devices=%d net_conns=%d net_alerts=%d isolated=%d\n",
 		len(assetSpecs), len(vulnSpecs), len(iocSpecs), len(feedSpecs),
 		len(ruleSpecs), len(alertSpecs), len(incSpecs),
 		len(deviceSpecs), len(pbSpecs), len(actionSpecs), logCount,
 		len(identitySpecs), len(exposureSpecs), causalityCount,
-		len(reportSpecs), len(policySpecs), len(dsSpecs), etlCount)
+		len(reportSpecs), len(policySpecs), len(dsSpecs), etlCount,
+		len(netDevSpecs), len(connSpecs), len(netAlertSpecs), len(isoSpecs))
 }

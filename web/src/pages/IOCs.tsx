@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
-import PageHeader from '@/components/PageHeader'
+import ResizableTh from '@/components/ResizableTh'
 
 interface IOC {
   _key: string
@@ -59,15 +59,15 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 const VERDICT_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
-  malicious:  { bg: 'rgba(224,80,80,.18)',   color: 'var(--critical)',  label: 'Malicious' },
-  suspicious: { bg: 'rgba(224,128,64,.15)',  color: 'var(--high)',  label: 'Suspicious' },
-  benign:     { bg: 'rgba(47,176,122,.15)',  color: 'var(--accent-green)',  label: 'Benign' },
-  unknown:    { bg: 'rgba(84,110,122,.15)',  color: 'var(--text-muted)',  label: 'Unknown' },
-  false_positive: { bg: 'rgba(120,144,156,.15)', color: 'var(--text-muted)', label: 'False Positive' },
+  malicious:  { bg: 'rgba(224,80,80,.18)',   color: 'var(--critical)',  label: '恶意' },
+  suspicious: { bg: 'rgba(224,128,64,.15)',  color: 'var(--high)',  label: '可疑' },
+  benign:     { bg: 'rgba(47,176,122,.15)',  color: 'var(--accent-green)',  label: '无害' },
+  unknown:    { bg: 'rgba(84,110,122,.15)',  color: 'var(--text-muted)',  label: '未知' },
+  false_positive: { bg: 'rgba(120,144,156,.15)', color: 'var(--text-muted)', label: '误报' },
 }
 
 // Mock geo data for IP IOCs
-const GEO_COUNTRIES = ['United States', 'China', 'Russia', 'Germany', 'Netherlands', 'United Kingdom', 'France', 'Singapore', 'Brazil', 'India']
+const GEO_COUNTRIES = ['美国', '中国', '俄罗斯', '德国', '荷兰', '英国', '法国', '新加坡', '巴西', '印度']
 function mockGeoForIP(value: string): string {
   let hash = 0
   for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) | 0
@@ -262,9 +262,9 @@ function RelationshipGraph({ ioc, alerts, incidents, onNavigateAlert, onNavigate
       {/* Legend */}
       <g transform={`translate(${W - 100}, ${H - 32})`}>
         <rect x={0} y={0} width={8} height={8} rx={1} fill="none" stroke="#c04040" strokeWidth={1.5} />
-        <text x={11} y={7.5} fontSize="7" fill="var(--text-muted)" fontFamily="'Segoe UI',sans-serif">Alert</text>
+        <text x={11} y={7.5} fontSize="7" fill="var(--text-muted)" fontFamily="'Segoe UI',sans-serif">告警</text>
         <path d="M 36 4 L 39 1 L 44 1 L 47 4 L 44 7 L 39 7 Z" fill="none" stroke="#a78bfa" strokeWidth={1.5} />
-        <text x={50} y={7.5} fontSize="7" fill="var(--text-muted)" fontFamily="'Segoe UI',sans-serif">Incident</text>
+        <text x={50} y={7.5} fontSize="7" fill="var(--text-muted)" fontFamily="'Segoe UI',sans-serif">事件</text>
       </g>
     </svg>
   )
@@ -317,7 +317,8 @@ function downloadCSV(iocs: IOC[], filename = 'iocs.csv') {
   a.click()
 }
 
-export default function IOCs() {
+// IOCsTab — embeddable version (no PageHeader, used inside ThreatIntel tabs)
+export function IOCsTab() {
   const navigate = useNavigate()
   const [items, setItems] = useState<IOC[]>([])
   const [meta, setMeta] = useState<PageMeta>({ page: 1, page_size: 20, total: 0, total_pages: 1 })
@@ -637,17 +638,12 @@ export default function IOCs() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <PageHeader
-        title="IOC 管理"
-        actions={<>
-          <button className="btn-secondary" onClick={exportPageCSV}>导出</button>
-          <button className="btn-secondary" onClick={() => { /* hunt UI not yet implemented */ }}>
-            IOC 狩猎
-          </button>
-          <button className="btn-secondary" onClick={() => { setBulkError(''); setBulkSuccess(''); setShowBulk(true) }}>批量导入</button>
-          <button className="btn-primary" onClick={() => setShowAdd(true)}>+ 添加IOC</button>
-        </>}
-      />
+      {/* Inline toolbar (replaces PageHeader when embedded) */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '10px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <button className="btn-secondary" onClick={exportPageCSV}>导出</button>
+        <button className="btn-secondary" onClick={() => { setBulkError(''); setBulkSuccess(''); setShowBulk(true) }}>批量导入</button>
+        <button className="btn-primary" onClick={() => setShowAdd(true)}>+ 添加 IOC</button>
+      </div>
 
       {/* Filter bar */}
       <div className="filter-bar">
@@ -688,30 +684,30 @@ export default function IOCs() {
 
         <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
           <option value="">全部类型</option>
-          <option value="ip">IP Address</option>
-          <option value="domain">Domain</option>
+          <option value="ip">IP 地址</option>
+          <option value="domain">域名</option>
           <option value="url">URL</option>
-          <option value="hash">File Hash</option>
-          <option value="email">Email</option>
+          <option value="hash">文件哈希</option>
+          <option value="email">邮箱</option>
           <option value="cve">CVE</option>
           <option value="cidr">CIDR</option>
-          <option value="registry">Registry Key</option>
-          <option value="user_agent">User Agent</option>
-          <option value="mutex">Mutex</option>
+          <option value="registry">注册表项</option>
+          <option value="user_agent">用户代理</option>
+          <option value="mutex">互斥体</option>
         </select>
         <select className="filter-select" value={severityFilter} onChange={e => setSeverityFilter(e.target.value)}>
           <option value="">全部严重程度</option>
-          <option value="critical">Critical</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value="critical">严重</option>
+          <option value="high">高危</option>
+          <option value="medium">中危</option>
+          <option value="low">低危</option>
         </select>
         <select className="filter-select" value={verdictFilter} onChange={e => setVerdictFilter(e.target.value)}>
-          <option value="">All Verdict</option>
-          <option value="malicious">Malicious</option>
-          <option value="suspicious">Suspicious</option>
-          <option value="benign">Benign</option>
-          <option value="unknown">Unknown</option>
+          <option value="">全部判定</option>
+          <option value="malicious">恶意</option>
+          <option value="suspicious">可疑</option>
+          <option value="benign">正常</option>
+          <option value="unknown">未知</option>
         </select>
 
         <label style={{
@@ -805,7 +801,7 @@ export default function IOCs() {
           <table className="data-table">
             <thead>
               <tr>
-                <th style={{ width: 36 }}>
+                <ResizableTh style={{ width: 36 }}>
                   <input
                     type="checkbox"
                     ref={el => { if (el) el.indeterminate = someChecked }}
@@ -814,16 +810,16 @@ export default function IOCs() {
                     title="全选"
                     style={{ accentColor: 'var(--accent-blue)', cursor: 'pointer' }}
                   />
-                </th>
-                <th>类型</th>
-                <th>Value</th>
-                <th>Verdict</th>
-                <th>威胁名称</th>
-                <th>严重程度</th>
-                <th>置信度</th>
-                <th>标签</th>
-                <th>状态</th>
-                <th>创建时间</th>
+                </ResizableTh>
+                <ResizableTh>类型</ResizableTh>
+                <ResizableTh>指标值</ResizableTh>
+                <ResizableTh>判定</ResizableTh>
+                <ResizableTh>威胁名称</ResizableTh>
+                <ResizableTh>严重程度</ResizableTh>
+                <ResizableTh>置信度</ResizableTh>
+                <ResizableTh>标签</ResizableTh>
+                <ResizableTh>状态</ResizableTh>
+                <ResizableTh>创建时间</ResizableTh>
               </tr>
             </thead>
             <tbody>
@@ -887,7 +883,7 @@ export default function IOCs() {
             <div style={{ padding: '14px 16px 0', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>IOC Detail</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>IOC 详情</div>
                   <div style={{
                     fontFamily: 'monospace', fontSize: 13, fontWeight: 700,
                     color: 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.4,
@@ -961,9 +957,9 @@ export default function IOCs() {
                     {[
                       ['威胁名称', selected.threat_name || '-'],
                       ['来源', selected.source || '-'],
-                      ['状态', selected.active ? 'Active' : 'Inactive'],
-                      ['First Seen', fmtDate(selected.first_seen)],
-                      ['Last Seen', fmtDate(selected.last_seen)],
+                      ['状态', selected.active ? '活跃' : '停用'],
+                      ['首次发现', fmtDate(selected.first_seen)],
+                      ['最后发现', fmtDate(selected.last_seen)],
                       ['创建时间', fmtDate(selected.created_at)],
                     ].map(([k, v]) => (
                       <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: 11.5, borderBottom: '1px solid rgba(255,255,255,.04)', paddingBottom: 6, marginBottom: 6 }}>
@@ -1010,9 +1006,9 @@ export default function IOCs() {
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                         <thead>
                           <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                            <th style={{ padding: '6px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--border)' }}>情报源</th>
-                            <th style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--border)' }}>同步时间</th>
-                            <th style={{ padding: '6px 10px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--border)' }}>置信度</th>
+                            <ResizableTh style={{ padding: '6px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--border)' }}>情报源</ResizableTh>
+                            <ResizableTh style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--border)' }}>同步时间</ResizableTh>
+                            <ResizableTh style={{ padding: '6px 10px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--border)' }}>置信度</ResizableTh>
                           </tr>
                         </thead>
                         <tbody>
@@ -1049,8 +1045,8 @@ export default function IOCs() {
                       {toggling ? '处理中...' : selected.active ? '标记不活跃' : '标记活跃'}
                     </button>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="btn-primary" style={{ flex: 1, fontSize: 11 }} onClick={() => blockIOC(selected)}>Block IOC</button>
-                      <button className="btn-secondary" style={{ flex: 1, fontSize: 11 }} onClick={() => huntIOC(selected)}>Hunt for IOC</button>
+                      <button className="btn-primary" style={{ flex: 1, fontSize: 11 }} onClick={() => blockIOC(selected)}>封锁 IOC</button>
+                      <button className="btn-secondary" style={{ flex: 1, fontSize: 11 }} onClick={() => huntIOC(selected)}>狩猎 IOC</button>
                     </div>
                   </div>
                 </>
@@ -1294,19 +1290,19 @@ export default function IOCs() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>严重程度</div>
                   <select className="filter-select" style={{ width: '100%' }} value={addForm.severity} onChange={e => setAddForm(p => ({ ...p, severity: e.target.value }))}>
-                    <option value="critical">Critical</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <option value="critical">严重</option>
+                    <option value="high">高危</option>
+                    <option value="medium">中危</option>
+                    <option value="low">低危</option>
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>Verdict</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>判定</div>
                   <select className="filter-select" style={{ width: '100%' }} value={addForm.verdict} onChange={e => setAddForm(p => ({ ...p, verdict: e.target.value }))}>
-                    <option value="malicious">Malicious</option>
-                    <option value="suspicious">Suspicious</option>
-                    <option value="benign">Benign</option>
-                    <option value="unknown">Unknown</option>
+                    <option value="malicious">恶意</option>
+                    <option value="suspicious">可疑</option>
+                    <option value="benign">正常</option>
+                    <option value="unknown">未知</option>
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1402,4 +1398,9 @@ export default function IOCs() {
       )}
     </div>
   )
+}
+
+// Standalone page wrapper — keeps /iocs route working
+export default function IOCsPage() {
+  return <IOCsTab />
 }

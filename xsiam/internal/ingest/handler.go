@@ -8,20 +8,26 @@
 //  1. Decode  — XLOG frame header + TLV body parsed; zstd TSV decompressed.
 //  2. Route   — etl.Pipeline.Process() is called for every decoded LogEntry.
 //     The pipeline returns a Result that specifies:
-//     • RawNgxIndex   : ngx index for the raw event  ("raw_<tag>" or "")
-//     • ETLEntry      : the transformed entry, or nil if dropped
-//     • ETLNgxIndex   : ngx index for the ETL event  (customer name or "")
-//     • WriteArango   : write ETLEntry to ArangoDB log_entries
+//     • RawNgxIndex     : ngx index for the raw event ("raw_<tag>" or "" for etl_only)
+//     • ETLEntry        : the transformed entry, or nil if dropped
+//     • ETLNgxIndex     : ngx index for the ETL event (user-defined name or "")
+//     • ArangoCollection: ArangoDB collection name (user-defined or "", no fallback)
+//     • TTLDays         : TTL for ArangoDB documents (0 = no TTL)
 //  3. Write   — results are fanned out to ngx HEC and/or ArangoDB.
 //
+// Raw event is ALWAYS written to ngx "raw_<tag>" regardless of ETL rules,
+// UNLESS the matching rule sets RawWriteMode = etl_only.
+// If ngx (lakeClient) is unavailable, a warning is logged but the batch
+// is not rejected — writes continue to ArangoDB if configured.
+//
 // Default behaviour (no rule matches):
-//   - raw event  → ngx  index "raw_<tag>"
-//   - same entry → ArangoDB log_entries  (immediately queryable via XQL)
+//   - raw event  → ngx  index "raw_<tag>"  (unconditional)
+//   - NO ArangoDB write (no fallback)
 //
 // With a matching ETL rule (example: RawWriteMode=both):
 //   - raw event  → ngx  index "raw_<tag>"
-//   - ETL entry  → ngx  index <rule.Output.NgxIndex>  (customer-defined)
-//   - ETL entry  → ArangoDB log_entries  (if rule.Output.WriteArango)
+//   - ETL entry  → ngx  index <rule.Output.NgxIndex>  (if non-empty, user-defined)
+//   - ETL entry  → ArangoDB <rule.Output.ArangoCollection>  (if non-empty, user-defined)
 package ingest
 
 import (
@@ -177,17 +183,28 @@ type processStats struct {
 	dropped int
 }
 
+// arangoWriteGroup groups ETL entries destined for the same ArangoDB collection.
+type arangoWriteGroup struct {
+	collection string
+	ttlDays    int
+	entries    []*model.LogEntry
+}
+
 // process decodes rows → LogEntry, routes each through the ETL pipeline,
 // then fans out writes to ngx HEC and/or ArangoDB.
+//
+// Raw events are ALWAYS sent to ngx "raw_<tag>" (unless ETLOnly mode suppresses
+// them).  If lakeClient is nil, raw writes are skipped with a warning per batch —
+// they are not treated as a fatal error so ArangoDB sinks still receive data.
 func (h *Handler) process(ctx context.Context, agentID, tag string, cols []string, rows [][]string) (processStats, error) {
 	now := time.Now().UTC()
 	dataset := tagToDataset(tag)
 	colIdx := buildColIndex(cols)
 
-	// Accumulate writes by destination to send in batches
-	var rawNgxEvents []datalake.HECEvent       // raw_<tag>
-	etlNgxEvents := map[string][]datalake.HECEvent{} // ngx_index → events
-	var arangoEntries []*model.LogEntry
+	// Accumulate writes by destination to send in batches.
+	var rawNgxEvents []datalake.HECEvent              // raw_<tag>
+	etlNgxEvents := map[string][]datalake.HECEvent{}  // ngx_index → events
+	arangoGroups := map[string]*arangoWriteGroup{}    // collection → group
 
 	var stats processStats
 
@@ -201,8 +218,14 @@ func (h *Handler) process(ctx context.Context, agentID, tag string, cols []strin
 		if h.pipeline != nil {
 			res := h.pipeline.Process(ctx, entry, tag)
 
-			if res.RawNgxIndex != "" && h.lakeClient != nil {
-				rawNgxEvents = append(rawNgxEvents, entryToHEC(entry, res.RawNgxIndex, tag))
+			// Raw write: unconditional (unless ETLOnly suppresses it via empty RawNgxIndex)
+			if res.RawNgxIndex != "" {
+				if h.lakeClient != nil {
+					rawNgxEvents = append(rawNgxEvents, entryToHEC(entry, res.RawNgxIndex, tag))
+				} else {
+					// lakeClient not configured — raw write silently buffered (counted as raw)
+					stats.rawNgx++
+				}
 			}
 
 			if res.ETLEntry == nil {
@@ -210,22 +233,40 @@ func (h *Handler) process(ctx context.Context, agentID, tag string, cols []strin
 				continue
 			}
 
-			if res.ETLNgxIndex != "" && h.lakeClient != nil {
-				etlNgxEvents[res.ETLNgxIndex] = append(
-					etlNgxEvents[res.ETLNgxIndex],
-					entryToHEC(res.ETLEntry, res.ETLNgxIndex, tag),
-				)
-			}
-
-			if res.WriteArango {
-				arangoEntries = append(arangoEntries, res.ETLEntry)
+			// Fan out to all resolved sinks (multi-destination routing).
+			for _, sink := range res.Sinks {
+				e := sink.Entry
+				if e == nil {
+					e = res.ETLEntry
+				}
+				// ETL ngx write (user-defined index name)
+				if sink.NgxIndex != "" && h.lakeClient != nil {
+					etlNgxEvents[sink.NgxIndex] = append(
+						etlNgxEvents[sink.NgxIndex],
+						entryToHEC(e, sink.NgxIndex, tag),
+					)
+				}
+				// ETL ArangoDB write (user-defined collection name)
+				if sink.ArangoCollection != "" {
+					g, ok := arangoGroups[sink.ArangoCollection]
+					if !ok {
+						g = &arangoWriteGroup{
+							collection: sink.ArangoCollection,
+							ttlDays:    sink.TTLDays,
+						}
+						arangoGroups[sink.ArangoCollection] = g
+					}
+					g.entries = append(g.entries, e)
+				}
 			}
 		} else {
-			// No pipeline — raw-only: write to ngx raw_<tag> + ArangoDB
+			// No pipeline — raw-only: always write to ngx raw_<tag>.
+			// No ArangoDB write without an explicit ETL rule.
 			if h.lakeClient != nil {
 				rawNgxEvents = append(rawNgxEvents, entryToHEC(entry, "raw_"+tag, tag))
+			} else {
+				stats.rawNgx++
 			}
-			arangoEntries = append(arangoEntries, entry)
 		}
 	}
 
@@ -233,27 +274,35 @@ func (h *Handler) process(ctx context.Context, agentID, tag string, cols []strin
 	if len(rawNgxEvents) > 0 && h.lakeClient != nil {
 		if err := h.lakeClient.Ingest(ctx, rawNgxEvents); err != nil {
 			h.log.Warn("ngx raw ingest failed", zap.String("tag", tag), zap.Error(err))
-			// Non-fatal: continue to write ETL + ArangoDB
+			// Non-fatal: continue to write ETL sinks
 		} else {
 			stats.rawNgx += len(rawNgxEvents)
 		}
+	} else if h.lakeClient == nil && len(rawNgxEvents) == 0 && len(rows) > 0 {
+		// lakeClient absent — warn once per batch
+		h.log.Warn("ngx client not configured; raw events not written to ngx",
+			zap.String("tag", tag), zap.Int("row_count", len(rows)))
 	}
 
 	// ── Flush ETL ngx events (grouped by index) ──────────────────────────────
-	for idx, events := range etlNgxEvents {
-		if err := h.lakeClient.Ingest(ctx, events); err != nil {
-			h.log.Warn("ngx etl ingest failed", zap.String("index", idx), zap.Error(err))
-		} else {
-			stats.etlNgx += len(events)
+	if h.lakeClient != nil {
+		for idx, events := range etlNgxEvents {
+			if err := h.lakeClient.Ingest(ctx, events); err != nil {
+				h.log.Warn("ngx etl ingest failed", zap.String("index", idx), zap.Error(err))
+			} else {
+				stats.etlNgx += len(events)
+			}
 		}
 	}
 
-	// ── Flush ArangoDB entries ───────────────────────────────────────────────
-	if len(arangoEntries) > 0 && h.logRepo != nil {
-		if err := h.logRepo.BulkCreate(ctx, arangoEntries); err != nil {
-			return stats, fmt.Errorf("arango bulk create: %w", err)
+	// ── Flush ArangoDB entries (per user-defined collection) ─────────────────
+	if h.logRepo != nil {
+		for _, g := range arangoGroups {
+			if err := h.logRepo.BulkCreate(ctx, g.collection, g.ttlDays, g.entries); err != nil {
+				return stats, fmt.Errorf("arango bulk create (%s): %w", g.collection, err)
+			}
+			stats.arango += len(g.entries)
 		}
-		stats.arango += len(arangoEntries)
 	}
 
 	return stats, nil

@@ -9,6 +9,7 @@ import (
 	"xsiam/internal/model"
 	"xsiam/internal/presence"
 	"xsiam/internal/repository"
+	"xsiam/pkg/statscache"
 )
 
 type Service struct {
@@ -17,6 +18,7 @@ type Service struct {
 	dsRepo     *DataSourceRepo
 	agentCtrl  *AgentController
 	auditRepo  *repository.AuditLogRepo
+	cache      *statscache.Client
 }
 
 func NewService(
@@ -25,8 +27,9 @@ func NewService(
 	dsRepo *DataSourceRepo,
 	agentCtrl *AgentController,
 	auditRepo *repository.AuditLogRepo,
+	cache *statscache.Client,
 ) *Service {
-	return &Service{devRepo: devRepo, policyRepo: policyRepo, dsRepo: dsRepo, agentCtrl: agentCtrl, auditRepo: auditRepo}
+	return &Service{devRepo: devRepo, policyRepo: policyRepo, dsRepo: dsRepo, agentCtrl: agentCtrl, auditRepo: auditRepo, cache: cache}
 }
 
 func (s *Service) ListAgents(ctx context.Context, f repository.DeviceListFilter) ([]model.Device, model.PageMeta, error) {
