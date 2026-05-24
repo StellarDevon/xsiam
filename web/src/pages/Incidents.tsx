@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -1752,38 +1753,35 @@ export default function Incidents() {
 
       {/* ── Filter bar ──────────────────────────────────────── */}
       <div className="filter-bar">
-        {/* Keyword search with clear button */}
+        {/* Unified search box */}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
           <input
             className="filter-input"
-            style={{ width: 180, paddingRight: keyword ? 24 : undefined }}
-            placeholder="搜索事件"
-            value={keywordInput}
-            onChange={e => handleKeywordChange(e.target.value)}
+            style={{ width: 220, paddingRight: (keyword || search) ? 24 : undefined }}
+            placeholder="搜索事件 / 标题"
+            value={keywordInput || search}
+            onChange={e => {
+              const val = e.target.value
+              setSearch(val)
+              handleKeywordChange(val)
+            }}
+            onKeyDown={e => e.key === 'Enter' && doSearch()}
           />
-          {keyword && (
+          {(keyword || search) && (
             <button
-              onClick={() => { setKeywordInput(''); setKeyword(''); setPage(1); load(1, { keyword: '' }) }}
+              onClick={() => {
+                setKeywordInput(''); setKeyword(''); setSearch('')
+                setPage(1); load(1, { keyword: '', q: '' })
+              }}
               style={{
                 position: 'absolute', right: 6,
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--text-muted)', fontSize: 13, lineHeight: 1, padding: 0,
               }}
-              title="清除关键词"
-            >
-              &#x2715;
-            </button>
+              title="清除搜索"
+            >&#x2715;</button>
           )}
         </div>
-
-        <input
-          className="filter-input"
-          style={{ width: 200 }}
-          placeholder="搜索事件标题..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && doSearch()}
-        />
         <button className="btn-secondary" style={{ fontSize: 11 }} onClick={doSearch}>搜索</button>
         <select className="filter-select" value={severityFilter} onChange={e => setSeverityFilter(e.target.value)}>
           <option value="">全部严重程度</option>
@@ -1888,15 +1886,15 @@ export default function Incidents() {
         <table className="data-table incidents-table">
           <thead>
             <tr>
-              <th style={{ width: 36 }}>
+              <ResizableTh style={{ width: 36 }}>
                 <input
                   type="checkbox"
                   checked={allChecked}
                   onChange={() => setChecked(allChecked ? new Set() : new Set(incidents.map(i => i._key)))}
                 />
-              </th>
-              <th style={{ width: 92 }}>事件编号</th>
-              <th>事件名称</th>
+              </ResizableTh>
+              <ResizableTh style={{ width: 92 }}>事件编号</ResizableTh>
+              <ResizableTh>事件名称</ResizableTh>
               {/* Sortable columns */}
               {([
                 ['severity', '严重程度', 68],
@@ -1904,7 +1902,7 @@ export default function Incidents() {
                 ['status', '状态', 82],
                 ['alert_count', '告警', 48],
               ] as [string, string, number][]).map(([col, label, w]) => (
-                <th
+                <ResizableTh
                   key={col}
                   style={{ width: w, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => doSort(col)}
@@ -1915,23 +1913,23 @@ export default function Incidents() {
                       {sortDesc ? '▼' : '▲'}
                     </span>
                   )}
-                </th>
+                </ResizableTh>
               ))}
-              <th style={{ width: 88 }}>负责人</th>
-              <th style={{ width: 108 }}>MITRE 战术</th>
-              <th
+              <ResizableTh style={{ width: 88 }}>负责人</ResizableTh>
+              <ResizableTh style={{ width: 108 }}>MITRE 战术</ResizableTh>
+              <ResizableTh
                 style={{ width: 78, cursor: 'pointer', userSelect: 'none' }}
                 onClick={() => doSort('first_seen')}
               >
                 首次发现{sortBy === 'first_seen' && <span style={{ marginLeft: 3, fontSize: 9, opacity: 0.7 }}>{sortDesc ? '▼' : '▲'}</span>}
-              </th>
-              <th
+              </ResizableTh>
+              <ResizableTh
                 style={{ width: 78, cursor: 'pointer', userSelect: 'none' }}
                 onClick={() => doSort('last_activity')}
               >
                 最近更新{sortBy === 'last_activity' && <span style={{ marginLeft: 3, fontSize: 9, opacity: 0.7 }}>{sortDesc ? '▼' : '▲'}</span>}
-              </th>
-              <th style={{ width: 44 }}></th>
+              </ResizableTh>
+              <ResizableTh style={{ width: 44 }}></ResizableTh>
             </tr>
           </thead>
           <tbody>

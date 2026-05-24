@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
@@ -1902,6 +1903,7 @@ export default function Devices() {
           onKeyDown={e => e.key === 'Enter' && load(1)}
           style={{ minWidth: 220 }}
         />
+        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => load(1)}>搜索</button>
         <input
           className="filter-input"
           placeholder="搜索主机"
@@ -2037,7 +2039,7 @@ export default function Devices() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ width: 36, textAlign: 'center' }}>
+                  <ResizableTh style={{ width: 36, textAlign: 'center' }}>
                     <input
                       type="checkbox"
                       style={{ width: 13, height: 13, cursor: 'pointer' }}
@@ -2045,14 +2047,14 @@ export default function Devices() {
                       ref={el => { if (el) el.indeterminate = checkedKeys.size > 0 && checkedKeys.size < items.length }}
                       onChange={toggleAllChecked}
                     />
-                  </th>
-                  <th>设备 / 主机名</th>
-                  <th>平台</th>
-                  <th>Agent 版本</th>
-                  <th>IP 地址</th>
-                  <th>状态</th>
-                  <th>最近心跳</th>
-                  <th>操作</th>
+                  </ResizableTh>
+                  <ResizableTh>设备 / 主机名</ResizableTh>
+                  <ResizableTh>平台</ResizableTh>
+                  <ResizableTh>Agent 版本</ResizableTh>
+                  <ResizableTh>IP 地址</ResizableTh>
+                  <ResizableTh>状态</ResizableTh>
+                  <ResizableTh>最近心跳</ResizableTh>
+                  <ResizableTh>操作</ResizableTh>
                 </tr>
               </thead>
               <tbody>

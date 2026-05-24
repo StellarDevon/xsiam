@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -1320,6 +1321,7 @@ export default function Vulnerabilities() {
           onChange={e => setSearch(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && load(1)}
         />
+        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => load(1)}>搜索</button>
         <select className="filter-select" value={severityFilter} onChange={e => setSeverityFilter(e.target.value)}>
           <option value="">全部严重程度</option>
           <option value="critical">严重</option>
@@ -1387,18 +1389,18 @@ export default function Vulnerabilities() {
           <table className="data-table">
             <thead>
               <tr>
-                <th style={{ width: 32, textAlign: 'center' }}>
+                <ResizableTh style={{ width: 32, textAlign: 'center' }}>
                   <input type="checkbox" checked={allChecked} onChange={toggleAll} title="全选" style={{ cursor: 'pointer' }} />
-                </th>
-                <th>CVE编号</th>
-                <th>标题</th>
-                <th>严重程度</th>
-                <th>CVSS</th>
-                <th>SLA</th>
-                <th>状态</th>
-                <th>受影响资产</th>
-                <th>发布时间</th>
-                <th></th>
+                </ResizableTh>
+                <ResizableTh>CVE编号</ResizableTh>
+                <ResizableTh>标题</ResizableTh>
+                <ResizableTh>严重程度</ResizableTh>
+                <ResizableTh>CVSS</ResizableTh>
+                <ResizableTh>SLA</ResizableTh>
+                <ResizableTh>状态</ResizableTh>
+                <ResizableTh>受影响资产</ResizableTh>
+                <ResizableTh>发布时间</ResizableTh>
+                <ResizableTh></ResizableTh>
               </tr>
             </thead>
             <tbody>

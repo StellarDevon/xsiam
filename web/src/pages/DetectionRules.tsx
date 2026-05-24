@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -1511,6 +1512,7 @@ export default function DetectionRules() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && load(1)}
             />
+            <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => load(1)}>搜索</button>
             <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
               <option value="">全部类型</option>
               <option value="bioc">BIOC (Behavioral)</option>
@@ -1567,7 +1569,7 @@ export default function DetectionRules() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: 36, textAlign: 'center' }}>
+                    <ResizableTh style={{ width: 36, textAlign: 'center' }}>
                       <input
                         type="checkbox"
                         checked={allSelected}
@@ -1576,15 +1578,15 @@ export default function DetectionRules() {
                         style={{ accentColor: 'var(--accent-blue)', cursor: 'pointer', width: 13, height: 13 }}
                         title="全选"
                       />
-                    </th>
-                    <th>名称</th>
-                    <th>类型</th>
-                    <th>严重程度</th>
-                    <th>状态</th>
-                    <th>MITRE战术</th>
-                    <th>命中 7天/30天</th>
-                    <th>创建时间</th>
-                    <th></th>
+                    </ResizableTh>
+                    <ResizableTh>名称</ResizableTh>
+                    <ResizableTh>类型</ResizableTh>
+                    <ResizableTh>严重程度</ResizableTh>
+                    <ResizableTh>状态</ResizableTh>
+                    <ResizableTh>MITRE战术</ResizableTh>
+                    <ResizableTh>命中 7天/30天</ResizableTh>
+                    <ResizableTh>创建时间</ResizableTh>
+                    <ResizableTh></ResizableTh>
                   </tr>
                 </thead>
                 <tbody>

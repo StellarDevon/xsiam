@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import { useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
@@ -2259,26 +2260,26 @@ export default function Alerts() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ width: 36 }}>
+                  <ResizableTh style={{ width: 36 }}>
                     <input type="checkbox"
                       checked={allChecked}
                       onChange={() => setChecked(allChecked ? new Set() : new Set(alerts.map(a => a._key)))}
                     />
-                  </th>
-                  <th style={{ width: 68, cursor: 'pointer', userSelect: 'none' }} onClick={() => doSort('severity')}>
+                  </ResizableTh>
+                  <ResizableTh style={{ width: 68, cursor: 'pointer', userSelect: 'none' }} onClick={() => doSort('severity')}>
                     严重程度{sortArrow('severity')}
-                  </th>
-                  <th style={{ minWidth: 200 }}>告警名称</th>
-                  <th style={{ width: 60 }}>来源</th>
-                  <th style={{ width: 128 }}>主机 / 用户</th>
-                  <th style={{ width: 88 }}>关联事件</th>
-                  {showSecondaryColumns && !selected && <th style={{ width: 106 }}>MITRE 战术</th>}
-                  {showSecondaryColumns && !selected && <th style={{ width: 108 }}>检测规则</th>}
-                  <th style={{ width: 72 }}>状态</th>
-                  <th style={{ width: 80, cursor: 'pointer', userSelect: 'none' }} onClick={() => doSort('triggered_at')}>
+                  </ResizableTh>
+                  <ResizableTh style={{ minWidth: 200 }}>告警名称</ResizableTh>
+                  <ResizableTh style={{ width: 60 }}>来源</ResizableTh>
+                  <ResizableTh style={{ width: 128 }}>主机 / 用户</ResizableTh>
+                  <ResizableTh style={{ width: 88 }}>关联事件</ResizableTh>
+                  {showSecondaryColumns && !selected && <ResizableTh style={{ width: 106 }}>MITRE 战术</ResizableTh>}
+                  {showSecondaryColumns && !selected && <ResizableTh style={{ width: 108 }}>检测规则</ResizableTh>}
+                  <ResizableTh style={{ width: 72 }}>状态</ResizableTh>
+                  <ResizableTh style={{ width: 80, cursor: 'pointer', userSelect: 'none' }} onClick={() => doSort('triggered_at')}>
                     时间{sortArrow('triggered_at')}
-                  </th>
-                  <th style={{ width: 56 }}></th>
+                  </ResizableTh>
+                  <ResizableTh style={{ width: 56 }}></ResizableTh>
                 </tr>
               </thead>
               <tbody>

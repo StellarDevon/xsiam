@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import ReactFlow, {
   Background, Controls, MiniMap,
   ReactFlowProvider,
@@ -2117,6 +2118,7 @@ export default function Playbooks() {
 
       <div className="filter-bar">
         <input className="filter-input" placeholder="搜索剧本..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { setPage(1); load(1) } }} />
+        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => { setPage(1); load(1) }}>搜索</button>
         <select className="filter-select" value={triggerFilter} onChange={e => setTriggerFilter(e.target.value)}>
           <option value="">All Triggers</option>
           <option value="手动">Manual</option>
@@ -2139,14 +2141,14 @@ export default function Playbooks() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>名称</th>
-                <th>触发方式</th>
-                <th>状态</th>
-                <th>步骤</th>
-                <th>执行次数</th>
-                <th>Success Rate</th>
-                <th>最近运行</th>
-                <th></th>
+                <ResizableTh>名称</ResizableTh>
+                <ResizableTh>触发方式</ResizableTh>
+                <ResizableTh>状态</ResizableTh>
+                <ResizableTh>步骤</ResizableTh>
+                <ResizableTh>执行次数</ResizableTh>
+                <ResizableTh>Success Rate</ResizableTh>
+                <ResizableTh>最近运行</ResizableTh>
+                <ResizableTh></ResizableTh>
               </tr>
             </thead>
             <tbody>
@@ -2530,8 +2532,8 @@ export default function Playbooks() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                        <th style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', fontWeight: 500 }}>节点</th>
-                        <th style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', fontWeight: 500 }}>状态</th>
+                        <ResizableTh style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', fontWeight: 500 }}>节点</ResizableTh>
+                        <ResizableTh style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', fontWeight: 500 }}>状态</ResizableTh>
                       </tr>
                     </thead>
                     <tbody>

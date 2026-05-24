@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
@@ -559,6 +560,7 @@ export default function IntelFeeds() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && load(1)}
             />
+            <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => load(1)}>搜索</button>
             <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
               <option value="">全部类型</option>
               <option value="stix_taxii">STIX/TAXII</option>
@@ -582,13 +584,13 @@ export default function IntelFeeds() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>订阅源名称</th>
-                  <th>类型</th>
-                  <th>状态</th>
-                  <th>IOC数</th>
-                  <th>最后同步</th>
-                  <th>自动同步</th>
-                  <th>操作</th>
+                  <ResizableTh>订阅源名称</ResizableTh>
+                  <ResizableTh>类型</ResizableTh>
+                  <ResizableTh>状态</ResizableTh>
+                  <ResizableTh>IOC数</ResizableTh>
+                  <ResizableTh>最后同步</ResizableTh>
+                  <ResizableTh>自动同步</ResizableTh>
+                  <ResizableTh>操作</ResizableTh>
                 </tr>
               </thead>
               <tbody>
@@ -859,14 +861,14 @@ function IndicatorRulesTab() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>规则名称</th>
-              <th>指标类型</th>
-              <th>置信度阈值</th>
-              <th>处置动作</th>
-              <th>自动封锁</th>
-              <th>命中次数</th>
-              <th>状态</th>
-              <th>操作</th>
+              <ResizableTh>规则名称</ResizableTh>
+              <ResizableTh>指标类型</ResizableTh>
+              <ResizableTh>置信度阈值</ResizableTh>
+              <ResizableTh>处置动作</ResizableTh>
+              <ResizableTh>自动封锁</ResizableTh>
+              <ResizableTh>命中次数</ResizableTh>
+              <ResizableTh>状态</ResizableTh>
+              <ResizableTh>操作</ResizableTh>
             </tr>
           </thead>
           <tbody>
@@ -1470,10 +1472,10 @@ function FeedDetailPanel({ feed, syncing, togglingAutoSync, onClose, onSync, onT
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
-              <th style={{ textAlign: 'left', padding: '4px 8px 6px 0', color: 'var(--text-muted)', fontWeight: 500 }}>时间</th>
-              <th style={{ textAlign: 'right', padding: '4px 8px 6px', color: 'var(--text-muted)', fontWeight: 500 }}>耗时</th>
-              <th style={{ textAlign: 'right', padding: '4px 8px 6px', color: 'var(--text-muted)', fontWeight: 500 }}>新增IOC</th>
-              <th style={{ textAlign: 'center', padding: '4px 0 6px 8px', color: 'var(--text-muted)', fontWeight: 500 }}>状态</th>
+              <ResizableTh style={{ textAlign: 'left', padding: '4px 8px 6px 0', color: 'var(--text-muted)', fontWeight: 500 }}>时间</ResizableTh>
+              <ResizableTh style={{ textAlign: 'right', padding: '4px 8px 6px', color: 'var(--text-muted)', fontWeight: 500 }}>耗时</ResizableTh>
+              <ResizableTh style={{ textAlign: 'right', padding: '4px 8px 6px', color: 'var(--text-muted)', fontWeight: 500 }}>新增IOC</ResizableTh>
+              <ResizableTh style={{ textAlign: 'center', padding: '4px 0 6px 8px', color: 'var(--text-muted)', fontWeight: 500 }}>状态</ResizableTh>
             </tr>
           </thead>
           <tbody>

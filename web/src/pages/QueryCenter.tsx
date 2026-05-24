@@ -1219,7 +1219,7 @@ export default function QueryCenter() {
         {/* LEFT: sidebar (180px) */}
         <div style={{
           width: 180, flexShrink: 0, borderRight: '1px solid var(--border)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden',
           background: 'var(--bg-secondary)',
         }}>
 
@@ -1249,7 +1249,7 @@ export default function QueryCenter() {
               >{showSavedPanel ? '▲' : '▼'}</button>
             </div>
             {showSavedPanel && (
-              <div style={{ maxHeight: 200, overflowY: 'auto', paddingBottom: 4 }}>
+              <div style={{ paddingBottom: 4 }}>
                 {savedQueries.length === 0 ? (
                   <div style={{ padding: '6px 14px', fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
                     暂无保存的查询
@@ -1330,7 +1330,7 @@ export default function QueryCenter() {
               >{showTemplates ? '▲' : '▼'}</button>
             </div>
             {showTemplates && (
-              <div style={{ maxHeight: 220, overflowY: 'auto', paddingBottom: 4 }}>
+              <div style={{ paddingBottom: 4 }}>
                 {SECURITY_TEMPLATES.map(tpl => (
                   <div
                     key={tpl.name}
@@ -1384,7 +1384,7 @@ export default function QueryCenter() {
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
                 >清空</button>
               </div>
-              <div style={{ maxHeight: 200, overflowY: 'auto', paddingBottom: 4 }}>
+              <div style={{ paddingBottom: 4 }}>
                 {history.map((entry, i) => {
                   const preview = entry.query.replace(/\n/g, ' ').slice(0, 60)
                   const truncated = entry.query.replace(/\n/g, ' ').length > 60
@@ -1458,7 +1458,7 @@ export default function QueryCenter() {
                 fontSize: 11.5, outline: 'none',
               }}
             />
-            <div style={{ maxHeight: 180, overflowY: 'auto' }}>
+            <div style={{ paddingBottom: 8 }}>
               {SAMPLE_QUERIES
                 .filter(sq => !savedSearch || sq.name.toLowerCase().includes(savedSearch.toLowerCase()) || sq.tag.toLowerCase().includes(savedSearch.toLowerCase()))
                 .map(sq => (

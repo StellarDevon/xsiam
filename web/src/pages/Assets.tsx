@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ResizableTh from '@/components/ResizableTh'
 import api from '@/lib/api'
 import type { PageMeta } from '@/lib/api'
 import PageHeader from '@/components/PageHeader'
@@ -819,6 +820,7 @@ export default function Assets() {
           onChange={e => setSearch(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && load(1)}
         />
+        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => load(1)}>搜索</button>
         <select className="filter-select" value={typeFilter} onChange={e => set类型Filter(e.target.value)}>
           <option value="">全部类型</option>
           <option value="workstation">Workstation</option>
@@ -917,7 +919,7 @@ export default function Assets() {
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <th>CVE</th><th>CVSS</th><th>描述</th><th>Affected</th><th>状态</th>
+                        <ResizableTh>CVE</ResizableTh><ResizableTh>CVSS</ResizableTh><ResizableTh>描述</ResizableTh><ResizableTh>Affected</ResizableTh><ResizableTh>状态</ResizableTh>
                       </tr>
                     </thead>
                     <tbody>
@@ -934,7 +936,7 @@ export default function Assets() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ width: 36, padding: '0 8px' }}>
+                  <ResizableTh style={{ width: 36, padding: '0 8px' }}>
                     <input
                       type="checkbox"
                       checked={allChecked}
@@ -942,13 +944,13 @@ export default function Assets() {
                       onChange={toggleAll}
                       style={{ cursor: 'pointer' }}
                     />
-                  </th>
-                  <th>资产</th>
-                  <th>IP / 平台</th>
-                  <th>类型</th>
-                  <th>漏洞</th>
-                  <th>资产评分</th>
-                  <th
+                  </ResizableTh>
+                  <ResizableTh>资产</ResizableTh>
+                  <ResizableTh>IP / 平台</ResizableTh>
+                  <ResizableTh>类型</ResizableTh>
+                  <ResizableTh>漏洞</ResizableTh>
+                  <ResizableTh>资产评分</ResizableTh>
+                  <ResizableTh
                     onClick={toggleRiskSort}
                     style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   >
@@ -956,12 +958,12 @@ export default function Assets() {
                     {riskSort === 'desc' && ' ▼'}
                     {riskSort === 'asc' && ' ▲'}
                     {riskSort === null && ' ⇅'}
-                  </th>
-                  <th>未关闭事件</th>
-                  <th>Agent状态</th>
-                  <th>部门/负责人</th>
-                  <th>最近活跃</th>
-                  <th></th>
+                  </ResizableTh>
+                  <ResizableTh>未关闭事件</ResizableTh>
+                  <ResizableTh>Agent状态</ResizableTh>
+                  <ResizableTh>部门/负责人</ResizableTh>
+                  <ResizableTh>最近活跃</ResizableTh>
+                  <ResizableTh></ResizableTh>
                 </tr>
               </thead>
               <tbody>
@@ -1138,11 +1140,11 @@ export default function Assets() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                       <thead>
                         <tr style={{ background: 'var(--bg-secondary)' }}>
-                          <th style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVE ID</th>
-                          <th style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>危险度</th>
-                          <th style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVSS</th>
-                          <th style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>修复</th>
-                          <th style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>标题</th>
+                          <ResizableTh style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVE ID</ResizableTh>
+                          <ResizableTh style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>危险度</ResizableTh>
+                          <ResizableTh style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>CVSS</ResizableTh>
+                          <ResizableTh style={{ padding: '6px 6px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>修复</ResizableTh>
+                          <ResizableTh style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>标题</ResizableTh>
                         </tr>
                       </thead>
                       <tbody>
