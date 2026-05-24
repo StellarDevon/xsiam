@@ -27,11 +27,11 @@ function injectBlink() {
 /* ── severity colour helper ── */
 function severityColor(sev: string) {
   switch ((sev ?? '').toLowerCase()) {
-    case 'critical': return '#f44336'
-    case 'high':     return '#ff9800'
-    case 'medium':   return '#ffc107'
-    case 'low':      return '#4caf50'
-    default:         return '#607d8b'
+    case 'critical': return 'var(--critical)'
+    case 'high':     return 'var(--high)'
+    case 'medium':   return 'var(--medium)'
+    case 'low':      return 'var(--accent-green)'
+    default:         return 'var(--text-muted)'
   }
 }
 
@@ -317,7 +317,7 @@ export default function TopBar() {
           onClick={() => setShowSearch(false)}
           style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,.65)',
+            background: 'var(--bg-overlay)',
             backdropFilter: 'blur(4px)',
             zIndex: 1000,
             display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -328,7 +328,7 @@ export default function TopBar() {
             onClick={e => e.stopPropagation()}
             style={{
               width: 560, maxWidth: 'calc(100vw - 32px)',
-              background: '#050f1f',
+              background: 'var(--bg-primary)',
               border: '1px solid rgba(79,163,224,.30)',
               borderRadius: 10,
               boxShadow: '0 24px 64px rgba(0,0,0,.8)',
@@ -354,7 +354,7 @@ export default function TopBar() {
                 style={{
                   flex: 1, background: 'none', border: 'none', outline: 'none',
                   fontSize: 15, color: 'rgba(255,255,255,.90)',
-                  caretColor: '#4fa3e0',
+                  caretColor: 'var(--accent-blue)',
                 }}
               />
               <span
@@ -387,7 +387,7 @@ export default function TopBar() {
                         fontSize: 11, padding: '3px 9px', borderRadius: 12,
                         background: 'rgba(0,120,212,.15)',
                         border: '1px solid rgba(79,163,224,.20)',
-                        color: '#4fa3e0', cursor: 'pointer',
+                        color: 'var(--accent-blue)', cursor: 'pointer',
                         transition: 'background .12s',
                       }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,120,212,.30)')}
@@ -539,17 +539,17 @@ export default function TopBar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 4 }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
-              background: '#0078d4', boxShadow: '0 0 5px #0078d4',
+              background: 'var(--accent-blue)', boxShadow: '0 0 5px #0078d4',
               display: 'inline-block', animation: 'pulse-dot 2s ease-in-out infinite',
               flexShrink: 0,
             }} />
             <span style={{
               fontSize: 10.5, fontWeight: 700, letterSpacing: 1.6,
-              color: '#4fa3e0', textTransform: 'uppercase', userSelect: 'none',
+              color: 'var(--accent-blue)', textTransform: 'uppercase', userSelect: 'none',
             }}>
               XSIAM Agentic Assistant
             </span>
-            <span style={{ fontSize: 10, color: '#2b88d8', letterSpacing: 0 }}>
+            <span style={{ fontSize: 10, color: 'var(--accent-blue)', letterSpacing: 0 }}>
               Active · 3 automated responses running
             </span>
           </div>
@@ -563,9 +563,9 @@ export default function TopBar() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 4,
                   padding: '0 8px', height: 18, borderRadius: 4,
-                  border: `1px solid ${isCritical ? 'rgba(244,67,54,.45)' : 'rgba(255,152,0,.40)'}`,
-                  background: isCritical ? 'rgba(244,67,54,.12)' : 'rgba(255,152,0,.10)',
-                  color: isCritical ? '#f44336' : '#ff9800',
+                  border: `1px solid ${isCritical ? 'rgba(224,80,80,.45)' : 'rgba(224,128,64,.40)'}`,
+                  background: isCritical ? 'rgba(224,80,80,.12)' : 'rgba(224,128,64,.10)',
+                  color: isCritical ? 'var(--critical)' : 'var(--high)',
                   fontSize: 10, fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -576,7 +576,7 @@ export default function TopBar() {
               {showRenew && (
                 <div style={{
                   position: 'absolute', top: 24, right: 0,
-                  background: 'var(--bg-card, #0a1929)',
+                  background: 'var(--bg-card)',
                   border: '1px solid #0a2a4a',
                   borderRadius: 6, padding: '10px 14px',
                   boxShadow: '0 4px 16px rgba(0,0,0,.5)',
@@ -584,13 +584,13 @@ export default function TopBar() {
                   display: 'flex', flexDirection: 'column', gap: 8,
                   minWidth: 140,
                 }}>
-                  <span style={{ fontSize: 11, color: '#4fa3e0' }}>
+                  <span style={{ fontSize: 11, color: 'var(--accent-blue)' }}>
                     {isCritical ? '会话即将过期！' : `剩余 ${minsLeft} 分钟`}
                   </span>
                   <button
                     onClick={handleRenew}
                     style={{
-                      background: '#0078d4', border: 'none', borderRadius: 4,
+                      background: 'var(--accent-blue)', border: 'none', borderRadius: 4,
                       color: '#fff', fontSize: 12, fontWeight: 600,
                       padding: '5px 12px', cursor: 'pointer',
                     }}
@@ -605,10 +605,10 @@ export default function TopBar() {
           {/* Renew success toast */}
           {renewToast && (
             <span style={{
-              fontSize: 11, color: '#4caf50',
+              fontSize: 11, color: 'var(--accent-green)',
               padding: '1px 8px', borderRadius: 4,
-              background: 'rgba(76,175,80,.12)',
-              border: '1px solid rgba(76,175,80,.3)',
+              background: 'rgba(47,176,122,.12)',
+              border: '1px solid rgba(47,176,122,.3)',
             }}>
               {renewToast}
             </span>
@@ -624,7 +624,7 @@ export default function TopBar() {
                   padding: '0 8px', height: 18, fontSize: 10, fontWeight: 600,
                   cursor: 'pointer', border: 'none', letterSpacing: .4,
                   background: lang === l ? 'rgba(0,120,212,.55)' : 'transparent',
-                  color: lang === l ? '#ffffff' : 'rgba(79,163,224,.70)',
+                  color: lang === l ? 'var(--text-primary)' : 'rgba(79,163,224,.70)',
                   transition: 'background .15s, color .15s',
                 }}
               >
@@ -643,7 +643,7 @@ export default function TopBar() {
               color: 'rgba(79,163,224,.80)', borderRadius: 4,
               transition: 'background .15s, color .15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.10)'; e.currentTarget.style.color = '#ffffff' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.10)'; e.currentTarget.style.color = 'var(--text-primary)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(79,163,224,.80)' }}
           >
             {theme === 'light' ? (
@@ -678,7 +678,7 @@ export default function TopBar() {
                 transition: 'background .15s, color .15s',
                 position: 'relative',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.10)'; e.currentTarget.style.color = '#ffffff' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.10)'; e.currentTarget.style.color = 'var(--text-primary)' }}
               onMouseLeave={e => {
                 if (!notifOpen) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(79,163,224,.80)' }
               }}
@@ -693,7 +693,7 @@ export default function TopBar() {
                 <span style={{
                   position: 'absolute', top: 1, right: 1,
                   minWidth: 13, height: 13,
-                  background: '#f44336',
+                  background: 'var(--critical)',
                   borderRadius: 7, fontSize: 8, fontWeight: 700,
                   color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   padding: '0 3px', lineHeight: 1,
@@ -709,7 +709,7 @@ export default function TopBar() {
               <div style={{
                 position: 'absolute', top: 28, right: 0,
                 width: 320,
-                background: isDark ? '#0d1f35' : '#0a1929',
+                background: isDark ? 'var(--bg-card)' : 'var(--bg-card)',
                 border: '1px solid #0a2a4a',
                 borderRadius: 8,
                 boxShadow: '0 8px 32px rgba(0,0,0,.6)',
@@ -731,7 +731,7 @@ export default function TopBar() {
                   padding: '8px 12px',
                   borderBottom: '1px solid #0a2a4a',
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#4fa3e0' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-blue)' }}>
                     {newCount > 0 ? `${newCount} ${t('new_notifications')}` : t('notifications')}
                   </span>
                   <button
@@ -742,7 +742,7 @@ export default function TopBar() {
                       padding: '2px 6px', borderRadius: 3,
                       transition: 'color .15s, background .15s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#4fa3e0'; e.currentTarget.style.background = 'rgba(79,163,224,.10)' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-blue)'; e.currentTarget.style.background = 'rgba(79,163,224,.10)' }}
                     onMouseLeave={e => { e.currentTarget.style.color = 'rgba(79,163,224,.70)'; e.currentTarget.style.background = 'none' }}
                   >
                     {t('mark_all_read')}
@@ -761,7 +761,7 @@ export default function TopBar() {
                       style={{
                         flex: 1, padding: '6px 0', fontSize: 11, fontWeight: 600,
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: notifTab === tab ? '#4fa3e0' : 'rgba(79,163,224,.45)',
+                        color: notifTab === tab ? 'var(--accent-blue)' : 'rgba(79,163,224,.45)',
                         borderBottom: notifTab === tab ? '2px solid #0078d4' : '2px solid transparent',
                         transition: 'color .15s, border-color .15s',
                       }}
@@ -815,7 +815,7 @@ export default function TopBar() {
                             {isNew && (
                               <span style={{
                                 width: 5, height: 5, borderRadius: '50%',
-                                background: '#0078d4', flexShrink: 0,
+                                background: 'var(--accent-blue)', flexShrink: 0,
                               }} />
                             )}
                             {/* Relative time */}
@@ -855,13 +855,13 @@ export default function TopBar() {
                   <button
                     onClick={() => { navigate('/alerts'); setNotifOpen(false) }}
                     style={{
-                      fontSize: 11, color: '#4fa3e0',
+                      fontSize: 11, color: 'var(--accent-blue)',
                       background: 'none', border: 'none', cursor: 'pointer',
                       padding: '3px 8px', borderRadius: 3,
                       transition: 'color .15s, background .15s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#80c4f0'; e.currentTarget.style.background = 'rgba(79,163,224,.10)' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#4fa3e0'; e.currentTarget.style.background = 'none' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-blue)'; e.currentTarget.style.background = 'rgba(79,163,224,.10)' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--accent-blue)'; e.currentTarget.style.background = 'none' }}
                   >
                     {t('view_all_alerts')}
                   </button>
@@ -908,7 +908,7 @@ export default function TopBar() {
               <div style={{
                 position: 'absolute', top: 28, right: 0,
                 width: 200,
-                background: isDark ? '#0d1f35' : '#0a1929',
+                background: isDark ? 'var(--bg-card)' : 'var(--bg-card)',
                 border: '1px solid #0a2a4a',
                 borderRadius: 8,
                 boxShadow: '0 8px 32px rgba(0,0,0,.6)',
@@ -944,7 +944,7 @@ export default function TopBar() {
                     <div style={{ marginTop: 7 }}>
                       <span style={{
                         fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 10,
-                        background: 'rgba(0,120,212,.25)', color: '#4fa3e0',
+                        background: 'rgba(0,120,212,.25)', color: 'var(--accent-blue)',
                         border: '1px solid rgba(79,163,224,.25)',
                       }}>
                         {roleLabel(user.role)}
@@ -993,14 +993,14 @@ export default function TopBar() {
                   </button>
 
                   {/* Divider */}
-                  <div style={{ height: 1, background: '#0a2a4a', margin: '4px 0' }} />
+                  <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
 
                   {/* 退出登录 */}
                   <button
                     onClick={handleLogout}
-                    style={{ ...menuItemStyle, color: 'rgba(244,67,54,.80)' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,67,54,.10)'; e.currentTarget.style.color = '#f44336' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(244,67,54,.80)' }}
+                    style={{ ...menuItemStyle, color: 'rgba(224,80,80,.80)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,80,80,.10)'; e.currentTarget.style.color = 'var(--critical)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(224,80,80,.80)' }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>

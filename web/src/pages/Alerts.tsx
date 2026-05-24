@@ -94,17 +94,17 @@ const STATUS_LABELS: Record<string, string> = {
   auto_closed: '自动关闭',
 }
 const STATUS_COLORS: Record<string, string> = {
-  active: '#4fa3e0', new: '#4fa3e0',
-  investigating: '#f9a825', under_investigation: '#f9a825',
-  resolved: '#2fb07a',
-  false_positive: '#546e7a',
-  auto_closed: '#546e7a',
+  active: 'var(--accent-blue)', new: 'var(--accent-blue)',
+  investigating: 'var(--medium)', under_investigation: 'var(--medium)',
+  resolved: 'var(--accent-green)',
+  false_positive: 'var(--text-muted)',
+  auto_closed: 'var(--text-muted)',
 }
 const SEV_LABELS: Record<string, string> = {
   critical: '严重', high: '高危', medium: '中危', low: '低危', info: '信息',
 }
 const SEV_COLORS: Record<string, string> = {
-  critical: '#f44336', high: '#ff6d00', medium: '#ffc107', low: '#4caf50', info: '#546e7a',
+  critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)', low: 'var(--low)', info: 'var(--text-muted)',
 }
 const SOURCE_LABELS: Record<string, string> = {
   endpoint: '终端', network: '网络', cloud: '云', identity: '身份',
@@ -219,7 +219,7 @@ function buildProcessTree(procs: ProcessNode[]): Map<number | null, ProcessNode[
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function SevBadge({ sev }: { sev: string }) {
-  const color = SEV_COLORS[sev] ?? '#546e7a'
+  const color = SEV_COLORS[sev] ?? 'var(--text-muted)'
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -234,7 +234,7 @@ function SevBadge({ sev }: { sev: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const c = STATUS_COLORS[status] ?? '#546e7a'
+  const c = STATUS_COLORS[status] ?? 'var(--text-muted)'
   const label = STATUS_LABELS[status] ?? status
   const pulsing = status === 'active' || status === 'new'
   return (
@@ -255,12 +255,12 @@ function StatusBadge({ status }: { status: string }) {
 
 function SourceBadge({ src }: { src: string }) {
   const label = SOURCE_LABELS[src] ?? src
-  const color = src === 'endpoint' ? '#4fa3e0'
-    : src === 'network' ? '#ab47bc'
-    : src === 'cloud' ? '#26c6da'
-    : src === 'identity' ? '#ef5350'
-    : src === 'email' ? '#ff7043'
-    : '#78909c'
+  const color = src === 'endpoint' ? 'var(--accent-blue)'
+    : src === 'network' ? 'var(--accent-blue)'
+    : src === 'cloud' ? 'var(--accent-green)'
+    : src === 'identity' ? 'var(--high)'
+    : src === 'email' ? 'var(--high)'
+    : 'var(--text-muted)'
   return (
     <span style={{
       fontSize: 10, padding: '2px 7px', borderRadius: 3,
@@ -296,7 +296,7 @@ function ProcessTreeNode({
   const isLsass = isLsassAccess(node.name)
   const isBad = isMalicious || isSuspNamed
   const icon = procIcon(node.name, isBad)
-  const nameColor = isMalicious ? '#e53935' : isSuspNamed ? '#ff6f00' : 'var(--text-primary)'
+  const nameColor = isMalicious ? 'var(--critical)' : isSuspNamed ? 'var(--high)' : 'var(--text-primary)'
 
   // Build the prefix string for this node (connector lines from ancestors)
   const connectorParts: string[] = []
@@ -340,13 +340,13 @@ function ProcessTreeNode({
           {node.pid != null && (
             <span style={{
               fontFamily: 'Consolas,"JetBrains Mono",monospace',
-              fontSize: 11, color: '#7a8899', marginLeft: 5,
+              fontSize: 11, color: 'var(--text-muted)', marginLeft: 5,
             }}>(PID:{node.pid})</span>
           )}
           {/* User in blue */}
           {node.user && (
             <span style={{
-              fontSize: 10.5, color: '#4fa3e0', marginLeft: 6,
+              fontSize: 10.5, color: 'var(--accent-blue)', marginLeft: 6,
               background: 'rgba(79,163,224,.1)', padding: '0 5px',
               borderRadius: 3,
             }}>[{node.user}]</span>
@@ -355,8 +355,8 @@ function ProcessTreeNode({
           {isSuspNamed && (
             <span style={{
               fontSize: 9.5, marginLeft: 6, padding: '1px 6px', borderRadius: 3,
-              background: 'rgba(255,111,0,.15)', color: '#ff6f00',
-              border: '1px solid rgba(255,111,0,.35)', fontWeight: 700, flexShrink: 0,
+              background: 'rgba(224,128,64,.15)', color: 'var(--high)',
+              border: '1px solid rgba(224,128,64,.35)', fontWeight: 700, flexShrink: 0,
             }}>⚠️ Suspicious</span>
           )}
           {/* Timestamp */}
@@ -374,22 +374,22 @@ function ProcessTreeNode({
           }}>
             <span style={{
               fontFamily: 'Consolas,"JetBrains Mono",monospace',
-              fontSize: 10, color: isMalicious ? '#ef9a9a' : 'var(--text-muted)',
+              fontSize: 10, color: isMalicious ? 'var(--critical)' : 'var(--text-muted)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               maxWidth: 300,
             }} title={cmdRaw}>{cmdDisplay}</span>
             {isObfuscated && (
               <span style={{
                 fontSize: 9.5, padding: '1px 6px', borderRadius: 3,
-                background: 'rgba(229,57,53,.15)', color: '#e53935',
-                border: '1px solid rgba(229,57,53,.35)', fontWeight: 700, flexShrink: 0,
+                background: 'rgba(224,80,80,.15)', color: 'var(--critical)',
+                border: '1px solid rgba(224,80,80,.35)', fontWeight: 700, flexShrink: 0,
               }}>⚠️ 混淆命令</span>
             )}
             {isLsass && (
               <span style={{
                 fontSize: 9.5, padding: '1px 6px', borderRadius: 3,
-                background: 'rgba(255,111,0,.15)', color: '#ff6f00',
-                border: '1px solid rgba(255,111,0,.4)', fontWeight: 700, flexShrink: 0,
+                background: 'rgba(224,128,64,.15)', color: 'var(--high)',
+                border: '1px solid rgba(224,128,64,.4)', fontWeight: 700, flexShrink: 0,
               }}>⚠️ 凭证访问</span>
             )}
           </div>
@@ -477,8 +477,8 @@ function ProcessTree({ procs, sourceType }: ProcessTreeProps) {
       {/* Legend */}
       <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         {[
-          { icon: '🔴', label: '可疑进程', color: '#ff6f00' },
-          { icon: '⚠️', label: '混淆命令', color: '#e53935' },
+          { icon: '🔴', label: '可疑进程', color: 'var(--high)' },
+          { icon: '⚠️', label: '混淆命令', color: 'var(--critical)' },
           { icon: '📁', label: '系统进程', color: 'var(--text-muted)' },
           { icon: '💻', label: 'Shell', color: 'var(--text-muted)' },
         ].map(item => (
@@ -514,13 +514,13 @@ function IocSearchModal({ onClose }: IocSearchModalProps) {
   }
 
   const verdictColor: Record<string, string> = {
-    malicious: '#e53935', suspicious: '#ff6f00', clean: '#2fb07a', unknown: '#546e7a',
+    malicious: 'var(--critical)', suspicious: 'var(--high)', clean: 'var(--accent-green)', unknown: 'var(--text-muted)',
   }
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(0,0,0,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center',
     }} onClick={onClose}>
       <div style={{
         width: 540, maxHeight: '70vh', display: 'flex', flexDirection: 'column',
@@ -552,7 +552,7 @@ function IocSearchModal({ onClose }: IocSearchModalProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {results.map((ioc, i) => {
               const v = ioc.verdict ?? 'unknown'
-              const vColor = verdictColor[v] ?? '#546e7a'
+              const vColor = verdictColor[v] ?? 'var(--text-muted)'
               return (
                 <div key={i} style={{
                   padding: '8px 10px', background: 'var(--bg-secondary)',
@@ -662,7 +662,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
   if (!a) return null
 
   const verdictColor: Record<string, string> = {
-    malicious: '#e53935', suspicious: '#ff6f00', clean: '#2fb07a', unknown: '#546e7a',
+    malicious: 'var(--critical)', suspicious: 'var(--high)', clean: 'var(--accent-green)', unknown: 'var(--text-muted)',
   }
 
   function markStatus(newStatus: string) {
@@ -730,10 +730,10 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
   const canResolve = a.status === 'investigating' || a.status === 'active' || a.status === 'new'
 
   // Severity-based urgency
-  const urgency = a.severity === 'critical' ? { label: '立即响应', color: '#e53935', bg: 'rgba(229,57,53,.08)' }
-    : a.severity === 'high' ? { label: '优先处置', color: '#ff6f00', bg: 'rgba(255,111,0,.06)' }
-    : a.severity === 'medium' ? { label: '尽快跟进', color: '#f9a825', bg: 'rgba(249,168,37,.06)' }
-    : { label: '按序排期', color: '#2fb07a', bg: 'rgba(47,176,122,.06)' }
+  const urgency = a.severity === 'critical' ? { label: '立即响应', color: 'var(--critical)', bg: 'rgba(224,80,80,.08)' }
+    : a.severity === 'high' ? { label: '优先处置', color: 'var(--high)', bg: 'rgba(224,128,64,.06)' }
+    : a.severity === 'medium' ? { label: '尽快跟进', color: 'var(--medium)', bg: 'rgba(200,160,48,.06)' }
+    : { label: '按序排期', color: 'var(--accent-green)', bg: 'rgba(47,176,122,.06)' }
 
   const advice = a.mitre_tactic ? MITRE_ADVICE[a.mitre_tactic] : undefined
 
@@ -751,7 +751,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
   return (
     <div style={{
       width: 460, flexShrink: 0,
-      background: 'var(--bg-card)',
+      background: 'var(--bg-drawer)',
       borderLeft: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
@@ -759,8 +759,8 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
       <div style={{
         padding: '12px 16px 10px',
         borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-secondary)',
-        flexShrink: 0,
+        background: 'var(--bg-card2)',
+        flexShrink: 0, minHeight: 48,
       }}>
         {/* Top row: badges + close */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -790,7 +790,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
           {alertHost(a) && (
             <>
               <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>·</span>
-              <span style={{ fontSize: 10.5, color: '#4fa3e0', fontFamily: 'monospace' }}>🖥 {alertHost(a)}</span>
+              <span style={{ fontSize: 10.5, color: 'var(--accent-blue)', fontFamily: 'monospace' }}>🖥 {alertHost(a)}</span>
             </>
           )}
         </div>
@@ -834,32 +834,32 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(79,163,224,.1)')}
           >
             <span style={{ fontSize: 14, flexShrink: 0 }}>🔗</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#4fa3e0', flex: 1 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-blue)', flex: 1 }}>
               关联事件 #{a.incident_id}
             </span>
-            <span style={{ fontSize: 11.5, color: '#4fa3e0', fontWeight: 600, flexShrink: 0 }}>→</span>
+            <span style={{ fontSize: 11.5, color: 'var(--accent-blue)', fontWeight: 600, flexShrink: 0 }}>→</span>
           </button>
         )}
 
         {/* Incident association (change/link row) */}
         <div style={{
           padding: '6px 10px', borderRadius: 4, marginBottom: 10,
-          background: a.incident_id ? 'rgba(79,163,224,.06)' : 'rgba(255,111,0,.06)',
-          border: `1px solid ${a.incident_id ? 'rgba(79,163,224,.2)' : 'rgba(255,111,0,.2)'}`,
+          background: a.incident_id ? 'rgba(79,163,224,.06)' : 'rgba(224,128,64,.06)',
+          border: `1px solid ${a.incident_id ? 'rgba(79,163,224,.2)' : 'rgba(224,128,64,.2)'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           {a.incident_id ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>关联事件</span>
               <span
-                style={{ color: '#4fa3e0', fontFamily: 'monospace', fontSize: 10.5, cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 10.5, cursor: 'pointer', textDecoration: 'underline' }}
                 onClick={() => navigate(`/incidents?highlight=${a.incident_id}`)}
               >
                 INC-{a.incident_id}
               </span>
             </div>
           ) : (
-            <span style={{ fontSize: 10.5, color: '#ff6f00', fontWeight: 500 }}>⚠ 未关联任何事件</span>
+            <span style={{ fontSize: 10.5, color: 'var(--high)', fontWeight: 500 }}>⚠ 未关联任何事件</span>
           )}
           <button
             className="btn-secondary"
@@ -925,7 +925,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
           {canInvestigate && (
             <button
               className="btn-secondary"
-              style={{ fontSize: 10.5, padding: '4px 10px', color: '#f9a825', borderColor: 'rgba(249,168,37,.3)' }}
+              style={{ fontSize: 10.5, padding: '4px 10px', color: 'var(--medium)', borderColor: 'rgba(200,160,48,.3)' }}
               disabled={acting}
               onClick={() => markStatus('investigating')}
             >
@@ -935,7 +935,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
           {canResolve && a.status === 'investigating' && (
             <button
               className="btn-secondary"
-              style={{ fontSize: 10.5, padding: '4px 10px', color: '#2fb07a', borderColor: 'rgba(47,176,122,.3)' }}
+              style={{ fontSize: 10.5, padding: '4px 10px', color: 'var(--accent-green)', borderColor: 'rgba(47,176,122,.3)' }}
               disabled={acting}
               onClick={() => markStatus('resolved')}
             >
@@ -956,7 +956,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
       </div>
 
       {/* ── Tabs ────────────────────────────── */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0 }}>
         {TABS.map(t => (
           <button
             key={t.id}
@@ -984,10 +984,10 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
               <div style={{
                 padding: '10px 12px', borderRadius: 5,
                 background: 'rgba(249,168,37,.06)',
-                border: '1px solid rgba(249,168,37,.25)',
-                borderLeft: '3px solid #f9a825',
+                border: '1px solid rgba(200,160,48,.25)',
+                borderLeft: '3px solid var(--medium)',
               }}>
-                <div style={{ fontSize: 10, color: '#f9a825', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>
+                <div style={{ fontSize: 10, color: 'var(--medium)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>
                   🛡 处置建议
                 </div>
                 <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
@@ -1075,8 +1075,8 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
                   const isPast = idx < currentStep
                   const isCurrent = idx === currentStep
                   const isFuture = idx > currentStep
-                  const dotColor = isCurrent ? '#4fa3e0' : isPast ? '#2fb07a' : 'rgba(255,255,255,.15)'
-                  const lineColor = idx < currentStep ? '#2fb07a' : 'rgba(255,255,255,.1)'
+                  const dotColor = isCurrent ? 'var(--accent-blue)' : isPast ? 'var(--accent-green)' : 'rgba(255,255,255,.15)'
+                  const lineColor = idx < currentStep ? 'var(--accent-green)' : 'rgba(255,255,255,.1)'
                   // Timestamps: first step = created_at, current step = updated_at
                   const ts = idx === 0 ? a.created_at
                     : isCurrent ? (a.updated_at ?? undefined)
@@ -1102,14 +1102,14 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
                         }} />
                         {/* Right connector line */}
                         {idx < STATUS_FLOW.length - 1 && (
-                          <div style={{ flex: 1, height: 2, background: isCurrent || isPast ? '#2fb07a' : 'rgba(255,255,255,.1)' }} />
+                          <div style={{ flex: 1, height: 2, background: isCurrent || isPast ? 'var(--accent-green)' : 'rgba(255,255,255,.1)' }} />
                         )}
                       </div>
                       {/* Label + timestamp */}
                       <div style={{ marginTop: 5, textAlign: 'center' }}>
                         <div style={{
                           fontSize: 10, fontWeight: isCurrent ? 700 : 400,
-                          color: isCurrent ? '#4fa3e0' : isPast ? '#2fb07a' : 'var(--text-muted)',
+                          color: isCurrent ? 'var(--accent-blue)' : isPast ? 'var(--accent-green)' : 'var(--text-muted)',
                         }}>
                           {step.label}
                         </div>
@@ -1170,16 +1170,16 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {iocs.map((ioc, i) => {
-                    const vColor = verdictColor[ioc.verdict] ?? '#546e7a'
+                    const vColor = verdictColor[ioc.verdict] ?? 'var(--text-muted)'
                     const vLabel = ioc.verdict === 'malicious' ? '恶意'
                       : ioc.verdict === 'suspicious' ? '可疑'
                       : ioc.verdict === 'clean' ? '安全'
                       : '未知'
-                    const typeColor = ioc.type === 'ip' || ioc.type === 'IP' ? '#ef5350'
-                      : ioc.type === 'domain' ? '#ab47bc'
-                      : ioc.type === 'hash' || ioc.type === 'file_hash' ? '#ff7043'
-                      : ioc.type === 'url' ? '#26c6da'
-                      : '#78909c'
+                    const typeColor = ioc.type === 'ip' || ioc.type === 'IP' ? 'var(--critical)'
+                      : ioc.type === 'domain' ? 'var(--accent-blue)'
+                      : ioc.type === 'hash' || ioc.type === 'file_hash' ? 'var(--high)'
+                      : ioc.type === 'url' ? 'var(--accent-blue)'
+                      : 'var(--text-muted)'
                     const confidence = ioc.confidence ?? 0
                     const valDisplay = ioc.value.length > 42 ? ioc.value.slice(0, 42) + '…' : ioc.value
                     return (
@@ -1280,16 +1280,16 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {iocSearchResults.map((ioc, i) => {
                     const v = ioc.verdict ?? 'unknown'
-                    const vColor = verdictColor[v] ?? '#546e7a'
+                    const vColor = verdictColor[v] ?? 'var(--text-muted)'
                     const vLabel = v === 'malicious' ? '恶意'
                       : v === 'suspicious' ? '可疑'
                       : v === 'clean' ? '安全'
                       : '未知'
-                    const typeColor = ioc.type === 'ip' || ioc.type === 'IP' ? '#ef5350'
-                      : ioc.type === 'domain' ? '#ab47bc'
-                      : ioc.type === 'hash' || ioc.type === 'file_hash' ? '#ff7043'
-                      : ioc.type === 'url' ? '#26c6da'
-                      : '#78909c'
+                    const typeColor = ioc.type === 'ip' || ioc.type === 'IP' ? 'var(--critical)'
+                      : ioc.type === 'domain' ? 'var(--accent-blue)'
+                      : ioc.type === 'hash' || ioc.type === 'file_hash' ? 'var(--high)'
+                      : ioc.type === 'url' ? 'var(--accent-blue)'
+                      : 'var(--text-muted)'
                     const confidence = ioc.confidence ?? 0
                     const valDisplay = ioc.value.length > 42 ? ioc.value.slice(0, 42) + '…' : ioc.value
                     return (
@@ -1374,7 +1374,7 @@ function AlertDetailPane({ alert, onClose, onUpdate }: DetailPaneProps) {
             <pre style={{
               background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 4,
               padding: 12, fontSize: 10.5, fontFamily: 'Consolas,"JetBrains Mono",monospace',
-              color: '#7ec8e3', overflow: 'auto', lineHeight: 1.7, whiteSpace: 'pre-wrap',
+              color: 'var(--accent-blue)', overflow: 'auto', lineHeight: 1.7, whiteSpace: 'pre-wrap',
               maxHeight: 500,
             }}>
               {JSON.stringify(a, null, 2)}
@@ -1434,7 +1434,7 @@ function AdvancedFilterPanel({
   return (
     <div style={{
       padding: '12px 20px 14px',
-      background: 'var(--bg-secondary)',
+      background: 'var(--bg-card2)',
       borderBottom: '1px solid var(--border)',
       flexShrink: 0,
     }}>
@@ -1452,7 +1452,7 @@ function AdvancedFilterPanel({
                   padding: '3px 10px', borderRadius: 3, cursor: 'pointer', fontSize: 11,
                   background: quickTime === qt.value ? 'rgba(79,163,224,.2)' : 'rgba(255,255,255,.05)',
                   border: `1px solid ${quickTime === qt.value ? 'rgba(79,163,224,.5)' : 'var(--border-light)'}`,
-                  color: quickTime === qt.value ? '#4fa3e0' : 'var(--text-secondary)',
+                  color: quickTime === qt.value ? 'var(--accent-blue)' : 'var(--text-secondary)',
                   fontWeight: quickTime === qt.value ? 600 : 400, transition: 'all .1s',
                 }}
               >{qt.label}</button>
@@ -1490,7 +1490,7 @@ function AdvancedFilterPanel({
                     padding: '2px 10px', borderRadius: 12, cursor: 'pointer', fontSize: 11,
                     background: active ? 'rgba(79,163,224,.2)' : 'rgba(255,255,255,.04)',
                     border: `1px solid ${active ? 'rgba(79,163,224,.5)' : 'var(--border-light)'}`,
-                    color: active ? '#4fa3e0' : 'var(--text-secondary)',
+                    color: active ? 'var(--accent-blue)' : 'var(--text-secondary)',
                     fontWeight: active ? 600 : 400, transition: 'all .1s',
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                   }}
@@ -1570,39 +1570,39 @@ function AlertStatsPanel({ stats, loading }: AlertStatsPanelProps) {
     {
       label: '总告警数',
       value: loading ? '…' : (stats?.total ?? '—'),
-      color: '#4fa3e0',
+      color: 'var(--accent-blue)',
     },
     {
       label: '严重',
       value: loading ? '…' : (stats?.by_severity?.critical ?? 0),
-      color: '#e53935',
+      color: 'var(--critical)',
     },
     {
       label: '高危',
       value: loading ? '…' : (stats?.by_severity?.high ?? 0),
-      color: '#ff6f00',
+      color: 'var(--high)',
     },
     {
       label: '今日新增',
       value: loading ? '…' : (stats?.new_last_24h ?? 0),
-      color: '#f9a825',
+      color: 'var(--medium)',
     },
     {
       label: '已处置',
       value: loading ? '…' : (stats?.by_status?.resolved ?? 0),
-      color: '#2fb07a',
+      color: 'var(--accent-green)',
     },
     {
       label: 'MTTR',
       value: loading ? '…' : (stats?.mttr_hours != null ? `${stats.mttr_hours.toFixed(1)}h` : '—'),
-      color: '#26c6da',
+      color: 'var(--accent-blue)',
     },
   ]
 
   return (
     <div style={{
       display: 'flex', gap: 12, padding: '12px 20px',
-      background: 'var(--bg-secondary)',
+      background: 'var(--bg-card2)',
       borderBottom: '1px solid var(--border)',
       flexShrink: 0, flexWrap: 'wrap',
     }}>
@@ -1611,7 +1611,7 @@ function AlertStatsPanel({ stats, loading }: AlertStatsPanelProps) {
           flex: '1 1 120px', minWidth: 100,
           padding: '10px 14px',
           background: 'var(--bg-card)',
-          border: `1px solid var(--border)`,
+          border: `1px solid 'var(--border)'`,
           borderLeft: `3px solid ${tile.color}`,
           borderRadius: 5,
           display: 'flex', flexDirection: 'column', gap: 4,
@@ -1975,14 +1975,14 @@ export default function Alerts() {
       {/* ── Severity + stats strip ───────────────────────── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '7px 20px',
-        borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0,
+        borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0,
         flexWrap: 'wrap',
       }}>
         {([
-          ['critical', '严重', '#e53935'],
-          ['high',     '高危', '#ff6f00'],
-          ['medium',   '中危', '#f9a825'],
-          ['low',      '低危', '#2fb07a'],
+          ['critical', '严重', 'var(--critical)'],
+          ['high',     '高危', 'var(--high)'],
+          ['medium',   '中危', 'var(--medium)'],
+          ['low',      '低危', 'var(--low)'],
         ] as [string, string, string][]).map(([key, label, color]) => (
           <button
             key={key}
@@ -2003,9 +2003,9 @@ export default function Alerts() {
             onClick={() => setIncidentFilter(incidentFilter === 'unlinked' ? '' : 'unlinked')}
             style={{
               padding: '5px 12px', borderRadius: 4, cursor: 'pointer',
-              background: incidentFilter === 'unlinked' ? 'rgba(255,111,0,.2)' : 'rgba(255,111,0,.08)',
-              border: `1px solid ${incidentFilter === 'unlinked' ? '#ff6f00' : 'rgba(255,111,0,.25)'}`,
-              color: '#ff6f00', fontSize: 11, fontWeight: 600, transition: 'all .12s',
+              background: incidentFilter === 'unlinked' ? 'rgba(224,128,64,.2)' : 'rgba(224,128,64,.08)',
+              border: `1px solid ${incidentFilter === 'unlinked' ? 'var(--high)' : 'rgba(224,128,64,.25)'}`,
+              color: 'var(--high)', fontSize: 11, fontWeight: 600, transition: 'all .12s',
             }}
           >
             ⚠ 未关联 <strong>{unlinkedCount}</strong>
@@ -2091,7 +2091,7 @@ export default function Alerts() {
             className="btn-secondary"
             style={{
               fontSize: 11,
-              color: autoRefresh ? '#2fb07a' : undefined,
+              color: autoRefresh ? 'var(--accent-green)' : undefined,
               borderColor: autoRefresh ? 'rgba(47,176,122,.4)' : undefined,
               background: autoRefresh ? 'rgba(47,176,122,.08)' : undefined,
             }}
@@ -2217,7 +2217,7 @@ export default function Alerts() {
             {/* 导出选中 */}
             <button
               className="btn-secondary"
-              style={{ fontSize: 11, color: '#2fb07a', borderColor: 'rgba(47,176,122,.3)' }}
+              style={{ fontSize: 11, color: 'var(--accent-green)', borderColor: 'rgba(47,176,122,.3)' }}
               onClick={exportSelectedCSV}
             >
               ↓ 导出选中
@@ -2320,7 +2320,7 @@ export default function Alerts() {
                               onClick={e => { e.stopPropagation(); navigate(`/incidents?highlight=${alert.incident_id}`) }}
                               style={{
                                 flexShrink: 0, fontSize: 11, cursor: 'pointer',
-                                color: '#4fa3e0', lineHeight: 1,
+                                color: 'var(--accent-blue)', lineHeight: 1,
                                 padding: '1px 4px', borderRadius: 3,
                                 background: 'rgba(79,163,224,.12)',
                                 border: '1px solid rgba(79,163,224,.3)',
@@ -2338,7 +2338,7 @@ export default function Alerts() {
                       <td><SourceBadge src={alertSource(alert)} /></td>
                       <td style={{ fontSize: 11 }}>
                         {alertHost(alert) && (
-                          <span style={{ color: '#4fa3e0', fontFamily: 'monospace', fontSize: 10.5, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 10.5, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             🖥 {alertHost(alert)}
                           </span>
                         )}
@@ -2350,13 +2350,13 @@ export default function Alerts() {
                       <td style={{ fontSize: 11 }}>
                         {alert.incident_id ? (
                           <span
-                            style={{ color: '#4fa3e0', fontFamily: 'monospace', fontSize: 10.5, cursor: 'pointer' }}
+                            style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 10.5, cursor: 'pointer' }}
                             onClick={e => { e.stopPropagation(); navigate(`/incidents?highlight=${alert.incident_id}`) }}
                           >
                             INC-{alert.incident_id}
                           </span>
                         ) : (
-                          <span style={{ color: '#ff6f00', fontSize: 10, fontWeight: 600 }}>未关联</span>
+                          <span style={{ color: 'var(--high)', fontSize: 10, fontWeight: 600 }}>未关联</span>
                         )}
                       </td>
                       {showSecondaryColumns && !selected && (
@@ -2414,7 +2414,7 @@ export default function Alerts() {
                                 padding: '2px 4px', borderRadius: 3,
                                 background: 'rgba(79,163,224,.12)',
                                 border: '1px solid rgba(79,163,224,.3)',
-                                color: '#4fa3e0', textDecoration: 'none', cursor: 'pointer',
+                                color: 'var(--accent-blue)', textDecoration: 'none', cursor: 'pointer',
                               }}
                             >🔗</a>
                           )}
@@ -2422,7 +2422,7 @@ export default function Alerts() {
                             <>
                               <button
                                 className="btn-secondary"
-                                style={{ fontSize: 9.5, padding: '2px 6px', color: '#f9a825', borderColor: 'rgba(249,168,37,.3)' }}
+                                style={{ fontSize: 9.5, padding: '2px 6px', color: 'var(--medium)', borderColor: 'rgba(200,160,48,.3)' }}
                                 title="标记为调查中"
                                 onClick={e => {
                                   e.stopPropagation()

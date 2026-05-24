@@ -117,11 +117,11 @@ const CASES: CaseItem[] = [
 const MITRE_CELLS: MitreCell[] = [
   { count: 0, label: 'Reconnaissance' },
   { count: 2, label: 'Resource\nDevelopment' },
-  { count: 5, label: 'Initial Access', color: '#fa582d' },
+  { count: 5, label: 'Initial Access', color: 'var(--accent-orange)' },
   { count: 1, label: 'Execution' },
   { count: 0, label: 'Persistence' },
   { count: 0, label: 'Privilege\nEscalation' },
-  { count: 1, label: 'Defense\nEvasion', color: '#e53935' },
+  { count: 1, label: 'Defense\nEvasion', color: 'var(--critical)' },
   { count: 2, label: 'Credential\nAccess' },
   { count: 2, label: 'Discovery' },
   { count: 0, label: 'Lateral\nMovement' },
@@ -138,7 +138,7 @@ const ARTIFACTS: ArtifactRow[] = [
 ]
 
 const ASSETS: AssetRow[] = [
-  { icon: '🖥', name: 'daas-01', tag: 'EG', badges: ['Cortex Labs Serv...', '+2'] },
+  { icon: '🖥', name: 'daas-01', tag: 'EG', badges: ['XSIAM Labs Serv...', '+2'] },
   { icon: '🖥', name: 'dc01 ⭐', tag: 'R', badges: ['Certificate Autho...', '+4'] },
   { icon: '👤', name: 'democload\\watson', tag: 'R', badges: ['Privileged Accou...'] },
 ]
@@ -252,7 +252,7 @@ const ALL_ARTIFACTS: ArtifactRow[] = [
 ]
 
 const ALL_ASSETS: AssetRow[] = [
-  { icon: '🖥', name: 'daas-01', tag: 'EG', badges: ['Cortex Labs Serv...', '+2'] },
+  { icon: '🖥', name: 'daas-01', tag: 'EG', badges: ['XSIAM Labs Serv...', '+2'] },
   { icon: '🖥', name: 'dc01 ⭐', tag: 'R', badges: ['Certificate Autho...', '+4'] },
   { icon: '👤', name: 'democload\\watson', tag: 'R', badges: ['Privileged Accou...'] },
   { icon: '🖥', name: 'wkstn-007', tag: 'EG', badges: ['Engineering'] },
@@ -340,16 +340,16 @@ const SEV_TAG_BG: Record<string, string> = {
 }
 
 function getActionDotColor(action: string): string {
-  if (action.toLowerCase().includes('prevented')) return '#e53935'
-  if (action.toLowerCase().includes('allowed')) return '#0078d4'
-  return '#4fa3e0'
+  if (action.toLowerCase().includes('prevented')) return 'var(--critical)'
+  if (action.toLowerCase().includes('allowed')) return 'var(--accent-blue)'
+  return 'var(--accent-blue)'
 }
 
 function getSmartScoreStyle(score: number): { background: string; color: string } | null {
   if (score <= 0) return null
-  if (score >= 80) return { background: 'rgba(229,57,53,0.15)', color: '#ef5350' }
-  if (score >= 60) return { background: 'rgba(255,111,0,0.15)', color: '#ffa726' }
-  if (score >= 40) return { background: 'rgba(249,168,37,0.15)', color: '#f9a825' }
+  if (score >= 80) return { background: 'rgba(224,80,80,0.15)', color: 'var(--critical)' }
+  if (score >= 60) return { background: 'rgba(224,128,64,0.15)', color: 'var(--high)' }
+  if (score >= 40) return { background: 'rgba(200,160,48,0.15)', color: 'var(--medium)' }
   return null
 }
 
@@ -410,8 +410,8 @@ function SLABadge({ createdAt, priority, severity }: { createdAt: string; priori
   const sla = computeSLA(createdAt, priority, severity)
   if (!sla) return null
 
-  const barColor = sla.breached ? '#e53935' : sla.pct > 0.5 ? '#ffa726' : '#00c896'
-  const labelColor = sla.breached ? '#e53935' : sla.pct > 0.5 ? '#ffa726' : '#00c896'
+  const barColor = sla.breached ? 'var(--critical)' : sla.pct > 0.5 ? 'var(--high)' : 'var(--accent-green)'
+  const labelColor = sla.breached ? 'var(--critical)' : sla.pct > 0.5 ? 'var(--high)' : 'var(--accent-green)'
 
   const absRemaining = Math.abs(sla.remainingMs)
   const remHours = Math.floor(absRemaining / 3600000)
@@ -439,7 +439,7 @@ function SLABadge({ createdAt, priority, severity }: { createdAt: string; priori
           transition: 'width .3s',
         }} />
       </div>
-      <div style={{ fontSize: 11, color: sla.breached ? '#e53935' : 'var(--text-muted)' }}>
+      <div style={{ fontSize: 11, color: sla.breached ? 'var(--critical)' : 'var(--text-muted)' }}>
         {remainLabel}
       </div>
     </div>
@@ -566,16 +566,16 @@ function SLAStatsCard({ stats, loading }: { stats: SLAStats | null; loading: boo
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>P1违约</span>
             <span style={{
-              fontSize: 13, fontWeight: 700, color: stats.p1_breach > 0 ? '#e53935' : 'var(--text-muted)',
-              background: stats.p1_breach > 0 ? 'rgba(229,57,53,.12)' : 'transparent',
+              fontSize: 13, fontWeight: 700, color: stats.p1_breach > 0 ? 'var(--critical)' : 'var(--text-muted)',
+              background: stats.p1_breach > 0 ? 'rgba(224,80,80,.12)' : 'transparent',
               padding: '1px 6px', borderRadius: 3,
             }}>{stats.p1_breach}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>P2预警</span>
             <span style={{
-              fontSize: 13, fontWeight: 700, color: stats.p2_at_risk > 0 ? '#ffa726' : 'var(--text-muted)',
-              background: stats.p2_at_risk > 0 ? 'rgba(255,167,38,.12)' : 'transparent',
+              fontSize: 13, fontWeight: 700, color: stats.p2_at_risk > 0 ? 'var(--high)' : 'var(--text-muted)',
+              background: stats.p2_at_risk > 0 ? 'rgba(224,128,64,.12)' : 'transparent',
               padding: '1px 6px', borderRadius: 3,
             }}>{stats.p2_at_risk}</span>
           </div>
@@ -583,7 +583,7 @@ function SLAStatsCard({ stats, loading }: { stats: SLAStats | null; loading: boo
             <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>合规率</span>
             <span style={{
               fontSize: 13, fontWeight: 700,
-              color: stats.compliance_rate >= 80 ? '#00c896' : stats.compliance_rate >= 60 ? '#ffa726' : '#e53935',
+              color: stats.compliance_rate >= 80 ? 'var(--accent-green)' : stats.compliance_rate >= 60 ? 'var(--high)' : 'var(--critical)',
               padding: '1px 6px', borderRadius: 3,
             }}>{stats.compliance_rate.toFixed(0)}%</span>
           </div>
@@ -640,19 +640,19 @@ interface QueueTierDef {
 }
 
 const QUEUE_TIERS: QueueTierDef[] = [
-  { key: 'p1', label: 'P1 — 严重级别 + SLA已超时', headerColor: '#ef5350', headerBg: 'rgba(229,57,53,0.10)', borderColor: 'rgba(229,57,53,0.35)' },
-  { key: 'p2', label: 'P2 — 高危 + SLA接近超时', headerColor: '#ffa726', headerBg: 'rgba(255,111,0,0.10)', borderColor: 'rgba(255,111,0,0.35)' },
-  { key: 'p3', label: 'P3 — 中危', headerColor: '#f9a825', headerBg: 'rgba(249,168,37,0.10)', borderColor: 'rgba(249,168,37,0.35)' },
-  { key: 'p4', label: 'P4 — 低危', headerColor: '#8a8fa0', headerBg: 'rgba(138,143,160,0.07)', borderColor: 'rgba(138,143,160,0.25)' },
+  { key: 'p1', label: 'P1 — 严重级别 + SLA已超时', headerColor: 'var(--critical)', headerBg: 'rgba(224,80,80,0.10)', borderColor: 'rgba(224,80,80,0.35)' },
+  { key: 'p2', label: 'P2 — 高危 + SLA接近超时', headerColor: 'var(--high)', headerBg: 'rgba(224,128,64,0.10)', borderColor: 'rgba(224,128,64,0.35)' },
+  { key: 'p3', label: 'P3 — 中危', headerColor: 'var(--medium)', headerBg: 'rgba(200,160,48,0.10)', borderColor: 'rgba(200,160,48,0.35)' },
+  { key: 'p4', label: 'P4 — 低危', headerColor: 'var(--text-muted)', headerBg: 'rgba(138,143,160,0.07)', borderColor: 'rgba(138,143,160,0.25)' },
 ]
 
 const SEV_ICON: Record<string, string> = { critical: '🔴', high: '🟠', medium: '🟡', low: '⚪' }
 
 function getSlaBarColor(pct: number, breached: boolean): string {
-  if (breached) return '#e53935'
-  if (pct > 0.75) return '#ffa726'
-  if (pct > 0.5) return '#f9a825'
-  return '#00c896'
+  if (breached) return 'var(--critical)'
+  if (pct > 0.75) return 'var(--high)'
+  if (pct > 0.5) return 'var(--medium)'
+  return 'var(--accent-green)'
 }
 
 function formatSlaTimeLabel(sla: SLAInfo): string {
@@ -734,7 +734,7 @@ function PriorityQueueView({ incidents, now: _now, selectedId, onSelect, onAssig
                 const sev = inc.severity?.toLowerCase() ?? ''
                 const limitH = SLA_LIMITS_LOCAL[sev] ?? null
                 const sla = limitH ? computeSLA(inc.created_at, undefined, sev) : null
-                const barColor = sla ? getSlaBarColor(sla.pct, sla.breached) : '#00c896'
+                const barColor = sla ? getSlaBarColor(sla.pct, sla.breached) : 'var(--accent-green)'
                 const slaLabel = sla ? formatSlaTimeLabel(sla) : null
                 const ssStyle = getSmartScoreStyle(inc.smart_score ?? 0)
                 const isSelected = (inc.incident_id || inc._key) === selectedId
@@ -779,7 +779,7 @@ function PriorityQueueView({ incidents, now: _now, selectedId, onSelect, onAssig
                         👤 {inc.assigned_to ?? inc.assignee ?? '未分配'}
                       </span>
                       {sla?.breached && (
-                        <span style={{ color: '#e53935', fontWeight: 600, marginLeft: 'auto', flexShrink: 0 }}>
+                        <span style={{ color: 'var(--critical)', fontWeight: 600, marginLeft: 'auto', flexShrink: 0 }}>
                           ⏱ {slaLabel}
                         </span>
                       )}
@@ -832,8 +832,8 @@ function PriorityQueueView({ incidents, now: _now, selectedId, onSelect, onAssig
                         disabled={!!aLoadEscalate}
                         style={{
                           flex: 1, padding: '3px 0', fontSize: 10.5,
-                          border: '1px solid rgba(255,167,38,.45)',
-                          borderRadius: 4, background: 'rgba(255,111,0,0.08)', color: '#ffa726',
+                          border: '1px solid rgba(224,128,64,.45)',
+                          borderRadius: 4, background: 'rgba(224,128,64,0.08)', color: 'var(--high)',
                           cursor: aLoadEscalate ? 'wait' : 'pointer', transition: 'all .12s',
                         }}
                       >{aLoadEscalate ? '…' : '升级'}</button>
@@ -896,7 +896,7 @@ function setAutomationRuleEnabled(ruleId: string, enabled: boolean): void {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
-export default function XDRCases() {
+export default function XSIAMCases() {
   const [mainView, setMainView] = useState<'cases' | 'policy'>('cases')
   const [selectedCase, setSelectedCase] = useState<string>('INC5254')
   const [activeTab, setActiveTab] = useState<string>('overview')
@@ -1149,7 +1149,7 @@ export default function XDRCases() {
             subtitle={selectedCaseData ? `${selectedCaseData.displayId} ${selectedCaseData.name}` : undefined}
             actions={<>
               <span style={{
-                fontSize: 10.5, color: '#8a8fa0',
+                fontSize: 10.5, color: 'var(--text-muted)',
                 border: '1px solid var(--border-light)',
                 padding: '2px 8px', borderRadius: 3,
               }}>Managed by Unit42 Managed Services</span>
@@ -1179,7 +1179,7 @@ export default function XDRCases() {
                 }}
                 style={{
                   background: 'var(--bg-card)', border: '1px solid #00c89644',
-                  color: '#0078d4', borderRadius: 4, padding: '4px 10px',
+                  color: 'var(--accent-blue)', borderRadius: 4, padding: '4px 10px',
                   fontSize: 12, cursor: 'pointer',
                 }}>+ 新建案例</button>
             </>}
@@ -1191,25 +1191,25 @@ export default function XDRCases() {
               flexShrink: 0,
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '8px 18px',
-              background: 'linear-gradient(90deg, rgba(229,57,53,0.12) 0%, rgba(255,111,0,0.10) 100%)',
-              borderBottom: '1px solid rgba(229,57,53,0.30)',
-              borderLeft: '3px solid #e53935',
+              background: 'linear-gradient(90deg, rgba(224,80,80,0.12) 0%, rgba(224,128,64,0.10) 100%)',
+              borderBottom: '1px solid rgba(224,80,80,0.30)',
+              borderLeft: '3px solid var(--critical)',
             }}>
               <span style={{ fontSize: 14 }}>⚠️</span>
-              <span style={{ fontSize: 12.5, fontWeight: 600, color: '#ef5350', flex: 1 }}>
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--critical)', flex: 1 }}>
                 {slaBreachCount} 个案例已超出SLA响应时限
               </span>
               <button
                 onClick={() => { setSlaFilterActive(true); setSlaBannerDismissed(false) }}
                 style={{
-                  background: 'rgba(229,57,53,0.18)', border: '1px solid rgba(229,57,53,0.45)',
-                  color: '#ef5350', borderRadius: 4, padding: '3px 12px',
+                  background: 'rgba(224,80,80,0.18)', border: '1px solid rgba(224,80,80,0.45)',
+                  color: 'var(--critical)', borderRadius: 4, padding: '3px 12px',
                   fontSize: 11.5, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap',
                 }}>查看超时案例</button>
               <button
                 onClick={() => setSlaBannerDismissed(true)}
                 style={{
-                  background: 'none', border: 'none', color: 'rgba(229,57,53,0.7)',
+                  background: 'none', border: 'none', color: 'rgba(224,80,80,0.7)',
                   cursor: 'pointer', fontSize: 16, padding: '0 4px', lineHeight: 1,
                 }}>×</button>
             </div>
@@ -1219,14 +1219,14 @@ export default function XDRCases() {
             <div style={{
               flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
               padding: '4px 18px',
-              background: 'rgba(229,57,53,0.07)', borderBottom: '1px solid rgba(229,57,53,0.20)',
+              background: 'rgba(224,80,80,0.07)', borderBottom: '1px solid rgba(224,80,80,0.20)',
             }}>
-              <span style={{ fontSize: 11, color: '#ef5350' }}>🔴 正在显示超时案例</span>
+              <span style={{ fontSize: 11, color: 'var(--critical)' }}>🔴 正在显示超时案例</span>
               <button
                 onClick={() => setSlaFilterActive(false)}
                 style={{
-                  background: 'none', border: '1px solid rgba(229,57,53,0.35)',
-                  color: 'rgba(229,57,53,0.8)', borderRadius: 3, padding: '1px 8px',
+                  background: 'none', border: '1px solid rgba(224,80,80,0.35)',
+                  color: 'rgba(224,80,80,0.8)', borderRadius: 3, padding: '1px 8px',
                   fontSize: 10.5, cursor: 'pointer',
                 }}>清除筛选</button>
             </div>
@@ -1340,7 +1340,7 @@ export default function XDRCases() {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                        <span style={{ color: '#f9a825', fontSize: 12 }}>★</span>
+                        <span style={{ color: 'var(--medium)', fontSize: 12 }}>★</span>
                         <span style={{
                           fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 3,
                           color: 'white', background: SEV_PILL_BG[c.severity],
@@ -1444,7 +1444,7 @@ export default function XDRCases() {
               <div style={{ padding: '12px 18px 0', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
                 {/* Title row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ color: '#f9a825', fontSize: 14 }}>★</span>
+                  <span style={{ color: 'var(--medium)', fontSize: 14 }}>★</span>
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 3,
                     color: 'white', background: selectedCaseData ? SEV_PILL_BG[selectedCaseData.severity] : 'var(--high)',
@@ -1634,8 +1634,8 @@ export default function XDRCases() {
                             {a.wf && <span>WF</span>}
                             <span style={{
                               padding: '1px 5px', borderRadius: 3,
-                              border: `1px solid ${a.verdict === 'malware' ? '#e5393544' : '#00c89644'}`,
-                              color: a.verdict === 'malware' ? '#e53935' : 'var(--accent-green)',
+                              border: `1px solid ${a.verdict === 'malware' ? 'rgba(224,80,80,.44)' : 'rgba(47,176,122,.44)'}`,
+                              color: a.verdict === 'malware' ? 'var(--critical)' : 'var(--accent-green)',
                             }}>
                               {a.verdict === 'malware' ? '🔴 Malware' : 'Benign'}
                             </span>
@@ -1659,7 +1659,7 @@ export default function XDRCases() {
                             <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                               <span style={{
                                 fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
-                                color: 'white', background: a.tag === 'EG' ? '#6d28d9' : '#dc2626',
+                                color: 'white', background: a.tag === 'EG' ? 'var(--accent-blue)' : 'var(--critical)',
                               }}>{a.tag}</span>
                               {a.badges.map((b, bi) => (
                                 <span key={bi} style={{
@@ -1818,7 +1818,7 @@ export default function XDRCases() {
                               </td>
                               <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>{row.category}</td>
                               <td style={{ ...tdStyle, color: 'var(--text-primary)', maxWidth: 260 }}>
-                                {row.starred && <span style={{ color: '#f9a825', marginRight: 4 }}>★</span>}
+                                {row.starred && <span style={{ color: 'var(--medium)', marginRight: 4 }}>★</span>}
                                 {row.name}
                               </td>
                               <td style={{
@@ -1863,13 +1863,13 @@ export default function XDRCases() {
                                 <td style={tdStyle}>
                                   <span style={{
                                     fontSize: 10, padding: '2px 6px', borderRadius: 3,
-                                    border: `1px solid ${a.verdict === 'malware' ? '#e5393544' : '#00c89644'}`,
-                                    color: a.verdict === 'malware' ? '#e53935' : 'var(--accent-green)',
+                                    border: `1px solid ${a.verdict === 'malware' ? 'rgba(224,80,80,.44)' : 'rgba(47,176,122,.44)'}`,
+                                    color: a.verdict === 'malware' ? 'var(--critical)' : 'var(--accent-green)',
                                   }}>
                                     {a.verdict === 'malware' ? '🔴 Malware' : '✓ Benign'}
                                   </span>
                                 </td>
-                                <td style={{ ...tdStyle, color: a.vtScore ? (parseInt(a.vtScore.replace('VT', '')) > 0 ? '#e53935' : 'var(--text-muted)') : 'var(--text-muted)', fontSize: 11 }}>{a.vtScore ?? '—'}</td>
+                                <td style={{ ...tdStyle, color: a.vtScore ? (parseInt(a.vtScore.replace('VT', '')) > 0 ? 'var(--critical)' : 'var(--text-muted)') : 'var(--text-muted)', fontSize: 11 }}>{a.vtScore ?? '—'}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -1892,7 +1892,7 @@ export default function XDRCases() {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--text-primary)', marginBottom: 4 }}>{a.name}</div>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
-                                <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3, color: 'white', background: a.tag === 'EG' ? '#6d28d9' : '#dc2626' }}>{a.tag}</span>
+                                <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3, color: 'white', background: a.tag === 'EG' ? 'var(--accent-blue)' : 'var(--critical)' }}>{a.tag}</span>
                                 {a.badges.map((b, bi) => (
                                   <span key={bi} style={{ fontSize: 9.5, color: 'var(--text-muted)', border: '1px solid var(--border-light)', padding: '1px 5px', borderRadius: 3 }}>{b}</span>
                                 ))}
@@ -1916,7 +1916,7 @@ export default function XDRCases() {
                       <div style={{ position: 'absolute', left: 8, top: 0, bottom: 0, width: 2, background: 'var(--border)' }} />
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                         {TIMELINE_EVENTS.map((ev, i) => {
-                          const dotColor = ev.type === 'alert' ? '#e53935' : ev.type === 'action' ? 'var(--accent-orange)' : ev.type === 'note' ? 'var(--accent-blue)' : ev.type === 'status' ? 'var(--accent-green)' : '#8a8fa0'
+                          const dotColor = ev.type === 'alert' ? 'var(--critical)' : ev.type === 'action' ? 'var(--accent-orange)' : ev.type === 'note' ? 'var(--accent-blue)' : ev.type === 'status' ? 'var(--accent-green)' : 'var(--text-muted)'
                           const icon = ev.type === 'alert' ? '⚠' : ev.type === 'action' ? '⚡' : ev.type === 'note' ? '📝' : ev.type === 'status' ? '↕' : '👤'
                           return (
                             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, paddingBottom: 18, position: 'relative' }}>
@@ -1974,7 +1974,7 @@ export default function XDRCases() {
                         <div key={msg.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                           <div style={{
                             width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                            background: msg.author === 'Automation' || msg.author === 'System' || msg.author === 'AutoAssign' ? 'var(--accent-orange)' : msg.author === 'watson' ? '#6d28d9' : msg.author === 'ir-team' ? '#0891b2' : '#374151',
+                            background: msg.author === 'Automation' || msg.author === 'System' || msg.author === 'AutoAssign' ? 'var(--accent-orange)' : msg.author === 'watson' ? 'var(--accent-blue)' : msg.author === 'ir-team' ? 'var(--accent-blue)' : 'var(--text-muted)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 11, fontWeight: 700, color: 'white',
                           }}>{msg.avatar}</div>
@@ -2078,7 +2078,7 @@ export default function XDRCases() {
                         </thead>
                         <tbody>
                           {EXECUTIONS.map((ex, i) => {
-                            const statusColor = ex.status === 'completed' ? 'var(--accent-green)' : ex.status === 'running' ? 'var(--accent-orange)' : '#e53935'
+                            const statusColor = ex.status === 'completed' ? 'var(--accent-green)' : ex.status === 'running' ? 'var(--accent-orange)' : 'var(--critical)'
                             const statusLabel = ex.status === 'completed' ? '✓ Completed' : ex.status === 'running' ? '⟳ Running' : '✕ Failed'
                             return (
                               <tr key={i} style={{ cursor: 'default' }}>
@@ -2096,7 +2096,7 @@ export default function XDRCases() {
                                     <div style={{ width: 50, height: 4, background: 'var(--border)', borderRadius: 2 }}>
                                       <div style={{
                                         width: `${(ex.stepsOk / ex.steps) * 100}%`, height: 4,
-                                        background: ex.status === 'failed' ? '#e53935' : 'var(--accent-green)', borderRadius: 2,
+                                        background: ex.status === 'failed' ? 'var(--critical)' : 'var(--accent-green)', borderRadius: 2,
                                       }} />
                                     </div>
                                     <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{ex.stepsOk}/{ex.steps}</span>
@@ -2225,7 +2225,7 @@ export default function XDRCases() {
             subtitle="Prevention Policy Rules"
             actions={<>
               <span style={{
-                fontSize: 10.5, color: '#8a8fa0',
+                fontSize: 10.5, color: 'var(--text-muted)',
                 border: '1px solid var(--border-light)',
                 padding: '2px 8px', borderRadius: 3,
               }}>Managed by Unit42 Managed Services</span>
@@ -2247,8 +2247,8 @@ export default function XDRCases() {
               onClick={() => alert('26 policies have elevated risk configurations. Review recommended.')}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: '#2a1a00', border: '1px solid #ff9900aa',
-                color: '#ff9900', borderRadius: 4, padding: '4px 12px',
+                background: 'var(--bg-card)', border: '1px solid #ff9900aa',
+                color: 'var(--high)', borderRadius: 4, padding: '4px 12px',
                 fontSize: 11.5, cursor: 'pointer',
               }}>⚠ View Risks associated with 26 policies</button>
           </div>
@@ -2429,14 +2429,14 @@ export default function XDRCases() {
             onClick={() => setAgentix开放(false)}
             style={{
               position: 'fixed', inset: 0,
-              background: 'rgba(0,0,0,.55)', zIndex: 700,
+              background: 'var(--bg-overlay)', zIndex: 700,
             }}
           />
           {/* Panel */}
           <div style={{
             position: 'fixed', top: 0, bottom: 0, left: '50%', right: 0,
-            background: 'var(--bg-card)',
-            borderLeft: '1px solid #1a2535',
+            background: 'var(--bg-drawer)',
+            borderLeft: '1px solid var(--border)',
             zIndex: 800,
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
@@ -2445,8 +2445,9 @@ export default function XDRCases() {
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '10px 16px',
-              borderBottom: '1px solid #1a2535',
-              flexShrink: 0,
+              borderBottom: '1px solid var(--border)',
+              background: 'var(--bg-card2)',
+              flexShrink: 0, minHeight: 48,
             }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Endpoint Investigation Agent</span>
               <button
@@ -2500,7 +2501,7 @@ export default function XDRCases() {
                         borderRadius: 6, padding: '10px 12px', fontSize: 12, marginBottom: 8,
                       }}>
                         <span style={{ color: 'var(--accent-blue)' }}>{h.slice(0, 8)}...{h.slice(-4)}</span> is a SHA256 identified as{' '}
-                        <span style={{ color: '#e53935', fontWeight: 600 }}>Malware</span> by WildFire
+                        <span style={{ color: 'var(--critical)', fontWeight: 600 }}>Malware</span> by WildFire
                       </div>
                     </div>
                   )
@@ -2520,10 +2521,10 @@ export default function XDRCases() {
                         <b style={{ color: 'var(--text-secondary)' }}>Planned Steps to Address Your Request:</b>
                         <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
                           1. Will execute{' '}
-                          <code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)' }}>CortexBlockFile</code>{' '}
+                          <code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)' }}>BlockFile</code>{' '}
                           to block the provided file hash.
                         </span>
-                        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>• Blocking the file hash using CortexBlockFile action.</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>• Blocking the file hash using BlockFile action.</span>
                       </div>
                     </div>
                   )
@@ -2536,14 +2537,14 @@ export default function XDRCases() {
                       </div>
                       <div style={{
                         display: 'flex', alignItems: 'flex-start', gap: 8,
-                        background: '#2a1a00', border: '1px solid #ff9900aa',
+                        background: 'var(--bg-card)', border: '1px solid #ff9900aa',
                         borderRadius: 6, padding: '10px 12px',
-                        fontSize: 12, color: '#ff9900',
+                        fontSize: 12, color: 'var(--high)',
                       }}>
                         ⚠ <span>Sensitive action detected — User approval required</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', paddingLeft: 14 }}>
-                        Blocking the file hash using CortexBlockFile action.
+                        Blocking the file hash using BlockFile action.
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 14 }}>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1 }}>Should I proceed?</span>
@@ -2628,8 +2629,8 @@ export default function XDRCases() {
                 onClick={sendAgentix}
                 style={{
                   width: 32, height: 32,
-                  background: '#0078d4', border: 'none', borderRadius: '50%',
-                  color: '#001a12', fontSize: 16,
+                  background: 'var(--accent-blue)', border: 'none', borderRadius: '50%',
+                  color: 'var(--bg-card)', fontSize: 16,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
                 }}>↑</button>
@@ -2655,8 +2656,8 @@ function AgentixSpinner() {
   return (
     <div style={{
       width: 48, height: 48, borderRadius: '50%',
-      border: '2px solid #00c89622',
-      borderTopColor: '#0078d4',
+      border: '2px solid rgba(47,176,122,.13)',
+      borderTopColor: 'var(--accent-blue)',
       animation: 'xsiam-spin 1.5s linear infinite',
       position: 'relative',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -2676,8 +2677,8 @@ function StepSpinner() {
   return (
     <div style={{
       width: 14, height: 14, borderRadius: '50%',
-      border: '1.5px solid #00c89633',
-      borderTopColor: '#0078d4',
+      border: '1.5px solid rgba(47,176,122,.20)',
+      borderTopColor: 'var(--accent-blue)',
       animation: 'xsiam-spin .8s linear infinite',
       flexShrink: 0,
     }} />
@@ -2688,9 +2689,9 @@ function StepDone() {
   return (
     <div style={{
       width: 14, height: 14, borderRadius: '50%',
-      background: '#0078d4', display: 'flex',
+      background: 'var(--accent-blue)', display: 'flex',
       alignItems: 'center', justifyContent: 'center',
-      fontSize: 9, color: '#001a12', flexShrink: 0,
+      fontSize: 9, color: 'var(--bg-card)', flexShrink: 0,
     }}>✓</div>
   )
 }

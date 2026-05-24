@@ -119,30 +119,30 @@ function formatDate(iso: string): string {
 
 // ── Severity colors ───────────────────────────────────────────────────────────
 const SEVERITY_BORDER: Record<string, string> = {
-  critical: '#ef4444',
-  high:     '#f97316',
-  medium:   '#eab308',
-  low:      '#22c55e',
+  critical: 'var(--critical)',
+  high:     'var(--high)',
+  medium:   'var(--medium)',
+  low:      'var(--accent-green)',
 }
 
 // ── Node type colors & icons ──────────────────────────────────────────────────
 const NODE_COLORS: Record<string, string> = {
-  process:  '#4fa3e0',
-  file:     '#f9a825',
-  network:  '#43a047',
-  registry: '#ff7043',
-  user:     '#9c27b0',
-  alert:    '#e53935',
-  asset:    '#546e7a',
-  host:     '#00bcd4',
-  Process:  '#4fa3e0',
-  File:     '#f9a825',
-  Network:  '#43a047',
-  Registry: '#ff7043',
-  User:     '#9c27b0',
-  Alert:    '#e53935',
-  Asset:    '#546e7a',
-  Host:     '#00bcd4',
+  process:  'var(--accent-blue)',
+  file:     'var(--medium)',
+  network:  'var(--accent-green)',
+  registry: 'var(--high)',
+  user:     'var(--accent-blue)',
+  alert:    'var(--critical)',
+  asset:    'var(--text-muted)',
+  host:     'var(--accent-blue)',
+  Process:  'var(--accent-blue)',
+  File:     'var(--medium)',
+  Network:  'var(--accent-green)',
+  Registry: 'var(--high)',
+  User:     'var(--accent-blue)',
+  Alert:    'var(--critical)',
+  Asset:    'var(--text-muted)',
+  Host:     'var(--accent-blue)',
 }
 
 const NODE_ICONS: Record<string, string> = {
@@ -163,24 +163,24 @@ function panelTypeIcon(type: string): string {
 }
 
 const EDGE_COLORS: Record<string, string> = {
-  spawned:           '#4fa3e0',
-  wrote_file:        '#f9a825',
-  executed_file:     '#ff7043',
-  connected_to:      '#43a047',
-  modified_registry: '#ff7043',
-  lateral_move_to:   '#e53935',
-  triggered_alert:   '#e5393588',
-  logged_in_as:      '#9c27b0',
-  authenticated_as:  '#9c27b0',
-  accessed_resource: '#607d8b',
+  spawned:           'var(--accent-blue)',
+  wrote_file:        'var(--medium)',
+  executed_file:     'var(--high)',
+  connected_to:      'var(--accent-green)',
+  modified_registry: 'var(--high)',
+  lateral_move_to:   'var(--critical)',
+  triggered_alert:   '#c0404088',
+  logged_in_as:      'var(--accent-blue)',
+  authenticated_as:  'var(--accent-blue)',
+  accessed_resource: 'var(--text-muted)',
 }
 
 // ── Node type stat colors ─────────────────────────────────────────────────────
 const STAT_CHIP_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  process: { bg: '#4fa3e022', text: '#4fa3e0', label: '进程' },
-  file:    { bg: '#f9a82522', text: '#f9a825', label: '文件' },
-  network: { bg: '#43a04722', text: '#43a047', label: '网络' },
-  other:   { bg: '#60607822', text: '#9e9e9e', label: '其他' },
+  process: { bg: '#4fa3e022', text: 'var(--accent-blue)', label: '进程' },
+  file:    { bg: '#c8a03022', text: 'var(--medium)', label: '文件' },
+  network: { bg: '#28906a22', text: 'var(--accent-green)', label: '网络' },
+  other:   { bg: '#60607822', text: 'var(--text-muted)', label: '其他' },
 }
 
 // ── DAG layout (BFS level assignment) ────────────────────────────────────────
@@ -298,7 +298,7 @@ function NodeShape({
   isSuspect?: boolean
 }) {
   const borderColor = isSuspect
-    ? '#ef4444'
+    ? 'var(--critical)'
     : isSelected
     ? '#fff'
     : (severity && SEVERITY_BORDER[severity] ? SEVERITY_BORDER[severity] : color)
@@ -564,9 +564,9 @@ function buildProcessTree(incidentKey: string): ProcessNode {
 
 // Risk styling helpers
 const RISK_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = {
-  malicious:  { bg: '#ef444418', border: '#ef4444', text: '#ef4444',  label: '恶意' },
-  suspicious: { bg: '#f9731618', border: '#f97316', text: '#f97316',  label: '可疑' },
-  clean:      { bg: '#ffffff08', border: '#ffffff22', text: '#6b7280', label: '正常' },
+  malicious:  { bg: '#ef444418', border: 'var(--critical)', text: 'var(--critical)',  label: '恶意' },
+  suspicious: { bg: '#f9731618', border: 'var(--high)', text: 'var(--high)',  label: '可疑' },
+  clean:      { bg: '#ffffff08', border: '#ffffff22', text: 'var(--text-muted)', label: '正常' },
 }
 
 const PROC_ICONS: Record<string, string> = {
@@ -657,7 +657,7 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
               fontFamily: 'monospace', flexShrink: 0,
             }}>{node.name}</span>
             <span style={{
-              fontSize: 10.5, color: '#6b7280', fontFamily: 'monospace', flexShrink: 0,
+              fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'monospace', flexShrink: 0,
             }}>PID {node.pid}</span>
             {node.risk !== 'clean' && (
               <span style={{
@@ -674,7 +674,7 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
               <span style={{
                 fontSize: 9.5,
                 background: '#7c3aed22', border: '1px solid #7c3aed55',
-                color: '#a78bfa', borderRadius: 3, padding: '0 5px', flexShrink: 0,
+                color: 'var(--accent-blue)', borderRadius: 3, padding: '0 5px', flexShrink: 0,
               }}>{node.mitre}</span>
             )}
           </div>
@@ -709,12 +709,12 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
           border: '1px solid rgba(79,163,224,0.15)',
           borderRadius: 6,
         }}>
-          <span style={{ fontSize: 12, color: '#4fa3e0' }}>🌲 进程树</span>
+          <span style={{ fontSize: 12, color: 'var(--accent-blue)' }}>🌲 进程树</span>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>点击进程查看详情 · 点击 ▼ 折叠分支</span>
           <div style={{ flex: 1 }} />
-          <span style={{ fontSize: 10.5, color: '#ef4444', fontWeight: 600 }}>🔴 恶意</span>
-          <span style={{ fontSize: 10.5, color: '#f97316', fontWeight: 600, marginLeft: 8 }}>🟠 可疑</span>
-          <span style={{ fontSize: 10.5, color: '#6b7280', marginLeft: 8 }}>⚪ 正常</span>
+          <span style={{ fontSize: 10.5, color: 'var(--critical)', fontWeight: 600 }}>🔴 恶意</span>
+          <span style={{ fontSize: 10.5, color: 'var(--high)', fontWeight: 600, marginLeft: 8 }}>🟠 可疑</span>
+          <span style={{ fontSize: 10.5, color: 'var(--text-muted)', marginLeft: 8 }}>⚪ 正常</span>
         </div>
 
         {/* Tree */}
@@ -758,7 +758,7 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
                     color: 'var(--text-primary)', fontFamily: 'monospace',
                     wordBreak: 'break-all',
                   }}>{selectedProc.name}</div>
-                  <div style={{ fontSize: 10.5, color: '#6b7280', marginTop: 2 }}>PID {selectedProc.pid}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2 }}>PID {selectedProc.pid}</div>
                 </div>
               </div>
               {selectedProc.risk !== 'clean' && (
@@ -795,7 +795,7 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
                 <div style={{
                   fontSize: 10.5, fontFamily: 'monospace', color: 'var(--text-secondary)',
                   wordBreak: 'break-all', lineHeight: 1.5,
-                  background: 'rgba(0,0,0,0.3)', borderRadius: 4, padding: '5px 8px',
+                  background: 'var(--bg-code)', borderRadius: 4, padding: '5px 8px',
                 }}>
                   {selectedProc.path || '—'}
                 </div>
@@ -804,9 +804,9 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
                   borderBottom: '1px solid rgba(255,255,255,.04)', paddingBottom: 5,
                 }}>命令行</div>
                 <div style={{
-                  fontSize: 10.5, fontFamily: 'monospace', color: '#a5f3fc',
+                  fontSize: 10.5, fontFamily: 'monospace', color: 'var(--accent-blue)',
                   wordBreak: 'break-all', lineHeight: 1.5,
-                  background: 'rgba(0,0,0,0.3)', borderRadius: 4, padding: '5px 8px',
+                  background: 'var(--bg-code)', borderRadius: 4, padding: '5px 8px',
                 }}>
                   {selectedProc.cmdline || '—'}
                 </div>
@@ -836,9 +836,9 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
                   fontSize: 11, color: 'var(--text-muted)', paddingBottom: 3,
                 }}>SHA256</div>
                 <div style={{
-                  fontSize: 9.5, fontFamily: 'monospace', color: '#6b7280',
+                  fontSize: 9.5, fontFamily: 'monospace', color: 'var(--text-muted)',
                   wordBreak: 'break-all', lineHeight: 1.4,
-                  background: 'rgba(0,0,0,0.2)', borderRadius: 3, padding: '4px 6px',
+                  background: 'var(--bg-code)', borderRadius: 3, padding: '4px 6px',
                 }}>{selectedProc.sha256}</div>
               </div>
             </div>
@@ -851,7 +851,7 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     background: '#7c3aed22', border: '1px solid #7c3aed66',
-                    color: '#a78bfa', borderRadius: 4, padding: '3px 10px',
+                    color: 'var(--accent-blue)', borderRadius: 4, padding: '3px 10px',
                     fontSize: 12, fontWeight: 700, width: 'fit-content',
                   }}>{selectedProc.mitre}</span>
                   <span style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
@@ -869,21 +869,21 @@ function ProcessTreeView({ incidentId }: { incidentId: string }) {
                   {selectedProc.netConns.map((conn, idx) => (
                     <div key={idx} style={{
                       padding: '5px 8px',
-                      background: 'rgba(0,0,0,0.3)', borderRadius: 4,
+                      background: 'var(--bg-code)', borderRadius: 4,
                       border: '1px solid rgba(255,255,255,0.06)',
                       fontSize: 10.5, fontFamily: 'monospace',
                       display: 'flex', flexDirection: 'column', gap: 3,
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#4fa3e0', fontWeight: 600 }}>{conn.proto}</span>
-                        <span style={{ color: conn.state === 'ESTABLISHED' ? '#43a047' : '#9e9e9e' }}>
+                        <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{conn.proto}</span>
+                        <span style={{ color: conn.state === 'ESTABLISHED' ? 'var(--accent-green)' : 'var(--text-muted)' }}>
                           {conn.state}
                         </span>
                       </div>
-                      <div style={{ color: '#ef4444' }}>
+                      <div style={{ color: 'var(--critical)' }}>
                         → {conn.remoteIp}:{conn.remotePort}
                       </div>
-                      <div style={{ color: '#6b7280' }}>
+                      <div style={{ color: 'var(--text-muted)' }}>
                         local :{conn.localPort}
                       </div>
                     </div>
@@ -1277,7 +1277,7 @@ export default function CausalityGraph() {
       if (!p) return
       ctx.beginPath()
       ctx.arc(mmX(p.x), mmY(p.y), 3, 0, Math.PI * 2)
-      ctx.fillStyle = n.is_root ? '#e53935' : (NODE_COLORS[n.type] ?? '#607d8b')
+      ctx.fillStyle = n.is_root ? 'var(--critical)' : (NODE_COLORS[n.type] ?? 'var(--text-muted)')
       ctx.fill()
     })
 
@@ -1304,7 +1304,7 @@ export default function CausalityGraph() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.scale(2, 2)
-    ctx.fillStyle = '#10111a'
+    ctx.fillStyle = 'var(--bg-primary)'
     ctx.fillRect(0, 0, svgSize.w, svgSize.h)
     const img = new Image()
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
@@ -1421,7 +1421,7 @@ export default function CausalityGraph() {
                 <span style={{ color: 'var(--text-muted)', flexShrink: 0, marginRight: 8 }}>{label as React.ReactNode}</span>
                 <span style={{
                   color: label === '方向'
-                    ? (String(val) === 'inbound' ? '#43a047' : '#f97316')
+                    ? (String(val) === 'inbound' ? 'var(--accent-green)' : 'var(--high)')
                     : 'var(--text-secondary)',
                   fontFamily: 'monospace', textAlign: 'right', fontSize: 10.5,
                 }}>
@@ -1457,7 +1457,7 @@ export default function CausalityGraph() {
                 <span style={{ color: 'var(--text-muted)', flexShrink: 0, marginRight: 8 }}>{label}</span>
                 {label === '判定' ? (
                   <span style={{
-                    color: val === 'malicious' ? '#ef4444' : '#43a047',
+                    color: val === 'malicious' ? 'var(--critical)' : 'var(--accent-green)',
                     fontWeight: 600, fontSize: 11,
                   }}>
                     {val === 'malicious' ? '🔴 恶意' : '🟢 正常'}
@@ -1610,7 +1610,7 @@ export default function CausalityGraph() {
               borderBottom: viewTab === tab
                 ? '2px solid #4fa3e0'
                 : '2px solid transparent',
-              color: viewTab === tab ? '#4fa3e0' : 'var(--text-muted)',
+              color: viewTab === tab ? 'var(--accent-blue)' : 'var(--text-muted)',
               cursor: 'pointer',
               transition: 'all 0.15s',
               display: 'flex', alignItems: 'center', gap: 6,
@@ -1709,7 +1709,7 @@ export default function CausalityGraph() {
                 {/* Active edge timestamp during replay */}
                 {replayActiveEdge && replayActiveEdge.timestamp && (
                   <span style={{
-                    fontSize: 11, color: '#4fa3e0',
+                    fontSize: 11, color: 'var(--accent-blue)',
                     background: '#4fa3e022', border: '1px solid #4fa3e044',
                     borderRadius: 4, padding: '2px 8px',
                   }}>
@@ -1776,7 +1776,7 @@ export default function CausalityGraph() {
                       <polygon points="0 0, 8 3, 0 6" fill="#fff" />
                     </marker>
                     <marker id="arrowhead-replay" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                      <polygon points="0 0, 8 3, 0 6" fill="#4fa3e0" />
+                      <polygon points="0 0, 8 3, 0 6" fill="var(--accent-blue)" />
                     </marker>
                   </defs>
 
@@ -1789,7 +1789,7 @@ export default function CausalityGraph() {
 
                       const isActive = e.id === replayHighlightEdgeId
                       const isDimmed = replayDimmedEdges ? replayDimmedEdges.has(e.id) : false
-                      const color = isActive ? '#4fa3e0' : (EDGE_COLORS[e.relation] ?? '#ffffff30')
+                      const color = isActive ? 'var(--accent-blue)' : (EDGE_COLORS[e.relation] ?? '#ffffff30')
                       const opacity = isDimmed ? 0.1 : isActive ? 1 : 0.5
                       const mx = (from.x + to.x) / 2
                       const my = (from.y + to.y) / 2
@@ -1838,7 +1838,7 @@ export default function CausalityGraph() {
                       const p = pos[n.id]
                       if (!p) return null
                       const isSuspect = suspectNodes.has(n.id)
-                      const baseColor = isSuspect ? '#ef4444' : n.is_root ? '#e53935' : (NODE_COLORS[n.type] ?? '#607d8b')
+                      const baseColor = isSuspect ? 'var(--critical)' : n.is_root ? 'var(--critical)' : (NODE_COLORS[n.type] ?? 'var(--text-muted)')
                       const isSelected = selected?.id === n.id
                       const isHighlighted = highlightedNodes.size > 0 && highlightedNodes.has(n.id)
                       const isDimmed = highlightedNodes.size > 0 && !highlightedNodes.has(n.id)
@@ -2002,7 +2002,7 @@ export default function CausalityGraph() {
                   }}>
                     <span style={{
                       width: 10, height: 10, borderRadius: '50%',
-                      background: '#e53935', boxShadow: '0 0 6px #e53935',
+                      background: 'var(--critical)', boxShadow: '0 0 6px rgba(192,64,64,.6)',
                       display: 'inline-block', flexShrink: 0,
                     }} />
                     <span style={{ color: 'var(--text-muted)' }}>⭐ 根因节点</span>
@@ -2071,8 +2071,8 @@ export default function CausalityGraph() {
                   <span>
                     {'置信度 '}
                     <span style={{
-                      color: graph.confidence >= 0.8 ? '#43a047'
-                        : graph.confidence >= 0.5 ? '#f9a825' : '#e53935',
+                      color: graph.confidence >= 0.8 ? 'var(--accent-green)'
+                        : graph.confidence >= 0.5 ? 'var(--medium)' : 'var(--critical)',
                       fontWeight: 600,
                     }}>
                       {(graph.confidence * 100).toFixed(0)}%
@@ -2082,7 +2082,7 @@ export default function CausalityGraph() {
                 {(replayActive || replayIndex >= 0) && (
                   <>
                     <span style={{ opacity: 0.4 }}>·</span>
-                    <span style={{ color: '#4fa3e0' }}>
+                    <span style={{ color: 'var(--accent-blue)' }}>
                       {replayActive ? '▶' : '⏸'} 时间回放 {Math.max(replayIndex, 0)}/{sortedEdges.length}
                       {replayActiveEdge?.timestamp && ` · ${formatDate(replayActiveEdge.timestamp)}`}
                     </span>
@@ -2091,7 +2091,7 @@ export default function CausalityGraph() {
                 {suspectNodes.size > 0 && (
                   <>
                     <span style={{ opacity: 0.4 }}>·</span>
-                    <span style={{ color: '#ef4444' }}>🚩 {suspectNodes.size} 个可疑节点</span>
+                    <span style={{ color: 'var(--critical)' }}>🚩 {suspectNodes.size} 个可疑节点</span>
                   </>
                 )}
               </div>
@@ -2103,7 +2103,7 @@ export default function CausalityGraph() {
             <div
               style={{
                 position: 'fixed', inset: 0, zIndex: 200,
-                background: 'rgba(0,0,0,0.35)',
+                background: 'var(--bg-overlay)',
                 pointerEvents: 'auto',
               }}
               onClick={() => { setSelected(null); setCmdlineExpanded(false) }}
@@ -2114,7 +2114,7 @@ export default function CausalityGraph() {
                   position: 'fixed', top: 0, right: 0, bottom: 0,
                   width: 280,
                   borderLeft: '1px solid var(--border)',
-                  background: 'var(--bg-card)',
+                  background: 'var(--bg-drawer)',
                   display: 'flex', flexDirection: 'column',
                   overflow: 'hidden',
                   animation: 'slideInRight 0.2s ease-out',
@@ -2125,7 +2125,9 @@ export default function CausalityGraph() {
               {/* Header */}
               <div style={{
                 padding: '12px 16px', borderBottom: '1px solid var(--border)',
+                background: 'var(--bg-card2)',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                flexShrink: 0, minHeight: 48,
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
                   {/* Type icon (large) + label */}
@@ -2144,18 +2146,18 @@ export default function CausalityGraph() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 4,
-                      background: (NODE_COLORS[selected.type] ?? '#607d8b') + '22',
-                      border: `1px solid ${NODE_COLORS[selected.type] ?? '#607d8b'}`,
-                      color: NODE_COLORS[selected.type] ?? '#607d8b',
+                      background: (NODE_COLORS[selected.type] ?? 'var(--text-muted)') + '22',
+                      border: `1px solid ${NODE_COLORS[selected.type] ?? 'var(--text-muted)'}`,
+                      color: NODE_COLORS[selected.type] ?? 'var(--text-muted)',
                       borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600,
                     }}>
                       {NODE_ICONS[selected.type] ?? '◻'} {selected.type}
                     </span>
                     {selected.is_root && (
-                      <span style={{ fontSize: 11, color: '#e53935', fontWeight: 700 }}>⭐ 根节点</span>
+                      <span style={{ fontSize: 11, color: 'var(--critical)', fontWeight: 700 }}>⭐ 根节点</span>
                     )}
                     {suspectNodes.has(selected.id) && (
-                      <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 700 }}>🚩 可疑</span>
+                      <span style={{ fontSize: 11, color: 'var(--critical)', fontWeight: 700 }}>🚩 可疑</span>
                     )}
                   </div>
                 </div>
@@ -2210,7 +2212,7 @@ export default function CausalityGraph() {
                         <span style={{ color: 'var(--text-muted)' }}>MITRE</span>
                         <span style={{
                           background: '#7c3aed22', border: '1px solid #7c3aed66',
-                          color: '#a78bfa', borderRadius: 4, padding: '1px 6px', fontSize: 10.5,
+                          color: 'var(--accent-blue)', borderRadius: 4, padding: '1px 6px', fontSize: 10.5,
                         }}>{selected.mitre_technique}</span>
                       </div>
                     )}
@@ -2261,11 +2263,11 @@ export default function CausalityGraph() {
                               padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,.04)',
                             }}>
                               <span style={{
-                                color: isOut ? '#4fa3e0' : '#f9a825',
+                                color: isOut ? 'var(--accent-blue)' : 'var(--medium)',
                                 fontFamily: 'monospace', fontSize: 9,
                               }}>{isOut ? '→' : '←'}</span>
                               <span style={{
-                                color: EDGE_COLORS[e.relation] ?? '#666',
+                                color: EDGE_COLORS[e.relation] ?? 'var(--text-muted)',
                                 fontSize: 9.5, minWidth: 80,
                               }}>{e.relation}</span>
                               <span style={{
@@ -2299,8 +2301,8 @@ export default function CausalityGraph() {
                     className={suspectNodes.has(selected.id) ? 'btn-primary' : 'btn-secondary'}
                     style={{
                       fontSize: 12, width: '100%', textAlign: 'left',
-                      borderColor: suspectNodes.has(selected.id) ? '#ef4444' : undefined,
-                      color: suspectNodes.has(selected.id) ? '#ef4444' : undefined,
+                      borderColor: suspectNodes.has(selected.id) ? 'var(--critical)' : undefined,
+                      color: suspectNodes.has(selected.id) ? 'var(--critical)' : undefined,
                       background: suspectNodes.has(selected.id) ? '#ef444422' : undefined,
                     }}
                     onClick={() => toggleSuspect(selected.id)}
@@ -2374,9 +2376,9 @@ export default function CausalityGraph() {
                         flexShrink: 0,
                         width: 22, height: 22,
                         borderRadius: '50%',
-                        background: (NODE_COLORS[step.node.type] ?? '#607d8b') + '33',
-                        border: `1px solid ${NODE_COLORS[step.node.type] ?? '#607d8b'}`,
-                        color: NODE_COLORS[step.node.type] ?? '#607d8b',
+                        background: (NODE_COLORS[step.node.type] ?? 'var(--text-muted)') + '33',
+                        border: `1px solid ${NODE_COLORS[step.node.type] ?? 'var(--text-muted)'}`,
+                        color: NODE_COLORS[step.node.type] ?? 'var(--text-muted)',
                         fontSize: 10, fontWeight: 700,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
@@ -2390,7 +2392,7 @@ export default function CausalityGraph() {
                           <span style={{
                             display: 'inline-block', marginTop: 3,
                             background: '#7c3aed22', border: '1px solid #7c3aed55',
-                            color: '#a78bfa', borderRadius: 3,
+                            color: 'var(--accent-blue)', borderRadius: 3,
                             padding: '0 5px', fontSize: 10,
                           }}>
                             MITRE {step.mitre}
@@ -2418,7 +2420,7 @@ export default function CausalityGraph() {
                   display: 'flex', flexDirection: 'column', gap: 8,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#4fa3e0' }}>🤖 AI摘要</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-blue)' }}>🤖 AI摘要</span>
                     <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>— 模拟生成</span>
                     <button
                       className="btn-secondary"
@@ -2428,7 +2430,7 @@ export default function CausalityGraph() {
                   </div>
                   <pre style={{
                     margin: 0, fontSize: 11,
-                    color: '#a5f3fc',
+                    color: 'var(--accent-blue)',
                     fontFamily: 'monospace',
                     whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                     lineHeight: 1.6,

@@ -157,7 +157,7 @@ function buildMockExecutions(key: string): Execution[] {
 const NODE_LIBRARY = [
   {
     group: '触发器',
-    color: '#3b9ede',
+    color: 'var(--accent-blue)',
     items: [
       { icon: '⚡', name: 'Alert Triggered' },
       { icon: '📁', name: 'Incident Created' },
@@ -167,7 +167,7 @@ const NODE_LIBRARY = [
   },
   {
     group: '条件判断',
-    color: '#f9a825',
+    color: 'var(--medium)',
     items: [
       { icon: '🔀', name: 'If/Else' },
       { icon: '⚙️', name: 'Switch' },
@@ -176,7 +176,7 @@ const NODE_LIBRARY = [
   },
   {
     group: '数据查询',
-    color: '#3bcecf',
+    color: 'var(--accent-blue)',
     items: [
       { icon: '🔔', name: 'Get Alert' },
       { icon: '📋', name: 'Get Incident' },
@@ -186,7 +186,7 @@ const NODE_LIBRARY = [
   },
   {
     group: '响应操作',
-    color: '#2fb07a',
+    color: 'var(--accent-green)',
     items: [
       { icon: '🚫', name: 'Block IP' },
       { icon: '🔒', name: 'Isolate Host' },
@@ -196,7 +196,7 @@ const NODE_LIBRARY = [
   },
   {
     group: '集成',
-    color: '#9b59b6',
+    color: 'var(--accent-blue)',
     items: [
       { icon: '💬', name: 'Slack' },
       { icon: '📮', name: 'Email' },
@@ -253,7 +253,7 @@ const triggerColor: Record<string, string> = {
 
 const statusColor: Record<string, string> = {
   active: 'var(--accent-green)',
-  draft: '#f9a825',
+  draft: 'var(--medium)',
   inactive: 'var(--text-muted)',
   running: 'var(--accent-blue)',
   failed: 'var(--critical)',
@@ -270,11 +270,11 @@ const runStatusColor: Record<string, string> = {
 // ─── Node color map ───────────────────────────────────────────────────────────
 
 const NODE_STROKE_COLOR: Record<string, string> = {
-  triggerNode:   '#3b9ede',
-  conditionNode: '#f9a825',
-  actionNode:    '#2fb07a',
-  notifyNode:    '#9b59b6',
-  endNode:       '#4a5a7a',
+  triggerNode:   'var(--accent-blue)',
+  conditionNode: 'var(--medium)',
+  actionNode:    'var(--accent-green)',
+  notifyNode:    'var(--accent-blue)',
+  endNode:       'var(--text-muted)',
 }
 
 // ─── Custom Node Styles ───────────────────────────────────────────────────────
@@ -307,17 +307,17 @@ function TriggerNode({ data, selected }: NodeProps) {
         borderBottom: '1px solid rgba(59,158,222,.25)',
       }}>
         <span style={{ fontSize: 13 }}>⚡</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: '#3b9ede' }}>触发器</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: 'var(--accent-blue)' }}>触发器</span>
       </div>
       <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#a8d4f5', marginBottom: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
           {data.trigger_type || data.triggerType || data.label || '触发条件'}
         </div>
         {data.description && (
-          <div style={{ fontSize: 10.5, color: '#4a7aaa', lineHeight: 1.4 }}>{data.description}</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{data.description}</div>
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} style={{ background: '#3b9ede', border: '2px solid #0d2a4a', width: 10, height: 10 }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: 'var(--accent-blue)', border: '2px solid #0d2a4a', width: 10, height: 10 }} />
     </div>
   )
 }
@@ -329,36 +329,36 @@ function ConditionNode({ data, selected }: NodeProps) {
     <div style={{
       ...nodeCardBase,
       background: 'linear-gradient(135deg, #2a1f00 0%, #1e1500 100%)',
-      border: selected ? '1.5px solid #f9a825' : '1.5px solid #5a3e00',
-      boxShadow: selected ? '0 0 0 2px rgba(249,168,37,.3), 0 4px 20px rgba(0,0,0,.45)' : '0 4px 20px rgba(0,0,0,.45)',
+      border: selected ? '1.5px solid #c8a030' : '1.5px solid #5a3e00',
+      boxShadow: selected ? '0 0 0 2px rgba(200,160,48,.3), 0 4px 20px rgba(0,0,0,.45)' : '0 4px 20px rgba(0,0,0,.45)',
     }}>
       <div style={{
-        background: 'linear-gradient(90deg, #4a2e00, #3a2000)',
+        background: 'linear-gradient(90deg, #3a2a00, #2a1e00)',
         borderRadius: '4px 4px 0 0',
         padding: '6px 10px',
         display: 'flex', alignItems: 'center', gap: 6,
-        borderBottom: '1px solid rgba(249,168,37,.2)',
+        borderBottom: '1px solid rgba(200,160,48,.2)',
       }}>
         <span style={{ fontSize: 13 }}>◇</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: '#f9a825' }}>条件判断</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: 'var(--medium)' }}>条件判断</span>
       </div>
       <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 11.5, fontWeight: 600, color: '#ffd54f', marginBottom: 4 }}>
+        <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--medium)', marginBottom: 4 }}>
           {data.condition || data.label || '判断条件'}
         </div>
         {data.expression && (
           <div style={{
-            fontSize: 10, fontFamily: 'monospace', color: '#b8862a',
-            background: 'rgba(249,168,37,.06)', borderRadius: 3, padding: '3px 6px',
-            border: '1px solid rgba(249,168,37,.12)',
+            fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)',
+            background: 'rgba(200,160,48,.06)', borderRadius: 3, padding: '3px 6px',
+            border: '1px solid rgba(200,160,48,.12)',
           }}>
             {data.expression}
           </div>
         )}
       </div>
-      <Handle type="target" position={Position.Top} style={{ background: '#f9a825', border: '2px solid #2a1f00', width: 10, height: 10 }} />
-      <Handle type="source" position={Position.Bottom} id="true" style={{ background: '#2fb07a', border: '2px solid #2a1f00', width: 10, height: 10, left: '35%' }} />
-      <Handle type="source" position={Position.Bottom} id="false" style={{ background: '#d94040', border: '2px solid #2a1f00', width: 10, height: 10, left: '65%' }} />
+      <Handle type="target" position={Position.Top} style={{ background: 'var(--medium)', border: '2px solid #2a1f00', width: 10, height: 10 }} />
+      <Handle type="source" position={Position.Bottom} id="true" style={{ background: 'var(--accent-green)', border: '2px solid #2a1f00', width: 10, height: 10, left: '35%' }} />
+      <Handle type="source" position={Position.Bottom} id="false" style={{ background: 'var(--critical)', border: '2px solid #2a1f00', width: 10, height: 10, left: '65%' }} />
     </div>
   )
 }
@@ -381,18 +381,18 @@ function ActionNode({ data, selected }: NodeProps) {
         borderBottom: '1px solid rgba(47,176,122,.2)',
       }}>
         <span style={{ fontSize: 12 }}>▶</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: '#2fb07a' }}>执行动作</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: 'var(--accent-green)' }}>执行动作</span>
       </div>
       <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#6fcf97', marginBottom: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-green)', marginBottom: 4 }}>
           {data.action_type || data.actionType || data.label || '执行动作'}
         </div>
         {data.actionType && data.label && data.label !== data.actionType && (
-          <div style={{ fontSize: 10.5, color: '#2a7a4a', fontFamily: 'monospace' }}>{data.actionType}</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{data.actionType}</div>
         )}
       </div>
-      <Handle type="target" position={Position.Top} style={{ background: '#2fb07a', border: '2px solid #0a2a14', width: 10, height: 10 }} />
-      <Handle type="source" position={Position.Bottom} style={{ background: '#2fb07a', border: '2px solid #0a2a14', width: 10, height: 10 }} />
+      <Handle type="target" position={Position.Top} style={{ background: 'var(--accent-green)', border: '2px solid #0a2a14', width: 10, height: 10 }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: 'var(--accent-green)', border: '2px solid #0a2a14', width: 10, height: 10 }} />
     </div>
   )
 }
@@ -415,20 +415,20 @@ function NotifyNode({ data, selected }: NodeProps) {
         borderBottom: '1px solid rgba(155,89,182,.2)',
       }}>
         <span style={{ fontSize: 13 }}>📧</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: '#9b59b6' }}>发送通知</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.8px', textTransform: 'uppercase', color: 'var(--accent-blue)' }}>发送通知</span>
       </div>
       <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#c39bd3', marginBottom: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
           {data.label || '发送通知'}
         </div>
         {data.channel && (
-          <div style={{ fontSize: 10.5, color: '#7d3c98' }}>
-            渠道: <span style={{ color: '#a569bd' }}>{data.channel}</span>
+          <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
+            渠道: <span style={{ color: 'var(--text-secondary)' }}>{data.channel}</span>
           </div>
         )}
       </div>
-      <Handle type="target" position={Position.Top} style={{ background: '#9b59b6', border: '2px solid #1e0a3a', width: 10, height: 10 }} />
-      <Handle type="source" position={Position.Bottom} style={{ background: '#9b59b6', border: '2px solid #1e0a3a', width: 10, height: 10 }} />
+      <Handle type="target" position={Position.Top} style={{ background: 'var(--accent-blue)', border: '2px solid #1e0a3a', width: 10, height: 10 }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: 'var(--accent-blue)', border: '2px solid #1e0a3a', width: 10, height: 10 }} />
     </div>
   )
 }
@@ -446,8 +446,8 @@ function EndNode({ selected }: NodeProps) {
       flexDirection: 'column', gap: 2,
     }}>
       <span style={{ fontSize: 16 }}>⬛</span>
-      <span style={{ fontSize: 9, color: '#4a5a7a', fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase' }}>结束</span>
-      <Handle type="target" position={Position.Top} style={{ background: '#4a5a7a', border: '2px solid #10131a', width: 10, height: 10 }} />
+      <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase' }}>结束</span>
+      <Handle type="target" position={Position.Top} style={{ background: 'var(--text-muted)', border: '2px solid #10131a', width: 10, height: 10 }} />
     </div>
   )
 }
@@ -465,11 +465,11 @@ const nodeTypes: NodeTypes = {
 // ─── Palette config ───────────────────────────────────────────────────────────
 
 const PALETTE_ITEMS = [
-  { type: 'triggerNode',   label: '触发器', icon: '⚡', color: '#3b9ede', desc: '工作流入口' },
-  { type: 'conditionNode', label: '条件判断', icon: '◇', color: '#f9a825', desc: '分支判断' },
-  { type: 'actionNode',    label: '执行动作', icon: '▶', color: '#2fb07a', desc: '执行操作' },
-  { type: 'notifyNode',    label: '发送通知', icon: '📧', color: '#9b59b6', desc: '消息推送' },
-  { type: 'endNode',       label: '结束',    icon: '⬛', color: '#5a6a8a', desc: '流程终止' },
+  { type: 'triggerNode',   label: '触发器', icon: '⚡', color: 'var(--accent-blue)', desc: '工作流入口' },
+  { type: 'conditionNode', label: '条件判断', icon: '◇', color: 'var(--medium)', desc: '分支判断' },
+  { type: 'actionNode',    label: '执行动作', icon: '▶', color: 'var(--accent-green)', desc: '执行操作' },
+  { type: 'notifyNode',    label: '发送通知', icon: '📧', color: 'var(--accent-blue)', desc: '消息推送' },
+  { type: 'endNode',       label: '结束',    icon: '⬛', color: 'var(--border-light)', desc: '流程终止' },
 ]
 
 // ─── Default data for new nodes ───────────────────────────────────────────────
@@ -513,15 +513,15 @@ function buildDefaultFlow(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
       id: 'e-trigger-action1',
       source: 'trigger', target: 'action1',
       animated: true,
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#2fb07a', width: 16, height: 16 },
-      style: { stroke: '#2fb07a', strokeWidth: 1.5 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--accent-green)', width: 16, height: 16 },
+      style: { stroke: 'var(--accent-green)', strokeWidth: 1.5 },
     },
     {
       id: 'e-action1-end',
       source: 'action1', target: 'end',
       animated: true,
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#4a5a7a', width: 16, height: 16 },
-      style: { stroke: '#4a5a7a', strokeWidth: 1.5 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--text-muted)', width: 16, height: 16 },
+      style: { stroke: 'var(--text-muted)', strokeWidth: 1.5 },
     },
   ]
   return { nodes, edges }
@@ -556,7 +556,7 @@ function playbookToFlow(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
         : 'actionNode'
       const nodeId = (s.id as string) ?? `s${i}`
       const prevId = i === 0 ? 'trigger' : ((rawSteps[i - 1] as Record<string, unknown>).id as string ?? `s${i - 1}`)
-      const strokeColor = NODE_STROKE_COLOR[stepType] ?? '#2a3d5a'
+      const strokeColor = NODE_STROKE_COLOR[stepType] ?? 'var(--bg-card2)'
 
       nodes.push({
         id: nodeId,
@@ -593,7 +593,7 @@ function playbookToFlow(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
 // ─── Edge builder helper ──────────────────────────────────────────────────────
 
 function makeEdge(source: string, target: string, sourceNodeType?: string): Edge {
-  const strokeColor = sourceNodeType ? (NODE_STROKE_COLOR[sourceNodeType] ?? '#3b9ede') : '#3b9ede'
+  const strokeColor = sourceNodeType ? (NODE_STROKE_COLOR[sourceNodeType] ?? 'var(--accent-blue)') : 'var(--accent-blue)'
   return {
     id: `e-${source}-${target}-${Date.now()}`,
     source, target,
@@ -638,7 +638,7 @@ function PropsField({ label, value, onChange, onBlur, placeholder, mono, multili
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
     padding: '5px 8px', borderRadius: 3, fontSize: 11,
-    background: '#080b10', border: '1px solid #1e2535', color: '#8aa0c0',
+    background: 'var(--bg-primary)', border: '1px solid #1e2535', color: 'var(--text-secondary)',
     outline: 'none', fontFamily: mono ? 'monospace' : 'inherit',
     resize: multiline ? 'vertical' : undefined,
     minHeight: multiline ? 52 : undefined,
@@ -646,7 +646,7 @@ function PropsField({ label, value, onChange, onBlur, placeholder, mono, multili
   }
   return (
     <div>
-      <div style={{ fontSize: 9.5, fontWeight: 700, color: '#2a3d5a', letterSpacing: '.6px', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--bg-card2)', letterSpacing: '.6px', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
       {multiline
         ? <textarea
             value={value}
@@ -654,7 +654,7 @@ function PropsField({ label, value, onChange, onBlur, placeholder, mono, multili
             onBlur={onBlur}
             placeholder={placeholder}
             style={inputStyle}
-            onFocus={e => { e.currentTarget.style.borderColor = '#2a5a8a' }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
           />
         : <input
             type="text"
@@ -663,7 +663,7 @@ function PropsField({ label, value, onChange, onBlur, placeholder, mono, multili
             onBlur={onBlur}
             placeholder={placeholder}
             style={inputStyle}
-            onFocus={e => { e.currentTarget.style.borderColor = '#2a5a8a' }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
           />
       }
     </div>
@@ -680,13 +680,13 @@ interface PropsSelectProps {
 function PropsSelect({ label, value, options, onChange }: PropsSelectProps) {
   return (
     <div>
-      <div style={{ fontSize: 9.5, fontWeight: 700, color: '#2a3d5a', letterSpacing: '.6px', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--bg-card2)', letterSpacing: '.6px', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
         style={{
           width: '100%', padding: '5px 8px', borderRadius: 3, fontSize: 11,
-          background: '#080b10', border: '1px solid #1e2535', color: '#8aa0c0',
+          background: 'var(--bg-primary)', border: '1px solid #1e2535', color: 'var(--text-secondary)',
           outline: 'none', cursor: 'pointer',
         }}
       >
@@ -900,7 +900,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
   }), [nodes])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#080b10' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-primary)' }}>
       {/* ── Toolbar ────────────────────────────────────────────────────────── */}
       <div style={{
         height: 40, flexShrink: 0,
@@ -913,7 +913,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
         <div style={{
           padding: '2px 8px', borderRadius: 10,
           background: 'rgba(59,158,222,.12)', border: '1px solid rgba(59,158,222,.2)',
-          fontSize: 10.5, color: '#3b9ede', fontWeight: 700,
+          fontSize: 10.5, color: 'var(--accent-blue)', fontWeight: 700,
           marginRight: 8, flexShrink: 0,
         }}>
           {stats.total} 节点
@@ -922,10 +922,10 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
         {/* Mini stats */}
         <div style={{ display: 'flex', gap: 6, marginRight: 8 }}>
           {[
-            { val: stats.triggers, color: '#3b9ede', label: '触' },
-            { val: stats.conditions, color: '#f9a825', label: '条' },
-            { val: stats.actions, color: '#2fb07a', label: '动' },
-            { val: stats.notifies, color: '#9b59b6', label: '通' },
+            { val: stats.triggers, color: 'var(--accent-blue)', label: '触' },
+            { val: stats.conditions, color: 'var(--medium)', label: '条' },
+            { val: stats.actions, color: 'var(--accent-green)', label: '动' },
+            { val: stats.notifies, color: 'var(--accent-blue)', label: '通' },
           ].filter(s => s.val > 0).map(s => (
             <span key={s.label} style={{ fontSize: 10, color: s.color, fontWeight: 600 }}>
               {s.label}×{s.val}
@@ -945,19 +945,19 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
             style={{
               height: 28, width: 28, borderRadius: 3, fontSize: 13,
               background: 'none', border: 'none',
-              color: btn.disabled ? '#2a3d5a' : '#5a7aaa',
+              color: btn.disabled ? 'var(--bg-card2)' : 'var(--text-secondary)',
               cursor: btn.disabled ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all .15s',
             }}
-            onMouseEnter={e => { if (!btn.disabled) e.currentTarget.style.color = '#8aa0c0' }}
-            onMouseLeave={e => { e.currentTarget.style.color = btn.disabled ? '#2a3d5a' : '#5a7aaa' }}
+            onMouseEnter={e => { if (!btn.disabled) e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = btn.disabled ? 'var(--bg-card2)' : 'var(--text-secondary)' }}
           >
             {btn.label}
           </button>
         ))}
 
-        <div style={{ width: 1, height: 20, background: '#1e2535', margin: '0 8px' }} />
+        <div style={{ width: 1, height: 20, background: 'var(--bg-card)', margin: '0 8px' }} />
 
         {/* Clear button with confirm */}
         <button
@@ -966,11 +966,11 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
             height: 28, padding: '0 10px', borderRadius: 3, fontSize: 11,
             background: confirmClear ? 'rgba(217,64,64,.15)' : 'none',
             border: confirmClear ? '1px solid rgba(217,64,64,.5)' : '1px solid transparent',
-            color: confirmClear ? '#d94040' : '#5a7aaa',
+            color: confirmClear ? 'var(--critical)' : 'var(--text-secondary)',
             cursor: 'pointer', transition: 'all .15s', marginRight: 4,
           }}
-          onMouseEnter={e => { if (!confirmClear) { e.currentTarget.style.color = '#d94040'; e.currentTarget.style.borderColor = 'rgba(217,64,64,.3)' } }}
-          onMouseLeave={e => { if (!confirmClear) { e.currentTarget.style.color = '#5a7aaa'; e.currentTarget.style.borderColor = 'transparent' } }}
+          onMouseEnter={e => { if (!confirmClear) { e.currentTarget.style.color = 'var(--critical)'; e.currentTarget.style.borderColor = 'rgba(217,64,64,.3)' } }}
+          onMouseLeave={e => { if (!confirmClear) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'transparent' } }}
         >
           🗑️ {confirmClear ? '确认清空?' : '清空'}
         </button>
@@ -983,7 +983,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
             height: 28, padding: '0 14px', borderRadius: 4, fontSize: 11,
             background: saved ? 'rgba(47,176,122,.15)' : 'rgba(26,90,138,.3)',
             border: saved ? '1px solid #2fb07a' : '1px solid rgba(59,158,222,.35)',
-            color: saved ? '#2fb07a' : '#3b9ede',
+            color: saved ? 'var(--accent-green)' : 'var(--accent-blue)',
             cursor: saving ? 'default' : 'pointer',
             fontWeight: 600, transition: 'all .2s',
             marginRight: 8,
@@ -998,12 +998,12 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
 
         {/* Left palette (120px) */}
         <div style={{
-          width: 120, background: '#0b0e15',
+          width: 120, background: 'var(--bg-primary)',
           borderRight: '1px solid #1e2535',
           display: 'flex', flexDirection: 'column',
           flexShrink: 0, overflowY: 'auto',
         }}>
-          <div style={{ padding: '8px 8px 4px', fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#2a3d5a' }}>
+          <div style={{ padding: '8px 8px 4px', fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--bg-card2)' }}>
             节点面板
           </div>
           <div style={{ padding: '0 6px', display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -1038,7 +1038,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
                 <span style={{ fontSize: 14, lineHeight: 1 }}>{item.icon}</span>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 10.5, fontWeight: 600, color: item.color }}>{item.label}</div>
-                  <div style={{ fontSize: 9, color: '#2a3d5a', lineHeight: 1.3 }}>{item.desc}</div>
+                  <div style={{ fontSize: 9, color: 'var(--bg-card2)', lineHeight: 1.3 }}>{item.desc}</div>
                 </div>
               </div>
             ))}
@@ -1048,7 +1048,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
           <NodeLibraryPanel />
 
           <div style={{ marginTop: 'auto', padding: '8px', borderTop: '1px solid #1e2535' }}>
-            <div style={{ fontSize: 9, color: '#2a3d5a', lineHeight: 1.7 }}>
+            <div style={{ fontSize: 9, color: 'var(--bg-card2)', lineHeight: 1.7 }}>
               拖入节点<br />点击选中<br />Delete 删除
             </div>
           </div>
@@ -1068,27 +1068,27 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
             fitView
             fitViewOptions={{ padding: 0.25 }}
             deleteKeyCode="Delete"
-            style={{ background: '#080b10' }}
+            style={{ background: 'var(--bg-primary)' }}
             defaultEdgeOptions={{
               animated: true,
-              markerEnd: { type: MarkerType.ArrowClosed, color: '#3b9ede' },
-              style: { stroke: '#3b9ede', strokeWidth: 1.5 },
+              markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--accent-blue)' },
+              style: { stroke: 'var(--accent-blue)', strokeWidth: 1.5 },
             }}
           >
-            <Background color="#1a2030" gap={24} size={1} style={{ background: '#080b10' }} />
+            <Background color="#1a2030" gap={24} size={1} style={{ background: 'var(--bg-primary)' }} />
             <Controls
-              style={{ background: '#0d1018', border: '1px solid #1e2535', borderRadius: 6 }}
+              style={{ background: 'var(--bg-primary)', border: '1px solid #1e2535', borderRadius: 6 }}
             />
             <MiniMap
-              style={{ background: '#0b0e15', border: '1px solid #1e2535', borderRadius: 6 }}
+              style={{ background: 'var(--bg-primary)', border: '1px solid #1e2535', borderRadius: 6 }}
               nodeColor={(n) => {
                 switch (n.type) {
-                  case 'triggerNode':   return '#1a4a8a'
-                  case 'conditionNode': return '#4a3000'
-                  case 'actionNode':    return '#1a5a2a'
-                  case 'notifyNode':    return '#3a1a6a'
-                  case 'endNode':       return '#2a3348'
-                  default:             return '#1e2535'
+                  case 'triggerNode':   return 'var(--border)'
+                  case 'conditionNode': return 'var(--bg-card)'
+                  case 'actionNode':    return 'var(--border)'
+                  case 'notifyNode':    return 'var(--bg-card)'
+                  case 'endNode':       return 'var(--border)'
+                  default:             return 'var(--bg-card)'
                 }
               }}
               maskColor="rgba(8,11,16,.7)"
@@ -1096,12 +1096,12 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
             {nodes.length === 0 && (
               <Panel position="top-center">
                 <div style={{
-                  marginTop: 60, textAlign: 'center', color: '#1e2535',
+                  marginTop: 60, textAlign: 'center', color: 'var(--bg-card)',
                   pointerEvents: 'none',
                 }}>
                   <div style={{ fontSize: 36, marginBottom: 8, opacity: .3 }}>⬡</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#2a3d5a', marginBottom: 4 }}>画布为空</div>
-                  <div style={{ fontSize: 11, color: '#1e2535' }}>从左侧面板拖入节点</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bg-card2)', marginBottom: 4 }}>画布为空</div>
+                  <div style={{ fontSize: 11, color: 'var(--bg-card)' }}>从左侧面板拖入节点</div>
                 </div>
               </Panel>
             )}
@@ -1110,7 +1110,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
 
         {/* Right properties panel (240px) */}
         <div style={{
-          width: 240, background: '#0b0e15',
+          width: 240, background: 'var(--bg-primary)',
           borderLeft: '1px solid #1e2535',
           display: 'flex', flexDirection: 'column',
           flexShrink: 0,
@@ -1118,18 +1118,18 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
           transition: 'opacity .2s',
         }}>
           <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e2535', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-            <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#2a3d5a' }}>
+            <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--bg-card2)' }}>
               节点属性
             </span>
             {selectedNode && (
-              <span style={{ fontSize: 9, color: '#1e2535', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: 9, color: 'var(--bg-card)', fontFamily: 'monospace' }}>
                 #{selectedNode.id.slice(-6)}
               </span>
             )}
           </div>
 
           {!selectedNode ? (
-            <div style={{ padding: 16, fontSize: 11, color: '#1e2535', textAlign: 'center', marginTop: 20 }}>
+            <div style={{ padding: 16, fontSize: 11, color: 'var(--bg-card)', textAlign: 'center', marginTop: 20 }}>
               点击节点<br />查看/编辑属性
             </div>
           ) : (
@@ -1146,7 +1146,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
                     <span style={{ fontSize: 15 }}>{palette.icon}</span>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 700, color: palette.color }}>{palette.label}</div>
-                      <div style={{ fontSize: 9.5, color: '#2a3d5a' }}>{palette.desc}</div>
+                      <div style={{ fontSize: 9.5, color: 'var(--bg-card2)' }}>{palette.desc}</div>
                     </div>
                   </div>
                 ) : null
@@ -1243,7 +1243,7 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
                 style={{
                   padding: '5px 0', borderRadius: 4, fontSize: 11,
                   background: 'rgba(59,158,222,.1)', border: '1px solid rgba(59,158,222,.25)',
-                  color: '#3b9ede', cursor: 'pointer', fontWeight: 600,
+                  color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600,
                 }}
               >
                 保存属性
@@ -1251,8 +1251,8 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
 
               {/* Node ID */}
               <div>
-                <div style={{ fontSize: 9.5, fontWeight: 700, color: '#1e2535', letterSpacing: '.6px', textTransform: 'uppercase', marginBottom: 3 }}>节点 ID</div>
-                <div style={{ fontSize: 9.5, fontFamily: 'monospace', color: '#2a3d5a', background: '#080b10', padding: '3px 6px', borderRadius: 3, border: '1px solid #1e2535', wordBreak: 'break-all' }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--bg-card)', letterSpacing: '.6px', textTransform: 'uppercase', marginBottom: 3 }}>节点 ID</div>
+                <div style={{ fontSize: 9.5, fontFamily: 'monospace', color: 'var(--bg-card2)', background: 'var(--bg-primary)', padding: '3px 6px', borderRadius: 3, border: '1px solid #1e2535', wordBreak: 'break-all' }}>
                   {selectedNode.id}
                 </div>
               </div>
@@ -1262,14 +1262,14 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
                 <button onClick={duplicateSelectedNode} style={{
                   padding: '4px 0', borderRadius: 4, fontSize: 10.5,
                   background: 'rgba(59,158,222,.06)', border: '1px solid rgba(59,158,222,.18)',
-                  color: '#3b9ede', cursor: 'pointer',
+                  color: 'var(--accent-blue)', cursor: 'pointer',
                 }}>
                   ⧉ 复制节点
                 </button>
                 <button onClick={deleteSelectedNode} style={{
                   padding: '4px 0', borderRadius: 4, fontSize: 10.5,
                   background: 'rgba(217,64,64,.06)', border: '1px solid rgba(217,64,64,.18)',
-                  color: '#d94040', cursor: 'pointer',
+                  color: 'var(--critical)', cursor: 'pointer',
                 }}>
                   ✕ 删除节点
                 </button>
@@ -1281,11 +1281,11 @@ function FlowCanvasInner({ playbook, onSaved }: FlowCanvasInnerProps) {
 
       <style>{`
         .react-flow__controls-button {
-          background: #0d1018 !important;
-          border-bottom-color: #1e2535 !important;
-          fill: #3b9ede !important;
+          background: var(--bg-primary) !important;
+          border-bottom-color: var(--border) !important;
+          fill: var(--accent-blue) !important;
         }
-        .react-flow__controls-button:hover { background: #161b26 !important; }
+        .react-flow__controls-button:hover { background: var(--bg-secondary) !important; }
         .react-flow__edge-path { stroke-width: 1.5; }
         .react-flow__attribution { display: none !important; }
         .react-flow__minimap-mask { fill: rgba(8,11,16,.6) !important; }
@@ -1401,12 +1401,12 @@ function ExecutionDetailModal({ exec, playbookName, onClose }: ExecutionDetailMo
     <>
       <div
         onClick={onClose}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 1000 }}
+        style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 1000 }}
       />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
         width: 540, maxHeight: '82vh',
-        background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8,
+        background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8,
         zIndex: 1100, display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
         {/* Header */}
@@ -1444,10 +1444,10 @@ function ExecutionDetailModal({ exec, playbookName, onClose }: ExecutionDetailMo
             执行步骤 ({steps.length} 个)
           </div>
           {steps.map((step, i) => {
-            const stepColor = step.status === 'success' ? '#2fb07a'
-              : step.status === 'failed' ? '#d94040'
-              : step.status === 'running' ? '#3b9ede'
-              : '#5a7aaa'
+            const stepColor = step.status === 'success' ? 'var(--accent-green)'
+              : step.status === 'failed' ? 'var(--critical)'
+              : step.status === 'running' ? 'var(--accent-blue)'
+              : 'var(--text-secondary)'
             return (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -1466,12 +1466,12 @@ function ExecutionDetailModal({ exec, playbookName, onClose }: ExecutionDetailMo
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: 10, fontFamily: 'monospace', color: '#2a5a7a' }}>
+                  <span style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--border)' }}>
                     {step.offset}
                   </span>
                   <span style={{
                     fontSize: 10.5, fontWeight: step.status === 'failed' ? 600 : 400,
-                    color: step.status === 'failed' ? '#d94040' : step.status === 'skipped' ? '#5a7aaa' : 'var(--text-muted)',
+                    color: step.status === 'failed' ? 'var(--critical)' : step.status === 'skipped' ? 'var(--text-secondary)' : 'var(--text-muted)',
                     maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {step.detail}
@@ -1485,7 +1485,7 @@ function ExecutionDetailModal({ exec, playbookName, onClose }: ExecutionDetailMo
           {exec.error && (
             <div style={{
               marginTop: 8, background: 'rgba(217,64,64,.08)', border: '1px solid rgba(217,64,64,.3)',
-              borderRadius: 4, padding: '8px 12px', fontSize: 11.5, color: '#d94040',
+              borderRadius: 4, padding: '8px 12px', fontSize: 11.5, color: 'var(--critical)',
             }}>
               <strong>错误:</strong> {exec.error}
             </div>
@@ -1515,9 +1515,9 @@ interface ExecutionStatsRowProps {
 function ExecutionStatsRow({ playbookKey, executions }: ExecutionStatsRowProps) {
   const stats = buildExecStats(playbookKey, executions)
   const tiles = [
-    { label: '本月执行', value: `${stats.monthlyRuns}次`, color: '#3b9ede' },
-    { label: '成功率',   value: `${stats.successRate}%`,  color: stats.successRate >= 80 ? '#2fb07a' : stats.successRate >= 50 ? '#f9a825' : '#d94040' },
-    { label: '平均时长', value: stats.avgDuration,         color: '#9b59b6' },
+    { label: '本月执行', value: `${stats.monthlyRuns}次`, color: 'var(--accent-blue)' },
+    { label: '成功率',   value: `${stats.successRate}%`,  color: stats.successRate >= 80 ? 'var(--accent-green)' : stats.successRate >= 50 ? 'var(--medium)' : 'var(--critical)' },
+    { label: '平均时长', value: stats.avgDuration,         color: 'var(--accent-blue)' },
   ]
   return (
     <div style={{ display: 'flex', gap: 8, padding: '10px 14px 0' }}>
@@ -1653,9 +1653,9 @@ function ExecutionHistoryPanel({ playbookKey, playbookName, executions, loading,
                 {/* Trigger badge */}
                 <span style={{
                   fontSize: 9.5, fontWeight: 700, padding: '1px 6px', borderRadius: 3,
-                  background: trigger === 'auto' ? 'rgba(59,158,222,.15)' : 'rgba(249,168,37,.12)',
-                  color: trigger === 'auto' ? '#3b9ede' : '#f9a825',
-                  border: `1px solid ${trigger === 'auto' ? 'rgba(59,158,222,.3)' : 'rgba(249,168,37,.25)'}`,
+                  background: trigger === 'auto' ? 'rgba(59,158,222,.15)' : 'rgba(200,160,48,.12)',
+                  color: trigger === 'auto' ? 'var(--accent-blue)' : 'var(--medium)',
+                  border: `1px solid ${trigger === 'auto' ? 'rgba(59,158,222,.3)' : 'rgba(200,160,48,.25)'}`,
                   letterSpacing: '.4px', textTransform: 'uppercase',
                 }}>
                   {trigger === 'auto' ? '自动' : '手动'}
@@ -1681,7 +1681,7 @@ function ExecutionHistoryPanel({ playbookKey, playbookName, executions, loading,
                       transition: 'width .3s ease',
                     }} />
                   </div>
-                  <span style={{ fontSize: 10, color: '#3b9ede', fontWeight: 600, minWidth: 36, textAlign: 'right' }}>
+                  <span style={{ fontSize: 10, color: 'var(--accent-blue)', fontWeight: 600, minWidth: 36, textAlign: 'right' }}>
                     {stepsOk}/{stepsTotal}
                   </span>
                 </div>
@@ -1707,7 +1707,7 @@ function ExecutionHistoryPanel({ playbookKey, playbookName, executions, loading,
                     fontSize: 10.5, padding: '2px 8px', borderRadius: 3,
                     background: isLogOpen ? 'rgba(59,158,222,.12)' : 'rgba(255,255,255,.04)',
                     border: isLogOpen ? '1px solid rgba(59,158,222,.3)' : '1px solid rgba(255,255,255,.08)',
-                    color: isLogOpen ? '#3b9ede' : 'var(--text-muted)',
+                    color: isLogOpen ? 'var(--accent-blue)' : 'var(--text-muted)',
                     cursor: 'pointer', transition: 'all .15s',
                   }}
                 >
@@ -1719,7 +1719,7 @@ function ExecutionHistoryPanel({ playbookKey, playbookName, executions, loading,
                     fontSize: 10.5, padding: '2px 8px', borderRadius: 3,
                     background: 'rgba(59,158,222,.06)',
                     border: '1px solid rgba(59,158,222,.2)',
-                    color: '#3b9ede', cursor: 'pointer', transition: 'all .15s',
+                    color: 'var(--accent-blue)', cursor: 'pointer', transition: 'all .15s',
                   }}
                 >
                   🔍 详情
@@ -1731,7 +1731,7 @@ function ExecutionHistoryPanel({ playbookKey, playbookName, executions, loading,
                       fontSize: 10.5, padding: '2px 8px', borderRadius: 3,
                       background: 'rgba(47,176,122,.08)',
                       border: '1px solid rgba(47,176,122,.25)',
-                      color: '#2fb07a', cursor: 'pointer', transition: 'all .15s',
+                      color: 'var(--accent-green)', cursor: 'pointer', transition: 'all .15s',
                     }}
                     title={`重新执行 playbook`}
                   >
@@ -1745,20 +1745,20 @@ function ExecutionHistoryPanel({ playbookKey, playbookName, executions, loading,
             {isLogOpen && (
               <div style={{
                 margin: '0 14px 10px',
-                background: '#060810',
+                background: 'var(--bg-primary)',
                 border: '1px solid rgba(59,158,222,.15)',
                 borderRadius: 4,
                 padding: '8px 10px',
                 fontFamily: 'monospace',
                 fontSize: 10.5,
-                color: '#5a8aa8',
+                color: 'var(--text-secondary)',
                 lineHeight: 1.7,
                 maxHeight: 160,
                 overflowY: 'auto',
               }}>
                 {mockLogLines.map((line, i) => (
                   <div key={i} style={{
-                    color: line.includes('ERROR') ? '#d94040' : line.includes('✓') ? '#2fb07a' : '#5a8aa8',
+                    color: line.includes('ERROR') ? 'var(--critical)' : line.includes('✓') ? 'var(--accent-green)' : 'var(--text-secondary)',
                   }}>
                     {line}
                   </div>
@@ -1803,10 +1803,10 @@ function NodeLibraryPanel() {
           cursor: 'pointer',
         }}
       >
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#2a3d5a' }}>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--bg-card2)' }}>
           节点库
         </span>
-        <span style={{ fontSize: 9, color: '#2a3d5a', transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform .15s' }}>
+        <span style={{ fontSize: 9, color: 'var(--bg-card2)', transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform .15s' }}>
           ▾
         </span>
       </button>
@@ -1817,7 +1817,7 @@ function NodeLibraryPanel() {
           <div style={{ position: 'relative' }}>
             <span style={{
               position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)',
-              fontSize: 10, pointerEvents: 'none', color: '#2a3d5a',
+              fontSize: 10, pointerEvents: 'none', color: 'var(--bg-card2)',
             }}>🔍</span>
             <input
               type="text"
@@ -1828,11 +1828,11 @@ function NodeLibraryPanel() {
                 width: '100%', boxSizing: 'border-box',
                 paddingLeft: 22, paddingRight: 6, paddingTop: 4, paddingBottom: 4,
                 borderRadius: 3, fontSize: 10,
-                background: '#080b10', border: '1px solid #1e2535', color: '#8aa0c0',
+                background: 'var(--bg-primary)', border: '1px solid #1e2535', color: 'var(--text-secondary)',
                 outline: 'none',
               }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#2a5a8a' }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#1e2535' }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--bg-card)' }}
             />
           </div>
 
@@ -1881,7 +1881,7 @@ function NodeLibraryPanel() {
                           onMouseLeave={() => setHoveredItem(null)}
                         >
                           <span style={{ fontSize: 11, lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
-                          <span style={{ fontSize: 10.5, color: isHovered ? group.color : '#4a6a88', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, transition: 'color .12s' }}>
+                          <span style={{ fontSize: 10.5, color: isHovered ? group.color : 'var(--text-secondary)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, transition: 'color .12s' }}>
                             {item.name}
                           </span>
                           {/* Drag hint tooltip */}
@@ -1905,7 +1905,7 @@ function NodeLibraryPanel() {
           })}
 
           {filteredLibrary.length === 0 && (
-            <div style={{ fontSize: 10, color: '#2a3d5a', textAlign: 'center', padding: '4px 0' }}>
+            <div style={{ fontSize: 10, color: 'var(--bg-card2)', textAlign: 'center', padding: '4px 0' }}>
               无匹配节点
             </div>
           )}
@@ -1919,9 +1919,9 @@ function NodeLibraryPanel() {
 
 function StatsRow({ stats }: { stats: PlaybookStats }) {
   const tiles = [
-    { label: '总数', value: stats.loading ? '…' : String(stats.total), color: '#3b9ede' },
-    { label: '活跃', value: stats.loading ? '…' : String(stats.active), color: '#2fb07a' },
-    { label: '今日执行', value: stats.loading ? '…' : String(stats.todayRuns), color: '#f9a825' },
+    { label: '总数', value: stats.loading ? '…' : String(stats.total), color: 'var(--accent-blue)' },
+    { label: '活跃', value: stats.loading ? '…' : String(stats.active), color: 'var(--accent-green)' },
+    { label: '今日执行', value: stats.loading ? '…' : String(stats.todayRuns), color: 'var(--medium)' },
   ]
   return (
     <div style={{
@@ -2211,7 +2211,7 @@ export default function Playbooks() {
           <div style={{
             width: detailTab === 'flow' ? 740 : 380,
             borderLeft: '1px solid var(--border)',
-            background: detailTab === 'flow' ? '#080b10' : 'var(--bg-card)',
+            background: detailTab === 'flow' ? 'var(--bg-primary)' : 'var(--bg-card)',
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden', flexShrink: 0,
             transition: 'width .25s ease',
@@ -2381,8 +2381,8 @@ export default function Playbooks() {
       {/* Create / Edit Modal */}
       {showModal && (
         <>
-          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 520, maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 520, maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editTarget ? '编辑剧本' : 'New Playbook'}</div>
             {/* Quick template picker — only shown on create */}
             {!editTarget && (
@@ -2476,8 +2476,8 @@ export default function Playbooks() {
       {/* Delete Confirm Modal */}
       {deleteTarget && (
         <>
-          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>确认删除剧本</div>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
               确定要删除剧本 <strong style={{ color: 'var(--text-primary)' }}>「{deleteTarget.name}」</strong>？已有执行历史将一并删除。
@@ -2493,11 +2493,11 @@ export default function Playbooks() {
       {/* Execute Result Modal */}
       {execResult && (
         <>
-          <div onClick={() => setExecResult(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 800 }} />
+          <div onClick={() => setExecResult(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 800 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
             width: 520, maxHeight: '80vh', overflow: 'hidden',
-            background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 900,
+            background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 900,
             display: 'flex', flexDirection: 'column',
           }}>
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

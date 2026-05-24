@@ -55,12 +55,12 @@ const MITRE_TOTAL = 14
 
 // ─── Status badge config ──────────────────────────────────────────────────────
 const STATUS_CFG: Record<string, { color: string; bg: string; border: string; icon: string; glow?: string }> = {
-  draft:      { color: '#9ca3af', bg: 'rgba(156,163,175,.12)', border: 'rgba(156,163,175,.3)',  icon: '📝' },
-  active:     { color: '#22c55e', bg: 'rgba(34,197,94,.12)',   border: 'rgba(34,197,94,.35)',   icon: '✅', glow: '0 0 6px rgba(34,197,94,.4)' },
-  testing:    { color: '#f97316', bg: 'rgba(249,115,22,.12)',  border: 'rgba(249,115,22,.35)',  icon: '🧪' },
-  deprecated: { color: '#ef4444', bg: 'rgba(239,68,68,.12)',   border: 'rgba(239,68,68,.3)',    icon: '⛔' },
-  inactive:   { color: '#6b7280', bg: 'rgba(107,114,128,.1)',  border: 'rgba(107,114,128,.25)', icon: '⏸' },
-  disabled:   { color: '#6b7280', bg: 'rgba(107,114,128,.1)',  border: 'rgba(107,114,128,.25)', icon: '⏸' },
+  draft:      { color: 'var(--text-muted)', bg: 'rgba(156,163,175,.12)', border: 'rgba(156,163,175,.3)',  icon: '📝' },
+  active:     { color: 'var(--accent-green)', bg: 'rgba(34,197,94,.12)',   border: 'rgba(34,197,94,.35)',   icon: '✅', glow: '0 0 6px rgba(34,197,94,.4)' },
+  testing:    { color: 'var(--high)', bg: 'rgba(249,115,22,.12)',  border: 'rgba(249,115,22,.35)',  icon: '🧪' },
+  deprecated: { color: 'var(--critical)', bg: 'rgba(239,68,68,.12)',   border: 'rgba(239,68,68,.3)',    icon: '⛔' },
+  inactive:   { color: 'var(--text-muted)', bg: 'rgba(107,114,128,.1)',  border: 'rgba(107,114,128,.25)', icon: '⏸' },
+  disabled:   { color: 'var(--text-muted)', bg: 'rgba(107,114,128,.1)',  border: 'rgba(107,114,128,.25)', icon: '⏸' },
 }
 function getStatusCfg(s: string) { return STATUS_CFG[s] ?? STATUS_CFG['draft'] }
 
@@ -208,7 +208,7 @@ function RuleTestPanel({ rule }: { rule: Rule }) {
       </button>
 
       {apiErr && (
-        <div style={{ padding: '10px 12px', background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 6, fontSize: 12, color: '#ef4444' }}>
+        <div style={{ padding: '10px 12px', background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 6, fontSize: 12, color: 'var(--critical)' }}>
           ❌ {apiErr}
         </div>
       )}
@@ -221,7 +221,7 @@ function RuleTestPanel({ rule }: { rule: Rule }) {
           borderRadius: 8,
           display: 'flex', flexDirection: 'column', gap: 8,
         }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: result.matched ? '#22c55e' : '#ef4444' }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: result.matched ? 'var(--accent-green)' : 'var(--critical)' }}>
             {result.matched ? '✅ 规则匹配' : '❌ 未匹配'}
           </div>
           {result.message && (
@@ -257,11 +257,11 @@ function RulePerfPanel({ rule }: { rule: Rule }) {
       <div>
         <div style={rowSt}>
           <span style={{ color: 'var(--text-muted)' }}>触发次数 (30天)</span>
-          <span style={{ color: stats.hits30d > 100 ? '#f97316' : 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 600, fontSize: 14 }}>{stats.hits30d}</span>
+          <span style={{ color: stats.hits30d > 100 ? 'var(--high)' : 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 600, fontSize: 14 }}>{stats.hits30d}</span>
         </div>
         <div style={rowSt}>
           <span style={{ color: 'var(--text-muted)' }}>误报率</span>
-          <span style={{ color: stats.fpr > 10 ? '#ef4444' : stats.fpr > 5 ? '#f97316' : '#22c55e', fontFamily: 'monospace' }}>{stats.fpr.toFixed(1)}%</span>
+          <span style={{ color: stats.fpr > 10 ? 'var(--critical)' : stats.fpr > 5 ? 'var(--high)' : 'var(--accent-green)', fontFamily: 'monospace' }}>{stats.fpr.toFixed(1)}%</span>
         </div>
         <div style={{ ...rowSt, borderBottom: 'none' }}>
           <span style={{ color: 'var(--text-muted)' }}>平均响应时间</span>
@@ -335,18 +335,18 @@ function MitreCoverageDashboard({ onFilterByTactic }: { onFilterByTactic?: (tact
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 160 }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>ATT&amp;CK 战术覆盖</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-            <span style={{ fontSize: 48, fontWeight: 800, fontFamily: 'monospace', color: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f97316' : '#ef4444', lineHeight: 1 }}>{pct}%</span>
+            <span style={{ fontSize: 48, fontWeight: 800, fontFamily: 'monospace', color: pct >= 70 ? 'var(--accent-green)' : pct >= 40 ? 'var(--high)' : 'var(--critical)', lineHeight: 1 }}>{pct}%</span>
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>
-            本系统覆盖 ATT&amp;CK 战术 <strong style={{ color: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f97316' : '#ef4444' }}>{coveredTactics.length}</strong> / {MITRE_TOTAL} 个
+            本系统覆盖 ATT&amp;CK 战术 <strong style={{ color: pct >= 70 ? 'var(--accent-green)' : pct >= 40 ? 'var(--high)' : 'var(--critical)' }}>{coveredTactics.length}</strong> / {MITRE_TOTAL} 个
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ height: 10, background: 'var(--border)', borderRadius: 5, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f97316' : '#ef4444', borderRadius: 5, transition: 'width .5s' }} />
+            <div style={{ height: '100%', width: `${pct}%`, background: pct >= 70 ? 'var(--accent-green)' : pct >= 40 ? 'var(--high)' : 'var(--critical)', borderRadius: 5, transition: 'width .5s' }} />
           </div>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            {([['✅ 已覆盖', coveredTactics.length, '#22c55e'], ['❌ 未覆盖', uncoveredTactics.length, '#ef4444']] as [string, number, string][]).map(([label, n, color]) => (
+            {([['✅ 已覆盖', coveredTactics.length, 'var(--accent-green)'], ['❌ 未覆盖', uncoveredTactics.length, 'var(--critical)']] as [string, number, string][]).map(([label, n, color]) => (
               <span key={label} style={{ fontSize: 12, color }}>{label}: <strong style={{ fontSize: 15 }}>{n}</strong></span>
             ))}
           </div>
@@ -388,10 +388,10 @@ function MitreCoverageDashboard({ onFilterByTactic }: { onFilterByTactic?: (tact
       {/* Uncovered tactics */}
       {uncoveredTactics.length > 0 && (
         <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.2)', borderRadius: 8 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#ef4444', marginBottom: 8 }}>未覆盖战术</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--critical)', marginBottom: 8 }}>未覆盖战术</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {uncoveredTactics.map(t => (
-              <span key={t} style={{ fontSize: 11, padding: '3px 10px', background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', borderRadius: 10, color: '#ef4444' }}>{t}</span>
+              <span key={t} style={{ fontSize: 11, padding: '3px 10px', background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', borderRadius: 10, color: 'var(--critical)' }}>{t}</span>
             ))}
           </div>
         </div>
@@ -625,8 +625,8 @@ function RuleWizardModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 400 }} />
-      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 640, maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: '28px 28px 24px' }}>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 640, maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: '28px 28px 24px' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <span style={{ fontSize: 16, fontWeight: 600 }}>新建检测规则</span>
@@ -1055,7 +1055,7 @@ function HitStatsPanel({ rule }: { rule: Rule }) {
 
   const sparkData = stats.daily_hits ?? mockHitStats(rule._key).daily_hits ?? []
   const days = ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'D-1', '今']
-  const fprColor = stats.false_positive_rate > 10 ? '#ef4444' : stats.false_positive_rate > 5 ? '#f97316' : '#22c55e'
+  const fprColor = stats.false_positive_rate > 10 ? 'var(--critical)' : stats.false_positive_rate > 5 ? 'var(--high)' : 'var(--accent-green)'
 
   const gridCells: { label: string; value: React.ReactNode; accent?: string }[] = [
     {
@@ -1065,11 +1065,11 @@ function HitStatsPanel({ rule }: { rule: Rule }) {
     },
     {
       label: '近7天命中',
-      value: <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: stats.hits_7d > 0 ? '#f97316' : 'var(--text-muted)' }}>{stats.hits_7d}</span>,
+      value: <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: stats.hits_7d > 0 ? 'var(--high)' : 'var(--text-muted)' }}>{stats.hits_7d}</span>,
     },
     {
       label: '近30天命中',
-      value: <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: stats.hits_30d > 20 ? '#f97316' : 'var(--text-secondary)' }}>{stats.hits_30d}</span>,
+      value: <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: stats.hits_30d > 20 ? 'var(--high)' : 'var(--text-secondary)' }}>{stats.hits_30d}</span>,
     },
     {
       label: '最后命中',
@@ -1108,7 +1108,7 @@ function HitStatsPanel({ rule }: { rule: Rule }) {
       {/* Sparkline */}
       <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 14px' }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>近7天命中趋势</div>
-        <Sparkline data={sparkData} color="#4fa3e0" />
+        <Sparkline data={sparkData} color="var(--accent-blue)" />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
           {days.map((d, i) => (
             <span key={i} style={{ fontSize: 9, color: 'var(--text-muted)' }}>{d}</span>
@@ -1164,9 +1164,9 @@ function RuleDetailPanel({ selected, onClose, onEdit, onDelete, onStatusChange }
   ]
 
   return (
-    <div style={{ width: 400, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
+    <div style={{ width: 400, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
       {/* Header */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexShrink: 0 }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexShrink: 0 }}>
         <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected.name}</div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1188,7 +1188,7 @@ function RuleDetailPanel({ selected, onClose, onEdit, onDelete, onStatusChange }
             {selected.status === 'active' && (
               <button
                 className="btn-secondary"
-                style={{ fontSize: 10.5, padding: '2px 10px', color: '#ef4444', borderColor: 'rgba(239,68,68,.3)' }}
+                style={{ fontSize: 10.5, padding: '2px 10px', color: 'var(--critical)', borderColor: 'rgba(239,68,68,.3)' }}
                 disabled={statusChanging}
                 onClick={quickDeprecate}
               >
@@ -1430,10 +1430,10 @@ export default function DetectionRules() {
   // ── Rule type badge helper ─────────────────────────────────────────────────
   function ruleTypeBadge(rt: string) {
     const cfg: Record<string, { bg: string; color: string }> = {
-      bioc: { bg: 'rgba(79,163,224,.12)',   color: '#4fa3e0' },
+      bioc: { bg: 'rgba(79,163,224,.12)',   color: 'var(--accent-blue)' },
       ioc:  { bg: 'rgba(250,88,45,.1)',     color: 'var(--accent-orange)' },
-      spl2: { bg: 'rgba(167,139,250,.12)',  color: '#a78bfa' },
-      ueba: { bg: 'rgba(250,200,45,.1)',    color: '#f5c842' },
+      spl2: { bg: 'rgba(167,139,250,.12)',  color: 'var(--accent-blue)' },
+      ueba: { bg: 'rgba(250,200,45,.1)',    color: 'var(--medium)' },
     }
     const c = cfg[rt] ?? cfg.bioc
     return (
@@ -1546,7 +1546,7 @@ export default function DetectionRules() {
               </button>
               <button
                 className="btn-secondary"
-                style={{ fontSize: 11, padding: '3px 12px', color: '#ef4444', borderColor: 'rgba(239,68,68,.3)' }}
+                style={{ fontSize: 11, padding: '3px 12px', color: 'var(--critical)', borderColor: 'rgba(239,68,68,.3)' }}
                 disabled={bulkWorking}
                 onClick={() => bulkAction('disable')}
               >
@@ -1626,7 +1626,7 @@ export default function DetectionRules() {
                           {(rule.status === 'draft' || rule.status === 'testing') && (
                             <button
                               className="btn-secondary"
-                              style={{ fontSize: 10, padding: '2px 7px', color: '#22c55e', borderColor: 'rgba(34,197,94,.3)' }}
+                              style={{ fontSize: 10, padding: '2px 7px', color: 'var(--accent-green)', borderColor: 'rgba(34,197,94,.3)' }}
                               onClick={() => api.post(`/detection_rules/${rule._key}/status`, { status: 'active' }).then(() => load(page))}
                             >
                               激活
@@ -1635,7 +1635,7 @@ export default function DetectionRules() {
                           {rule.status === 'active' && (
                             <button
                               className="btn-secondary"
-                              style={{ fontSize: 10, padding: '2px 7px', color: '#ef4444', borderColor: 'rgba(239,68,68,.3)' }}
+                              style={{ fontSize: 10, padding: '2px 7px', color: 'var(--critical)', borderColor: 'rgba(239,68,68,.3)' }}
                               onClick={() => api.post(`/detection_rules/${rule._key}/status`, { status: 'deprecated' }).then(() => load(page))}
                             >
                               停用
@@ -1687,8 +1687,8 @@ export default function DetectionRules() {
       {/* MITRE Coverage Modal — heatmap grid */}
       {mitreModal !== null && (
         <>
-          <div onClick={() => setMitreModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 620, maxHeight: '78vh', overflowY: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setMitreModal(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 620, maxHeight: '78vh', overflowY: 'auto', background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ fontSize: 15, fontWeight: 600 }}>MITRE ATT&amp;CK 覆盖率</span>
               <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => setMitreModal(null)}>✕</button>
@@ -1748,8 +1748,8 @@ export default function DetectionRules() {
       {/* Edit Modal (existing rules) */}
       {showEditModal && (
         <>
-          <div onClick={() => setShowEditModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 560, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '85vh', overflowY: 'auto' }}>
+          <div onClick={() => setShowEditModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 560, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>编辑检测规则</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
@@ -1816,8 +1816,8 @@ export default function DetectionRules() {
 
       {deleteTarget && (
         <>
-          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>确认删除规则</div>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
               确定要删除规则 <strong style={{ color: 'var(--text-primary)' }}>「{deleteTarget.name}」</strong>？
@@ -1833,8 +1833,8 @@ export default function DetectionRules() {
       {/* Test Replay Modal */}
       {testModal !== null && (
         <>
-          <div onClick={() => setTestModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 580, maxHeight: '78vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setTestModal(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 580, maxHeight: '78vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexShrink: 0 }}>
               <span style={{ fontSize: 15, fontWeight: 600 }}>测试回放 — {testModal.ruleName}</span>
               <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => setTestModal(null)}>✕</button>

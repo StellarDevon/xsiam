@@ -121,9 +121,9 @@ function storagePct(used: number, max: number): number {
 
 function TypeBadge({ type }: { type: Tenant['type'] }) {
   const cfg = {
-    enterprise: { label: '企业版', bg: 'rgba(59,158,222,.16)', color: '#3b9ede' },
-    trial:      { label: '试用版', bg: 'rgba(208,112,48,.18)',  color: '#dd7a30' },
-    mssp:       { label: 'MSSP',   bg: 'rgba(140,100,220,.16)', color: '#a07ad8' },
+    enterprise: { label: '企业版', bg: 'rgba(59,158,222,.16)', color: 'var(--accent-blue)' },
+    trial:      { label: '试用版', bg: 'rgba(208,112,48,.18)',  color: 'var(--high)' },
+    mssp:       { label: 'MSSP',   bg: 'rgba(140,100,220,.16)', color: 'var(--accent-blue)' },
   }[type]
   return (
     <span style={{
@@ -136,9 +136,9 @@ function TypeBadge({ type }: { type: Tenant['type'] }) {
 
 function StatusBadge({ status }: { status: Tenant['status'] }) {
   const cfg = {
-    active:    { label: '活跃',   bg: 'rgba(47,176,122,.16)',  color: '#2fb07a' },
-    suspended: { label: '已暂停', bg: 'rgba(208,160,32,.16)',  color: '#d0a020' },
-    expired:   { label: '已过期', bg: 'rgba(217,64,64,.16)',   color: '#d94040' },
+    active:    { label: '活跃',   bg: 'rgba(47,176,122,.16)',  color: 'var(--accent-green)' },
+    suspended: { label: '已暂停', bg: 'rgba(208,160,32,.16)',  color: 'var(--medium)' },
+    expired:   { label: '已过期', bg: 'rgba(217,64,64,.16)',   color: 'var(--critical)' },
   }[status]
   return (
     <span style={{
@@ -161,13 +161,13 @@ function StatusBadge({ status }: { status: Tenant['status'] }) {
 function StorageBar({ used, max }: { used: number; max: number }) {
   const pct = storagePct(used, max)
   const isHot = pct >= 80
-  const barColor = isHot ? '#d94040' : pct >= 60 ? '#d0a020' : '#3b9ede'
+  const barColor = isHot ? 'var(--critical)' : pct >= 60 ? 'var(--medium)' : 'var(--accent-blue)'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
       <div style={{ width: 60, height: 5, background: 'var(--border-light)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: barColor, borderRadius: 3, transition: 'width .3s' }} />
       </div>
-      <span style={{ fontSize: 10.5, color: isHot ? '#d94040' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 10.5, color: isHot ? 'var(--critical)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
         {used}/{max} GB
       </span>
     </div>
@@ -254,7 +254,7 @@ function CreateTenantModal({ onClose, onCreated }: CreateModalProps) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}
     >
       <div
@@ -311,7 +311,7 @@ function CreateTenantModal({ onClose, onCreated }: CreateModalProps) {
             <label style={labelStyle}>到期日</label>
             <input style={inputStyle} type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} />
           </div>
-          {err && <div style={{ fontSize: 11.5, color: '#d94040', background: 'rgba(217,64,64,.08)', padding: '8px 12px', borderRadius: 4, border: '1px solid rgba(217,64,64,.2)' }}>{err}</div>}
+          {err && <div style={{ fontSize: 11.5, color: 'var(--critical)', background: 'rgba(217,64,64,.08)', padding: '8px 12px', borderRadius: 4, border: '1px solid rgba(217,64,64,.2)' }}>{err}</div>}
         </div>
 
         {/* Footer */}
@@ -343,9 +343,9 @@ function TenantDetailPanel({ tenant, onClose }: DetailPanelProps) {
   const isHot = pct >= 80
 
   return (
-    <div style={{ width: 380, flexShrink: 0, background: 'var(--bg-card)', borderLeft: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ width: 380, flexShrink: 0, background: 'var(--bg-drawer)', borderLeft: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0 }}>
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{tenant.display_name}</div>
@@ -360,7 +360,7 @@ function TenantDetailPanel({ tenant, onClose }: DetailPanelProps) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0 }}>
         {([['overview', '概览'], ['users', '用户'], ['audit', '审计日志']] as const).map(([id, label]) => (
           <button key={id} className={`tab${tab === id ? ' active' : ''}`} style={{ padding: '8px 14px', fontSize: 11.5 }} onClick={() => setTab(id)}>
             {label}
@@ -388,7 +388,7 @@ function TenantDetailPanel({ tenant, onClose }: DetailPanelProps) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
                 { label: '用户数',   value: tenant.user_count,   color: 'var(--accent-blue)' },
-                { label: '设备数',   value: tenant.device_count, color: '#a07ad8' },
+                { label: '设备数',   value: tenant.device_count, color: 'var(--accent-blue)' },
               ].map(k => (
                 <div key={k.label} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, padding: '10px 12px' }}>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: .4, marginBottom: 4 }}>{k.label}</div>
@@ -401,10 +401,10 @@ function TenantDetailPanel({ tenant, onClose }: DetailPanelProps) {
             <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, padding: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: .4 }}>存储用量</span>
-                <span style={{ fontSize: 11, color: isHot ? '#d94040' : 'var(--text-muted)' }}>{pct}%</span>
+                <span style={{ fontSize: 11, color: isHot ? 'var(--critical)' : 'var(--text-muted)' }}>{pct}%</span>
               </div>
               <div style={{ height: 6, background: 'var(--border-light)', borderRadius: 3, overflow: 'hidden', marginBottom: 6 }}>
-                <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: isHot ? '#d94040' : pct >= 60 ? '#d0a020' : '#3b9ede', borderRadius: 3, transition: 'width .4s' }} />
+                <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: isHot ? 'var(--critical)' : pct >= 60 ? 'var(--medium)' : 'var(--accent-blue)', borderRadius: 3, transition: 'width .4s' }} />
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{tenant.storage_gb} GB / {tenant.max_storage_gb} GB</div>
             </div>
@@ -493,8 +493,8 @@ function TenantListTab({ tenants, setTenants }: TenantListTabProps) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'var(--border)', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
           {[
             { label: '总租户数',  value: total,         color: 'var(--text-primary)', note: '全部租户' },
-            { label: '活跃租户',  value: active,        color: '#2fb07a',             note: `占比 ${Math.round(active/total*100)}%` },
-            { label: '试用租户',  value: trial,         color: '#dd7a30',             note: '有效期内' },
+            { label: '活跃租户',  value: active,        color: 'var(--accent-green)',             note: `占比 ${Math.round(active/total*100)}%` },
+            { label: '试用租户',  value: trial,         color: 'var(--high)',             note: '有效期内' },
             { label: '本月新增',  value: newThisMonth,  color: 'var(--accent-blue)',  note: '本月创建' },
           ].map(k => (
             <div key={k.label} style={{ background: 'var(--bg-sidebar)', padding: '10px 18px' }}>
@@ -582,7 +582,7 @@ function TenantListTab({ tenants, setTenants }: TenantListTabProps) {
                         className="btn-secondary"
                         style={{
                           fontSize: 10, padding: '2px 8px',
-                          color: t.status === 'suspended' ? '#2fb07a' : '#d0a020',
+                          color: t.status === 'suspended' ? 'var(--accent-green)' : 'var(--medium)',
                           borderColor: t.status === 'suspended' ? 'rgba(47,176,122,.3)' : 'rgba(208,160,32,.3)',
                         }}
                         onClick={() => toggleSuspend(t)}
@@ -657,9 +657,9 @@ function UsageMonitoringTab({ tenants }: { tenants: Tenant[] }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
         {[
           { label: '总用户',      value: totalUsers,             unit: '人',  color: 'var(--accent-blue)' },
-          { label: '总设备',      value: totalDevices,           unit: '台',  color: '#a07ad8' },
-          { label: '总存储',      value: `${totalStorage} GB`,   unit: '',    color: '#2fb07a' },
-          { label: '总告警(本月)', value: totalAlerts,            unit: '条',  color: '#dd7a30' },
+          { label: '总设备',      value: totalDevices,           unit: '台',  color: 'var(--accent-blue)' },
+          { label: '总存储',      value: `${totalStorage} GB`,   unit: '',    color: 'var(--accent-green)' },
+          { label: '总告警(本月)', value: totalAlerts,            unit: '条',  color: 'var(--high)' },
         ].map(k => (
           <div key={k.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '12px 14px' }}>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: .4, marginBottom: 6 }}>{k.label}</div>
@@ -678,7 +678,7 @@ function UsageMonitoringTab({ tenants }: { tenants: Tenant[] }) {
           {quotaWarnings.map(t => (
             <div key={t._key} style={{ padding: '10px 14px', background: 'rgba(208,160,32,.06)', border: '1px solid rgba(208,160,32,.25)', borderLeft: '3px solid #d0a020', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14 }}>⚠️</span>
-              <span style={{ fontSize: 12, color: '#d0a020', fontWeight: 600 }}>{t.display_name}</span>
+              <span style={{ fontSize: 12, color: 'var(--medium)', fontWeight: 600 }}>{t.display_name}</span>
               <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
                 存储已使用 {storagePct(t.storage_gb, t.max_storage_gb)}%，建议扩容（当前 {t.storage_gb} GB / {t.max_storage_gb} GB）
               </span>
@@ -718,7 +718,7 @@ function UsageMonitoringTab({ tenants }: { tenants: Tenant[] }) {
               <Tooltip
                 contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 11 }}
                 labelStyle={{ color: 'var(--text-primary)' }}
-                itemStyle={{ color: '#a07ad8' }}
+                itemStyle={{ color: 'var(--accent-blue)' }}
               />
               <Bar dataKey="devices" name="设备数" radius={[0, 3, 3, 0]}>
                 {deviceChartData.map((_, i) => <Cell key={i} fill="#a07ad8" fillOpacity={0.7 + i * 0.03} />)}
@@ -739,7 +739,7 @@ function UsageMonitoringTab({ tenants }: { tenants: Tenant[] }) {
                 labelStyle={{ color: 'var(--text-primary)' }}
               />
               <Legend wrapperStyle={{ fontSize: 10, color: 'var(--text-muted)' }} />
-              <Bar dataKey="used"      name="已用"   stackId="s" fill="#3b9ede" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="used"      name="已用"   stackId="s" fill="var(--accent-blue)" radius={[0, 0, 0, 0]} />
               <Bar dataKey="remaining" name="剩余"   stackId="s" fill="rgba(59,158,222,.15)" radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -755,7 +755,7 @@ function UsageMonitoringTab({ tenants }: { tenants: Tenant[] }) {
               <Tooltip
                 contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 11 }}
                 labelStyle={{ color: 'var(--text-primary)' }}
-                itemStyle={{ color: '#dd7a30' }}
+                itemStyle={{ color: 'var(--high)' }}
               />
               <Bar dataKey="alerts" name="告警数" radius={[0, 3, 3, 0]}>
                 {alertData.map((_, i) => <Cell key={i} fill="#dd7a30" fillOpacity={0.65 + i * 0.03} />)}
@@ -790,7 +790,7 @@ function SystemHealthTab() {
   ]
 
   function svcDotColor(s: 'normal' | 'degraded') {
-    return s === 'normal' ? '#2fb07a' : '#d94040'
+    return s === 'normal' ? 'var(--accent-green)' : 'var(--critical)'
   }
 
   return (
@@ -852,8 +852,8 @@ function SystemHealthTab() {
             <AreaChart data={memData} margin={{ left: -20, right: 0, top: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="memGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#2fb07a" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2fb07a" stopOpacity={0} />
+                  <stop offset="5%"  stopColor="var(--accent-green)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--accent-green)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="hour" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval={3} />
@@ -861,10 +861,10 @@ function SystemHealthTab() {
               <Tooltip
                 contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 11 }}
                 labelStyle={{ color: 'var(--text-primary)' }}
-                itemStyle={{ color: '#2fb07a' }}
+                itemStyle={{ color: 'var(--accent-green)' }}
                 formatter={((v: unknown) => [`${Number(v ?? 0)}%`, '内存']) as any}
               />
-              <Area type="monotone" dataKey="mem" name="内存" stroke="#2fb07a" fill="url(#memGrad)" strokeWidth={1.5} dot={false} />
+              <Area type="monotone" dataKey="mem" name="内存" stroke="var(--accent-green)" fill="url(#memGrad)" strokeWidth={1.5} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -887,10 +887,10 @@ function SystemHealthTab() {
               <span style={{
                 fontSize: 9.5, padding: '1px 6px', borderRadius: 3, fontWeight: 700, flexShrink: 0,
                 background: ev.level === 'WARN' ? 'rgba(208,160,32,.15)' : 'rgba(59,158,222,.12)',
-                color: ev.level === 'WARN' ? '#d0a020' : 'var(--accent-blue)',
+                color: ev.level === 'WARN' ? 'var(--medium)' : 'var(--accent-blue)',
               }}>{ev.level}</span>
               <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'monospace' }}>{ev.ts}</span>
-              <span style={{ fontSize: 12, color: ev.level === 'WARN' ? '#d0a020' : 'var(--text-secondary)', flex: 1 }}>{ev.msg}</span>
+              <span style={{ fontSize: 12, color: ev.level === 'WARN' ? 'var(--medium)' : 'var(--text-secondary)', flex: 1 }}>{ev.msg}</span>
             </div>
           ))}
         </div>
@@ -922,7 +922,7 @@ export default function TenantAdmin() {
         title="多租户管理控制台"
         subtitle={`${tenants.length} 个租户 · ${activeCount} 活跃`}
         actions={
-          <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 12, background: 'rgba(217,64,64,.12)', color: '#d94040', fontWeight: 700, border: '1px solid rgba(217,64,64,.25)' }}>
+          <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 12, background: 'rgba(217,64,64,.12)', color: 'var(--critical)', fontWeight: 700, border: '1px solid rgba(217,64,64,.25)' }}>
             SUPERADMIN
           </span>
         }

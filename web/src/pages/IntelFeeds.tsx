@@ -204,7 +204,7 @@ const cssStyles = `
   position: fixed;
   top: 0; right: 0; bottom: 0;
   width: 420px;
-  background: var(--bg-card);
+  background: var(--bg-drawer);
   border-left: 1px solid var(--border);
   z-index: 300;
   display: flex;
@@ -215,7 +215,7 @@ const cssStyles = `
 .xsiam-detail-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.25);
+  background: var(--bg-overlay);
   z-index: 299;
 }
 .xsiam-toggle {
@@ -243,7 +243,7 @@ const cssStyles = `
 .xsiam-bulk-bar {
   height: 3px;
   border-radius: 2px;
-  background: var(--accent-blue);
+  background: 'var(--accent-blue)';
   transition: width 0.4s ease;
 }
 /* Indicator Rules */
@@ -269,7 +269,7 @@ const cssStyles = `
 }
 /* Sample analysis */
 .xsiam-upload-zone {
-  border: 2px dashed var(--border-light);
+  border: 2px dashed 'var(--border-light)';
   border-radius: 8px;
   padding: 32px 20px;
   text-align: center;
@@ -277,7 +277,7 @@ const cssStyles = `
   transition: border-color 0.2s, background 0.2s;
 }
 .xsiam-upload-zone:hover {
-  border-color: var(--accent-blue);
+  border-color: 'var(--accent-blue)';
   background: rgba(59,158,222,0.04);
 }
 .xsiam-sample-row {
@@ -293,7 +293,7 @@ const cssStyles = `
 }
 .xsiam-sample-row:hover {
   background: var(--bg-card2);
-  border-color: var(--border-light);
+  border-color: 'var(--border-light)';
 }
 .xsiam-sample-row.selected {
   background: rgba(59,158,222,0.07);
@@ -309,7 +309,7 @@ const cssStyles = `
   font-size: 11px;
   font-family: monospace;
   background: rgba(208,112,48,0.14);
-  color: var(--high);
+  color: 'var(--high)';
   border: 1px solid rgba(208,112,48,0.25);
   margin: 2px;
 }
@@ -688,10 +688,10 @@ export default function IntelFeeds() {
       {/* Add/Edit Feed Modal */}
       {showModal && (
         <>
-          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 460, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 460, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editFeed ? '编辑订阅源' : 'Add Intel Feed'}</div>
@@ -937,10 +937,10 @@ function IndicatorRulesTab() {
       {/* Add/Edit Rule Modal */}
       {showRuleModal && (
         <>
-          <div onClick={() => setShowRuleModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowRuleModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 480, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 480, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>

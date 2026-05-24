@@ -97,11 +97,11 @@ function relativeTime(iso: string): string {
 }
 
 const ACTION_COLOR: Record<string, { bg: string; color: string }> = {
-  create:  { bg: 'rgba(76,175,80,.15)',  color: 'var(--accent-green)' },
-  update:  { bg: 'rgba(255,193,7,.12)',  color: '#ffc107' },
-  delete:  { bg: 'rgba(229,57,53,.13)',  color: 'var(--critical)' },
-  execute: { bg: 'rgba(79,163,224,.13)', color: '#4fa3e0' },
-  login:   { bg: 'rgba(156,39,176,.12)', color: '#ce93d8' },
+  create:  { bg: 'rgba(47,176,122,.15)',  color: 'var(--accent-green)' },
+  update:  { bg: 'rgba(200,160,48,.12)',  color: 'var(--medium)' },
+  delete:  { bg: 'rgba(224,80,80,.13)',  color: 'var(--critical)' },
+  execute: { bg: 'rgba(79,163,224,.13)', color: 'var(--accent-blue)' },
+  login:   { bg: 'rgba(106,80,168,.12)', color: 'var(--accent-blue)' },
 }
 
 type Tab = 'profile' | 'users' | 'tenants' | 'roles' | 'datasources' | 'auditlogs' | 'notify' | 'notifyrules' | 'webhooks' | 'soar' | 'dsconfig' | 'apikeys' | 'syshealth' | 'socperf'
@@ -883,7 +883,7 @@ export default function Settings() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
                 <div style={{
                   width: 52, height: 52,
-                  background: 'linear-gradient(135deg, #fa582d, #d64420)',
+                  background: 'linear-gradient(135deg, #2278b8, #1a5a90)',
                   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16, fontWeight: 700, color: 'white', flexShrink: 0,
                 }}>
@@ -892,7 +892,7 @@ export default function Settings() {
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600 }}>{user?.display_name}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{user?.email}</div>
-                  <div style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(250,88,45,.12)', color: 'var(--accent-orange)', borderRadius: 3, display: 'inline-block', marginTop: 4, textTransform: 'capitalize' }}>{user?.role}</div>
+                  <div style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(63,160,224,.12)', color: 'var(--accent-blue)', borderRadius: 3, display: 'inline-block', marginTop: 4, textTransform: 'capitalize' }}>{user?.role}</div>
                 </div>
               </div>
               {[
@@ -1000,7 +1000,7 @@ export default function Settings() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{
                           width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                          background: 'linear-gradient(135deg, rgba(250,88,45,.6), rgba(214,68,32,.4))',
+                          background: 'linear-gradient(135deg, rgba(34,120,184,.6), rgba(26,90,144,.4))',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 9, fontWeight: 700, color: 'white',
                         }}>
@@ -1195,7 +1195,7 @@ export default function Settings() {
                     color: (dsStats.by_status?.error ?? 0) > 0 ? 'var(--critical)' : 'var(--text-muted)',
                     icon: (dsStats.by_status?.error ?? 0) > 0,
                   },
-                  { label: '总事件数', value: (dsStats.total_events ?? 0).toLocaleString(), color: '#4fa3e0' },
+                  { label: '总事件数', value: (dsStats.total_events ?? 0).toLocaleString(), color: 'var(--accent-blue)' },
                 ].map(stat => (
                   <div key={stat.label} style={{
                     flex: '1 1 140px',
@@ -1271,7 +1271,7 @@ export default function Settings() {
                     <tr key={ds._key}>
                       <td style={{ fontSize: 12.5, fontWeight: 500 }}>{ds.name}</td>
                       <td>
-                        <span style={{ fontSize: 10.5, padding: '2px 7px', background: 'rgba(79,163,224,.1)', color: '#4fa3e0', border: '1px solid rgba(79,163,224,.2)', borderRadius: 3, fontFamily: 'monospace', fontWeight: 600 }}>
+                        <span style={{ fontSize: 10.5, padding: '2px 7px', background: 'rgba(79,163,224,.1)', color: 'var(--accent-blue)', border: '1px solid rgba(79,163,224,.2)', borderRadius: 3, fontFamily: 'monospace', fontWeight: 600 }}>
                           {(ds.type || 'syslog').toUpperCase()}
                         </span>
                       </td>
@@ -1455,9 +1455,9 @@ export default function Settings() {
                             <span style={{
                               display: 'inline-flex', alignItems: 'center', gap: 4,
                               fontSize: 11, padding: '2px 8px', borderRadius: 3,
-                              background: isSuccess ? 'rgba(76,175,80,.12)' : 'rgba(229,57,53,.12)',
+                              background: isSuccess ? 'rgba(47,176,122,.12)' : 'rgba(224,80,80,.12)',
                               color: isSuccess ? 'var(--accent-green)' : 'var(--critical)',
-                              border: `1px solid ${isSuccess ? 'rgba(76,175,80,.25)' : 'rgba(229,57,53,.25)'}`,
+                              border: `1px solid ${isSuccess ? 'rgba(47,176,122,.25)' : 'rgba(224,80,80,.25)'}`,
                             }}>
                               <span style={{ fontSize: 9 }}>{isSuccess ? '●' : '●'}</span>
                               {isSuccess ? 'success' : (log.result || 'failure')}
@@ -1603,7 +1603,7 @@ export default function Settings() {
                     display: 'inline-block',
                     fontSize: 11, fontFamily: 'monospace',
                     padding: '3px 10px', borderRadius: 3,
-                    background: 'rgba(79,163,224,.1)', color: '#4fa3e0',
+                    background: 'rgba(79,163,224,.1)', color: 'var(--accent-blue)',
                     border: '1px solid rgba(79,163,224,.25)',
                   }}>
                     通过环境变量 WEBHOOK_ENDPOINTS 配置
@@ -1645,8 +1645,8 @@ export default function Settings() {
                     {copilotStatus === 'configured' && (
                       <span style={{
                         fontSize: 11, padding: '2px 10px', borderRadius: 3, fontWeight: 600,
-                        background: 'rgba(76,175,80,.15)', color: 'var(--accent-green)',
-                        border: '1px solid rgba(76,175,80,.3)',
+                        background: 'rgba(47,176,122,.15)', color: 'var(--accent-green)',
+                        border: '1px solid rgba(47,176,122,.3)',
                       }}>已配置</span>
                     )}
                     {(copilotStatus === 'unconfigured' || copilotStatus === 'unknown') && (
@@ -1718,8 +1718,8 @@ export default function Settings() {
                   <tbody>
                     {notifyRules.map(rule => {
                       const SEVERITY_COLOR: Record<string, { bg: string; color: string }> = {
-                        low:      { bg: 'rgba(76,175,80,.12)',   color: 'var(--accent-green)' },
-                        medium:   { bg: 'rgba(255,193,7,.12)',   color: '#ffc107' },
+                        low:      { bg: 'rgba(47,176,122,.12)',   color: 'var(--accent-green)' },
+                        medium:   { bg: 'rgba(200,160,48,.12)',   color: 'var(--medium)' },
                         high:     { bg: 'rgba(255,152,0,.12)',   color: 'var(--high)' },
                         critical: { bg: 'rgba(229,57,53,.13)',   color: 'var(--critical)' },
                       }
@@ -1728,7 +1728,7 @@ export default function Settings() {
                       }
                       const condBadgeStyle = rule.conditionType === 'severity'
                         ? SEVERITY_COLOR[rule.severityLevel ?? 'high']
-                        : { bg: 'rgba(79,163,224,.12)', color: '#4fa3e0' }
+                        : { bg: 'rgba(79,163,224,.12)', color: 'var(--accent-blue)' }
                       const condLabel = rule.conditionType === 'severity'
                         ? `严重度 ≥ ${rule.severityLevel}`
                         : `状态 = ${rule.statusValue}`
@@ -1835,14 +1835,14 @@ export default function Settings() {
                   <div key={svc.key} style={{
                     padding: '14px 18px',
                     background: 'var(--bg-card2)',
-                    border: `1px solid ${svc.status === 'connected' ? 'rgba(76,175,80,.2)' : svc.status === 'disconnected' ? 'rgba(229,57,53,.2)' : 'var(--border)'}`,
+                    border: `1px solid ${svc.status === 'connected' ? 'rgba(47,176,122,.2)' : svc.status === 'disconnected' ? 'rgba(224,80,80,.2)' : 'var(--border)'}`,
                     borderRadius: 6,
                     display: 'flex', alignItems: 'center', gap: 14,
                   }}>
                     <div style={{
                       width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
                       background: svc.status === 'connected' ? 'var(--accent-green)' : svc.status === 'disconnected' ? 'var(--critical)' : 'var(--text-muted)',
-                      boxShadow: svc.status === 'connected' ? '0 0 6px rgba(76,175,80,.6)' : 'none',
+                      boxShadow: svc.status === 'connected' ? '0 0 6px rgba(47,176,122,.6)' : 'none',
                       animation: svc.status === 'connected' ? 'pulse 2s infinite' : 'none',
                     }} />
                     <div style={{ flex: 1 }}>
@@ -1861,9 +1861,9 @@ export default function Settings() {
                     </div>
                     <span style={{
                       fontSize: 10, padding: '2px 8px', borderRadius: 3, fontWeight: 600,
-                      background: svc.status === 'connected' ? 'rgba(76,175,80,.12)' : 'rgba(229,57,53,.12)',
+                      background: svc.status === 'connected' ? 'rgba(47,176,122,.12)' : 'rgba(224,80,80,.12)',
                       color: svc.status === 'connected' ? 'var(--accent-green)' : 'var(--critical)',
-                      border: `1px solid ${svc.status === 'connected' ? 'rgba(76,175,80,.25)' : 'rgba(229,57,53,.25)'}`,
+                      border: `1px solid ${svc.status === 'connected' ? 'rgba(47,176,122,.25)' : 'rgba(224,80,80,.25)'}`,
                     }}>
                       {svc.status === 'connected' ? '正常' : '异常'}
                     </span>
@@ -1906,12 +1906,12 @@ export default function Settings() {
                 {[
                   { name: 'alerts', count: 1842, color: 'var(--critical)' },
                   { name: 'incidents', count: 67, color: 'var(--high)' },
-                  { name: 'assets', count: 4210, color: '#4fa3e0' },
+                  { name: 'assets', count: 4210, color: 'var(--accent-blue)' },
                   { name: 'users', count: 24, color: 'var(--accent-green)' },
-                  { name: 'iocs', count: 9831, color: '#ce93d8' },
+                  { name: 'iocs', count: 9831, color: 'var(--accent-blue)' },
                   { name: 'audit_logs', count: 15620, color: 'var(--text-secondary)' },
                   { name: 'playbooks', count: 12, color: 'var(--medium)' },
-                  { name: 'detection_rules', count: 88, color: '#4fa3e0' },
+                  { name: 'detection_rules', count: 88, color: 'var(--accent-blue)' },
                   { name: 'datasources', count: 9, color: 'var(--accent-green)' },
                 ].map(col => (
                   <div key={col.name} style={{
@@ -2072,7 +2072,7 @@ export default function Settings() {
                       border: '1px solid var(--border)', textAlign: 'center', minWidth: 60,
                     }}>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{w.week}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#26c6da' }}>{w.mttr}h</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent-blue)' }}>{w.mttr}h</div>
                       <div style={{ fontSize: 9.5, color: w.mttr <= socKpi.mttr ? 'var(--accent-green)' : 'var(--critical)' }}>
                         {w.mttr <= socKpi.mttr ? '达标' : '超标'}
                       </div>
@@ -2096,7 +2096,7 @@ export default function Settings() {
                       />
                       <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                         {alertsByDay.map((entry, idx) => (
-                          <Cell key={`cell-${idx}`} fill={entry.weekend ? '#ff7043' : '#26c6da'} />
+                          <Cell key={`cell-${idx}`} fill={entry.weekend ? 'var(--high)' : 'var(--accent-blue)'} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -2104,11 +2104,11 @@ export default function Settings() {
                 </div>
                 <div style={{ marginTop: 8, display: 'flex', gap: 16, fontSize: 11.5, color: 'var(--text-muted)' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: '#26c6da', display: 'inline-block' }} />
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--accent-blue)', display: 'inline-block' }} />
                     工作日
                   </span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: '#ff7043', display: 'inline-block' }} />
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--high)', display: 'inline-block' }} />
                     周末
                   </span>
                 </div>
@@ -2159,7 +2159,7 @@ export default function Settings() {
                       <td>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                           {wh.event_types.slice(0, 2).map(e => (
-                            <span key={e} style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 3, fontFamily: 'monospace', background: 'rgba(79,163,224,.1)', color: '#4fa3e0', border: '1px solid rgba(79,163,224,.2)' }}>{e}</span>
+                            <span key={e} style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 3, fontFamily: 'monospace', background: 'rgba(79,163,224,.1)', color: 'var(--accent-blue)', border: '1px solid rgba(79,163,224,.2)' }}>{e}</span>
                           ))}
                           {wh.event_types.length > 2 && <span style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>+{wh.event_types.length - 2}</span>}
                           {wh.event_types.length === 0 && <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>-</span>}
@@ -2341,8 +2341,8 @@ export default function Settings() {
                 <div style={{
                   marginTop: 4,
                   padding: '10px 14px',
-                  background: soarBaseUrl && soarApiKey ? 'rgba(76,175,80,.07)' : 'var(--bg-card2)',
-                  border: `1px solid ${soarBaseUrl && soarApiKey ? 'rgba(76,175,80,.2)' : 'var(--border)'}`,
+                  background: soarBaseUrl && soarApiKey ? 'rgba(47,176,122,.07)' : 'var(--bg-card2)',
+                  border: `1px solid ${soarBaseUrl && soarApiKey ? 'rgba(47,176,122,.2)' : 'var(--border)'}`,
                   borderRadius: 5,
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12,
                 }}>
@@ -2393,7 +2393,7 @@ export default function Settings() {
                     { label: '活跃', value: dsconfigStats.by_status?.active ?? 0, color: 'var(--accent-green)' },
                     { label: '异常', value: dsconfigStats.by_status?.error ?? 0, color: (dsconfigStats.by_status?.error ?? 0) > 0 ? 'var(--critical)' : 'var(--text-muted)' },
                     { label: '停用', value: dsconfigStats.by_status?.inactive ?? 0, color: 'var(--text-muted)' },
-                    { label: '总事件', value: (dsconfigStats.total_events ?? 0).toLocaleString(), color: '#4fa3e0' },
+                    { label: '总事件', value: (dsconfigStats.total_events ?? 0).toLocaleString(), color: 'var(--accent-blue)' },
                   ].map(stat => (
                     <div key={stat.label} style={{ flex: '0 1 120px', padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6 }}>
                       <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 3 }}>{stat.label}</div>
@@ -2446,7 +2446,7 @@ export default function Settings() {
                     <tr key={ds._key}>
                       <td style={{ fontSize: 12.5, fontWeight: 500 }}>{ds.name}</td>
                       <td>
-                        <span style={{ fontSize: 10.5, padding: '2px 7px', background: 'rgba(79,163,224,.1)', color: '#4fa3e0', border: '1px solid rgba(79,163,224,.2)', borderRadius: 3, fontFamily: 'monospace', fontWeight: 600 }}>
+                        <span style={{ fontSize: 10.5, padding: '2px 7px', background: 'rgba(79,163,224,.1)', color: 'var(--accent-blue)', border: '1px solid rgba(79,163,224,.2)', borderRadius: 3, fontFamily: 'monospace', fontWeight: 600 }}>
                           {(ds.type || 'syslog').toUpperCase()}
                         </span>
                       </td>
@@ -2456,7 +2456,7 @@ export default function Settings() {
                           <span style={{
                             width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
                             background: ds.status === 'active' ? 'var(--accent-green)' : ds.status === 'error' ? 'var(--critical)' : 'var(--text-muted)',
-                            boxShadow: ds.status === 'active' ? '0 0 0 2px rgba(76,175,80,.25)' : 'none',
+                            boxShadow: ds.status === 'active' ? '0 0 0 2px rgba(47,176,122,.25)' : 'none',
                             animation: ds.status === 'active' ? 'pulse 2s infinite' : 'none',
                           }} />
                           <span style={{ color: ds.status === 'active' ? 'var(--accent-green)' : ds.status === 'error' ? 'var(--critical)' : 'var(--text-muted)', textTransform: 'capitalize' }}>
@@ -2561,7 +2561,7 @@ export default function Settings() {
                     rel="noopener noreferrer"
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: 6,
-                      fontSize: 12, color: '#4fa3e0', textDecoration: 'none',
+                      fontSize: 12, color: 'var(--accent-blue)', textDecoration: 'none',
                       padding: '5px 12px', borderRadius: 4,
                       border: '1px solid rgba(79,163,224,.3)',
                       background: 'rgba(79,163,224,.08)',
@@ -2588,14 +2588,14 @@ export default function Settings() {
                 {/* Privacy note */}
                 <div style={{
                   padding: '10px 14px',
-                  background: 'rgba(250,88,45,.05)',
-                  border: '1px solid rgba(250,88,45,.15)',
+                  background: 'rgba(63,160,224,.05)',
+                  border: '1px solid rgba(63,160,224,.15)',
                   borderRadius: 5,
                   fontSize: 11.5,
                   color: 'var(--text-muted)',
                   lineHeight: 1.6,
                 }}>
-                  <span style={{ color: 'var(--accent-orange)', fontWeight: 600 }}>注意：</span>
+                  <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>注意：</span>
                   密钥仅存储在浏览器本地（localStorage），不会上传至服务器。
                   清除浏览器数据将同时删除已保存的密钥。
                 </div>
@@ -2609,10 +2609,10 @@ export default function Settings() {
       {/* New Notify Rule Modal */}
       {showNewNotifyRule && (
         <>
-          <div onClick={() => setShowNewNotifyRule(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNewNotifyRule(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 460, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 460, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '90vh', overflowY: 'auto',
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>添加通知规则</div>
@@ -2729,10 +2729,10 @@ export default function Settings() {
       {/* New Tenant Modal */}
       {showNewTenant && (
         <>
-          <div onClick={() => setShowNewTenant(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNewTenant(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 400, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 400, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Add Tenant</div>
@@ -2767,10 +2767,10 @@ export default function Settings() {
       {/* New 角色 Modal */}
       {showNew角色 && (
         <>
-          <div onClick={() => setShowNew角色(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNew角色(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 440, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 440, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>新建角色</div>
@@ -2825,10 +2825,10 @@ export default function Settings() {
       {/* 管理成员 Modal */}
       {memberRole && (
         <>
-          <div onClick={() => setMemberRole(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setMemberRole(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 460, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 460, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '80vh', display: 'flex', flexDirection: 'column',
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>管理成员</div>
@@ -2873,7 +2873,7 @@ export default function Settings() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{
                       width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, rgba(250,88,45,.5), rgba(214,68,32,.3))',
+                      background: 'linear-gradient(135deg, rgba(34,120,184,.5), rgba(26,90,144,.3))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 10, fontWeight: 700, color: 'white',
                     }}>
@@ -2900,10 +2900,10 @@ export default function Settings() {
       {/* DataSource Configure Modal */}
       {showDsModal && (
         <>
-          <div onClick={() => setShowDsModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowDsModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 400, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 400, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editDs ? 'Configure Data Source' : 'Add Data Source'}</div>
@@ -2945,10 +2945,10 @@ export default function Settings() {
       {/* New User Modal */}
       {showNewUser && (
         <>
-          <div onClick={() => setShowNewUser(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNewUser(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 420, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 420, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>新建用户</div>
@@ -2987,10 +2987,10 @@ export default function Settings() {
       {/* Edit User Modal */}
       {editUser && (
         <>
-          <div onClick={() => setEditUser(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setEditUser(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 420, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 420, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>编辑用户</div>
@@ -3037,10 +3037,10 @@ export default function Settings() {
       {/* New Webhook Modal */}
       {showNewWebhook && (
         <>
-          <div onClick={() => setShowNewWebhook(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNewWebhook(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 480, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 480, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '90vh', overflowY: 'auto',
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>新建 Webhook</div>
@@ -3115,10 +3115,10 @@ export default function Settings() {
       {/* Reset Password Modal */}
       {resetPwdUser && (
         <>
-          <div onClick={() => setResetPwdUser(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setResetPwdUser(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 380, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 380, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>重置密码</div>

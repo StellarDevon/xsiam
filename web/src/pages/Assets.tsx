@@ -35,12 +35,12 @@ interface Asset {
 
 function AssetScoreBadge({ score }: { score: number }) {
   const [bg, color] = score >= 80
-    ? ['rgba(229,57,53,.2)', '#ef5350']
+    ? ['rgba(224,80,80,.2)', 'var(--critical)']
     : score >= 60
-      ? ['rgba(255,111,0,.2)', '#ffa726']
+      ? ['rgba(224,128,64,.2)', 'var(--high)']
       : score >= 30
-        ? ['rgba(249,168,37,.2)', '#f9a825']
-        : ['rgba(67,160,71,.2)', '#66bb6a']
+        ? ['rgba(200,160,48,.2)', 'var(--medium)']
+        : ['rgba(56,184,128,.2)', 'var(--low)']
   return (
     <span className="asset-score-badge" style={{ background: bg, color }}>
       {score}
@@ -96,10 +96,10 @@ type SortOrder = 'asc' | 'desc' | null
 
 // --- Risk color utility ---
 function riskColor(score: number): string {
-  if (score >= 80) return '#ef5350'
-  if (score >= 60) return '#ffa726'
-  if (score >= 40) return '#f9a825'
-  return '#66bb6a'
+  if (score >= 80) return 'var(--critical)'
+  if (score >= 60) return 'var(--high)'
+  if (score >= 40) return 'var(--medium)'
+  return 'var(--low)'
 }
 
 // --- Deterministic mock history from asset key ---
@@ -188,8 +188,8 @@ function RiskTrendChart({ asset }: { asset: Asset }) {
         )}
       </svg>
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8, fontSize: 11 }}>
-        <span style={{ color: '#ef5350' }}>最高风险: <strong>{maxScore}</strong></span>
-        <span style={{ color: '#66bb6a' }}>最低风险: <strong>{minScore}</strong></span>
+        <span style={{ color: 'var(--critical)' }}>最高风险: <strong>{maxScore}</strong></span>
+        <span style={{ color: 'var(--low)' }}>最低风险: <strong>{minScore}</strong></span>
       </div>
     </div>
   )
@@ -217,7 +217,7 @@ interface ZoneInfo {
 }
 
 const ZONES: ZoneInfo[] = [
-  { name: 'DMZ',  prefix: '10.0.1',  label: 'DMZ (10.0.1.x)',  fillColor: 'rgba(255,111,0,.07)',  borderColor: 'rgba(255,111,0,.35)' },
+  { name: 'DMZ',  prefix: '10.0.1',  label: 'DMZ (10.0.1.x)',  fillColor: 'rgba(224,128,64,.07)',  borderColor: 'rgba(224,128,64,.35)' },
   { name: '内网',  prefix: '192.168', label: '内网 (192.168.x.x)', fillColor: 'rgba(59,130,246,.07)', borderColor: 'rgba(59,130,246,.35)' },
   { name: '管理网', prefix: '10.0.0',  label: '管理网 (10.0.0.x)', fillColor: 'rgba(38,166,154,.07)', borderColor: 'rgba(38,166,154,.35)' },
 ]
@@ -363,7 +363,7 @@ function TopologyMap({ center, neighbors, onSelect }: { center: Asset; neighbors
           const isCenter = idx === 0
           const score = n.asset.risk_score ?? 0
           const nodeFill = isCenter ? 'rgba(59,130,246,.22)' : riskColor(score) + '28'
-          const nodeStroke = isCenter ? '#3b82f6' : riskColor(score)
+          const nodeStroke = isCenter ? 'var(--accent-blue)' : riskColor(score)
           const r = isCenter ? 19 : 14
           const isHov = hovered === n.asset._key
           return (
@@ -388,7 +388,7 @@ function TopologyMap({ center, neighbors, onSelect }: { center: Asset; neighbors
                 strokeWidth={isCenter ? 2.5 : isHov ? 2 : 1.5} />
               {/* Risk score label */}
               <text x={n.x} y={n.y + 3.5} textAnchor="middle"
-                fontSize={isCenter ? 9 : 8} fill={isCenter ? '#93c5fd' : nodeStroke}
+                fontSize={isCenter ? 9 : 8} fill={isCenter ? 'var(--accent-blue)' : nodeStroke}
                 fontWeight={600} style={{ pointerEvents: 'none' }}>
                 {score}
               </text>
@@ -427,10 +427,10 @@ function TopologyMap({ center, neighbors, onSelect }: { center: Asset; neighbors
           {/* Risk level legend */}
           <text x={6} y={12} fontSize={7.5} fill="rgba(255,255,255,.4)" fontWeight={600}>风险等级</text>
           {[
-            { label: 'Critical', color: '#ef5350' },
-            { label: 'High',     color: '#ffa726' },
-            { label: 'Medium',   color: '#f9a825' },
-            { label: 'Low',      color: '#66bb6a' },
+            { label: 'Critical', color: 'var(--critical)' },
+            { label: 'High',     color: 'var(--high)' },
+            { label: 'Medium',   color: 'var(--medium)' },
+            { label: 'Low',      color: 'var(--low)' },
           ].map((b, i) => (
             <g key={b.label} transform={`translate(${6 + i * 34}, 17)`}>
               <rect width={8} height={8} rx={2} fill={b.color} />
@@ -440,7 +440,7 @@ function TopologyMap({ center, neighbors, onSelect }: { center: Asset; neighbors
           {/* Zone legend */}
           <text x={6} y={38} fontSize={7.5} fill="rgba(255,255,255,.4)" fontWeight={600}>网络区域</text>
           {[
-            { label: 'DMZ',  color: 'rgba(255,111,0,.7)' },
+            { label: 'DMZ',  color: 'rgba(224,128,64,.7)' },
             { label: '内网',  color: 'rgba(59,130,246,.7)' },
             { label: '管理网', color: 'rgba(38,166,154,.7)' },
           ].map((b, i) => (
@@ -474,12 +474,12 @@ function CveBadge({ assetKey }: { assetKey: string }) {
 
   const n = count ?? 0
   const bg = count === null ? 'rgba(255,255,255,.06)'
-    : n > 5 ? 'rgba(229,57,53,.18)'
-      : n > 0 ? 'rgba(255,111,0,.18)'
+    : n > 5 ? 'rgba(224,80,80,.18)'
+      : n > 0 ? 'rgba(224,128,64,.18)'
         : 'rgba(255,255,255,.06)'
   const color = count === null ? 'var(--text-muted)'
-    : n > 5 ? '#ef5350'
-      : n > 0 ? '#ffa726'
+    : n > 5 ? 'var(--critical)'
+      : n > 0 ? 'var(--high)'
         : 'var(--text-muted)'
 
   return (
@@ -744,10 +744,10 @@ export default function Assets() {
           <div style={{ display: 'flex', gap: 8, padding: '6px 20px', alignItems: 'center', fontSize: 11.5 }}>
             <span style={{ color: 'var(--text-muted)', marginRight: 4 }}>风险分布:</span>
             {[
-              { label: 'Critical', count: critical, bg: 'rgba(229,57,53,.15)', color: '#ef5350' },
-              { label: 'High',     count: high,     bg: 'rgba(255,111,0,.15)', color: '#ffa726' },
-              { label: 'Medium',   count: medium,   bg: 'rgba(249,168,37,.15)', color: '#f9a825' },
-              { label: 'Low',      count: low,      bg: 'rgba(67,160,71,.15)',  color: '#66bb6a' },
+              { label: 'Critical', count: critical, bg: 'rgba(224,80,80,.15)', color: 'var(--critical)' },
+              { label: 'High',     count: high,     bg: 'rgba(224,128,64,.15)', color: 'var(--high)' },
+              { label: 'Medium',   count: medium,   bg: 'rgba(200,160,48,.15)', color: 'var(--medium)' },
+              { label: 'Low',      count: low,      bg: 'rgba(56,184,128,.15)', color: 'var(--low)' },
             ].map(b => (
               <span key={b.label} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -782,7 +782,7 @@ export default function Assets() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 20px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
         <span style={{ fontSize: 11.5, color: 'var(--text-muted)', marginRight: 4 }}>网络段:</span>
         {NET_SEGMENTS.map(seg => {
-          const accentColor = seg === 'DMZ' ? 'rgba(255,111,0,.8)'
+          const accentColor = seg === 'DMZ' ? 'rgba(224,128,64,.8)'
             : seg === '内网' ? 'rgba(59,130,246,.8)'
             : seg === '管理网' ? 'rgba(38,166,154,.8)'
             : 'var(--accent-blue)'
@@ -895,10 +895,10 @@ export default function Assets() {
               <div className="card">
                 <div className="card-title">CVE 严重程度分布</div>
                 {[
-                  { label: 'Critical', color: '#e53935', pct: 12, count: kpi?.critical_vulns ?? 0 },
-                  { label: 'High', color: '#ff6f00', pct: 25, count: null },
-                  { label: 'Medium', color: '#f9a825', pct: 56, count: null },
-                  { label: 'Low', color: '#00897b', pct: 16, count: null },
+                  { label: 'Critical', color: 'var(--critical)', pct: 12, count: kpi?.critical_vulns ?? 0 },
+                  { label: 'High', color: 'var(--high)', pct: 25, count: null },
+                  { label: 'Medium', color: 'var(--medium)', pct: 56, count: null },
+                  { label: 'Low', color: 'var(--low)', pct: 16, count: null },
                 ].map(s => (
                   <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                     <span style={{ width: 60, fontSize: 11, color: s.color }}>{s.label}</span>
@@ -1023,9 +1023,9 @@ export default function Assets() {
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => openEdit(a)}>编辑</button>
                         <button
-                          style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', transition: 'all .15s', background: 'none', border: '1px solid rgba(0,0,0,.15)', color: '#888' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,67,54,.08)'; e.currentTarget.style.border = '1px solid #f44336'; e.currentTarget.style.color = '#f44336' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.border = '1px solid rgba(0,0,0,.15)'; e.currentTarget.style.color = '#888' }}
+                          style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', transition: 'all .15s', background: 'none', border: '1px solid rgba(0,0,0,.15)', color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,80,80,.08)'; e.currentTarget.style.border = '1px solid var(--critical)'; e.currentTarget.style.color = 'var(--critical)' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.border = '1px solid rgba(0,0,0,.15)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                           onClick={() => confirmDelete(a)}
                         >删除</button>
                       </div>
@@ -1040,10 +1040,10 @@ export default function Assets() {
         {/* Detail panel */}
         {selected && (
           <div style={{
-            width: 360, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)',
+            width: 360, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
           }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{selected.hostname || selected._key}</span>
               <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => setSelected(null)}>&#x2715;</button>
             </div>
@@ -1147,14 +1147,14 @@ export default function Assets() {
                       </thead>
                       <tbody>
                         {vulns.map(v => {
-                          const sevColor = v.severity === 'critical' ? '#ef5350'
-                            : v.severity === 'high' ? '#ffa726'
-                            : v.severity === 'medium' ? '#f9a825'
-                            : '#66bb6a'
-                          const sevBg = v.severity === 'critical' ? 'rgba(229,57,53,.15)'
-                            : v.severity === 'high' ? 'rgba(255,111,0,.15)'
-                            : v.severity === 'medium' ? 'rgba(249,168,37,.15)'
-                            : 'rgba(67,160,71,.15)'
+                          const sevColor = v.severity === 'critical' ? 'var(--critical)'
+                            : v.severity === 'high' ? 'var(--high)'
+                            : v.severity === 'medium' ? 'var(--medium)'
+                            : 'var(--low)'
+                          const sevBg = v.severity === 'critical' ? 'rgba(224,80,80,.15)'
+                            : v.severity === 'high' ? 'rgba(224,128,64,.15)'
+                            : v.severity === 'medium' ? 'rgba(200,160,48,.15)'
+                            : 'rgba(56,184,128,.15)'
                           const fixColor = v.fix_status === 'fixed' ? 'var(--accent-green)' : 'var(--text-muted)'
                           return (
                             <tr key={v._key} style={{ borderBottom: '1px solid rgba(255,255,255,.04)' }}>
@@ -1219,7 +1219,7 @@ export default function Assets() {
                         </span>
                       </div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8, fontSize: 10, color: 'var(--text-muted)' }}>
-                        {[{ label: '≥80', color: '#ef5350' }, { label: '≥60', color: '#ffa726' }, { label: '≥40', color: '#f9a825' }, { label: '<40', color: '#66bb6a' }].map(b => (
+                        {[{ label: '≥80', color: 'var(--critical)' }, { label: '≥60', color: 'var(--high)' }, { label: '≥40', color: 'var(--medium)' }, { label: '<40', color: 'var(--low)' }].map(b => (
                           <span key={b.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                             <span style={{ width: 8, height: 8, borderRadius: 2, background: b.color, display: 'inline-block' }} />
                             {b.label}
@@ -1264,10 +1264,10 @@ export default function Assets() {
       {/* Create / Edit Modal */}
       {showModal && (
         <>
-          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 480, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 480, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editTarget ? '编辑资产' : '添加资产'}</div>
@@ -1334,10 +1334,10 @@ export default function Assets() {
       {/* Delete Confirm Modal */}
       {deleteTarget && (
         <>
-          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 380, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 380, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>确认删除</div>
@@ -1357,10 +1357,10 @@ export default function Assets() {
       {/* Bulk Tag Modal */}
       {showTagModal && (
         <>
-          <div onClick={() => setShowTagModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowTagModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 380, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 380, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>批量添加标签</div>

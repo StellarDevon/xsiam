@@ -247,11 +247,11 @@ const THREAT_ACTORS: ThreatActor[] = [
 ]
 
 const MOTIVATION_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-  espionage: { color: '#a78bfa', bg: 'rgba(167,139,250,.15)', label: '情报窃取' },
-  financial: { color: '#f9a825', bg: 'rgba(249,168,37,.15)', label: '经济利益' },
-  ransomware: { color: '#ef5350', bg: 'rgba(229,57,53,.15)', label: '勒索软件' },
-  'social engineering': { color: '#4fa3e0', bg: 'rgba(79,163,224,.15)', label: '社会工程' },
-  sabotage: { color: '#ffa726', bg: 'rgba(255,167,38,.15)', label: '破坏活动' },
+  espionage: { color: 'var(--accent-blue)', bg: 'rgba(167,139,250,.15)', label: '情报窃取' },
+  financial: { color: 'var(--medium)', bg: 'rgba(200,160,48,.15)', label: '经济利益' },
+  ransomware: { color: 'var(--critical)', bg: 'rgba(224,80,80,.15)', label: '勒索软件' },
+  'social engineering': { color: 'var(--accent-blue)', bg: 'rgba(79,163,224,.15)', label: '社会工程' },
+  sabotage: { color: 'var(--high)', bg: 'rgba(224,128,64,.15)', label: '破坏活动' },
 }
 
 function daysAgo(isoDate: string): string {
@@ -321,9 +321,9 @@ const MOCK_CAMPAIGNS: Campaign[] = [
 ]
 
 const CAMPAIGN_STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; border: string }> = {
-  ongoing:      { color: '#ef5350', bg: 'rgba(229,57,53,.15)',  label: '进行中', border: 'rgba(229,57,53,.35)' },
-  resolved:     { color: '#66bb6a', bg: 'rgba(67,160,71,.15)',  label: '已解决', border: 'rgba(67,160,71,.35)' },
-  investigating:{ color: '#ffa726', bg: 'rgba(255,167,38,.15)', label: '调查中', border: 'rgba(255,167,38,.35)' },
+  ongoing:      { color: 'var(--critical)', bg: 'rgba(224,80,80,.15)',  label: '进行中', border: 'rgba(224,80,80,.35)' },
+  resolved:     { color: 'var(--accent-green)', bg: 'rgba(47,176,122,.15)',  label: '已解决', border: 'rgba(47,176,122,.35)' },
+  investigating:{ color: 'var(--high)', bg: 'rgba(224,128,64,.15)', label: '调查中', border: 'rgba(224,128,64,.35)' },
 }
 
 const IOC_TYPES = ['ip', 'domain', 'url', 'hash', 'email', 'cve', 'cidr', 'registry', 'user_agent', 'mutex']
@@ -335,16 +335,16 @@ const IOC_LABELS: Record<string, string> = {
 }
 
 const typeColor: Record<string, string> = {
-  ip: '#4fa3e0', domain: '#a78bfa', url: '#00c896',
-  hash: '#f9a825', email: '#fa582d', cve: '#90a4ae',
-  cidr: '#4fa3e0', registry: '#ff6f00', user_agent: '#26a69a', mutex: '#ce93d8',
+  ip: 'var(--accent-blue)', domain: 'var(--accent-blue)', url: 'var(--accent-green)',
+  hash: 'var(--medium)', email: 'var(--high)', cve: 'var(--text-muted)',
+  cidr: 'var(--accent-blue)', registry: 'var(--high)', user_agent: 'var(--accent-green)', mutex: 'var(--accent-blue)',
 }
 
 const verdictConfig: Record<string, { bg: string; color: string; label: string }> = {
-  malicious:  { bg: 'rgba(229,57,53,.18)',   color: '#ef5350', label: '恶意' },
-  suspicious: { bg: 'rgba(255,111,0,.15)',   color: '#ffa726', label: '可疑' },
-  benign:     { bg: 'rgba(67,160,71,.15)',   color: '#66bb6a', label: '无害' },
-  unknown:    { bg: 'rgba(84,110,122,.15)',  color: '#90a4ae', label: '未知' },
+  malicious:  { bg: 'rgba(224,80,80,.18)',   color: 'var(--critical)', label: '恶意' },
+  suspicious: { bg: 'rgba(224,128,64,.15)',  color: 'var(--high)', label: '可疑' },
+  benign:     { bg: 'rgba(47,176,122,.15)',  color: 'var(--accent-green)', label: '无害' },
+  unknown:    { bg: 'rgba(84,110,122,.15)',  color: 'var(--text-muted)', label: '未知' },
 }
 
 const feedStatusColor: Record<string, string> = {
@@ -758,13 +758,13 @@ export default function ThreatIntel() {
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <button
                 onClick={() => navigate(`/alerts?keyword=${encodeURIComponent(iocHuntQuery)}`)}
-                style={{ fontSize: 11, padding: '3px 10px', background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.3)', borderRadius: 4, color: '#4fa3e0', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 11, padding: '3px 10px', background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.3)', borderRadius: 4, color: 'var(--accent-blue)', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
                 在告警中搜索 →
               </button>
               <button
                 onClick={() => navigate(`/incidents?keyword=${encodeURIComponent(iocHuntQuery)}`)}
-                style={{ fontSize: 11, padding: '3px 10px', background: 'rgba(167,139,250,.1)', border: '1px solid rgba(167,139,250,.3)', borderRadius: 4, color: '#a78bfa', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 11, padding: '3px 10px', background: 'rgba(167,139,250,.1)', border: '1px solid rgba(167,139,250,.3)', borderRadius: 4, color: 'var(--accent-blue)', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
                 在事件中搜索 →
               </button>
@@ -794,7 +794,7 @@ export default function ThreatIntel() {
                       padding: '3px 10px', background: vcfg.bg, border: `1px solid ${vcfg.color}44`,
                       borderRadius: 4, fontSize: 11,
                     }}>
-                      <span style={{ fontSize: 9.5, textTransform: 'uppercase', background: `${typeColor[ioc.type] ?? '#4fa3e0'}22`, color: typeColor[ioc.type] ?? '#4fa3e0', padding: '1px 5px', borderRadius: 3, fontWeight: 700 }}>{ioc.type}</span>
+                      <span style={{ fontSize: 9.5, textTransform: 'uppercase', background: `${typeColor[ioc.type] ?? 'var(--accent-blue)'}22`, color: typeColor[ioc.type] ?? 'var(--accent-blue)', padding: '1px 5px', borderRadius: 3, fontWeight: 700 }}>{ioc.type}</span>
                       <span style={{ fontFamily: 'monospace', color: 'var(--text-primary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={ioc.value}>{ioc.value}</span>
                       <span style={{ color: vcfg.color, fontWeight: 700, fontSize: 10 }}>{vcfg.label}</span>
                     </div>
@@ -809,9 +809,9 @@ export default function ThreatIntel() {
       {/* Stats Summary Bar */}
       <div style={{ display: 'flex', gap: 12, padding: '10px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0, background: 'var(--bg-primary)' }}>
         {[
-          { label: 'IOC 总数', value: statsIocTotal, color: '#4fa3e0', bg: 'rgba(79,163,224,.1)', border: 'rgba(79,163,224,.25)', suffix: '个 IOC' },
-          { label: '检测规则', value: statsRulesTotal, color: '#a78bfa', bg: 'rgba(167,139,250,.1)', border: 'rgba(167,139,250,.25)', suffix: '条规则' },
-          { label: '活跃情报源', value: statsActiveFeedsTotal, color: '#00c896', bg: 'rgba(0,200,150,.1)', border: 'rgba(0,200,150,.25)', suffix: '个活跃情报源' },
+          { label: 'IOC 总数', value: statsIocTotal, color: 'var(--accent-blue)', bg: 'rgba(79,163,224,.1)', border: 'rgba(79,163,224,.25)', suffix: '个 IOC' },
+          { label: '检测规则', value: statsRulesTotal, color: 'var(--accent-blue)', bg: 'rgba(167,139,250,.1)', border: 'rgba(167,139,250,.25)', suffix: '条规则' },
+          { label: '活跃情报源', value: statsActiveFeedsTotal, color: 'var(--accent-green)', bg: 'rgba(0,200,150,.1)', border: 'rgba(0,200,150,.25)', suffix: '个活跃情报源' },
         ].map(stat => (
           <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', background: stat.bg, border: `1px solid ${stat.border}`, borderRadius: 8, minWidth: 160 }}>
             <div>
@@ -888,10 +888,10 @@ export default function ThreatIntel() {
       {tab === 'indicators' && (
         <div style={{ display: 'flex', gap: 8, padding: '8px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0, background: 'var(--bg-primary)', alignItems: 'center' }}>
           {[
-            { emoji: '🔴', label: '恶意', count: verdictSummary.mc, bg: 'rgba(229,57,53,.1)', border: 'rgba(229,57,53,.3)', color: '#ef5350' },
-            { emoji: '🟠', label: '可疑', count: verdictSummary.sc, bg: 'rgba(255,111,0,.1)', border: 'rgba(255,111,0,.3)', color: '#ffa726' },
-            { emoji: '⚪', label: '未知', count: verdictSummary.uc, bg: 'rgba(84,110,122,.1)', border: 'rgba(84,110,122,.3)', color: '#90a4ae' },
-            { emoji: '🟢', label: '无害', count: verdictSummary.bc, bg: 'rgba(67,160,71,.1)', border: 'rgba(67,160,71,.3)', color: '#66bb6a' },
+            { emoji: '🔴', label: '恶意', count: verdictSummary.mc, bg: 'rgba(224,80,80,.1)', border: 'rgba(224,80,80,.3)', color: 'var(--critical)' },
+            { emoji: '🟠', label: '可疑', count: verdictSummary.sc, bg: 'rgba(224,128,64,.1)', border: 'rgba(224,128,64,.3)', color: 'var(--high)' },
+            { emoji: '⚪', label: '未知', count: verdictSummary.uc, bg: 'rgba(84,110,122,.1)', border: 'rgba(84,110,122,.3)', color: 'var(--text-muted)' },
+            { emoji: '🟢', label: '无害', count: verdictSummary.bc, bg: 'rgba(47,176,122,.1)', border: 'rgba(47,176,122,.3)', color: 'var(--accent-green)' },
           ].map(v => (
             <div key={v.label}
               style={{ padding: '5px 14px', background: v.bg, border: `1px solid ${verdictFilter === v.label.toLowerCase() ? v.color : v.border}`, borderRadius: 6, fontSize: 12, color: v.color, cursor: 'pointer', fontWeight: verdictFilter === v.label.toLowerCase() ? 700 : 400 }}
@@ -939,7 +939,7 @@ export default function ThreatIntel() {
                 {!iocLoading && iocs.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No indicators</td></tr>}
                 {iocs.map(ioc => (
                   <tr key={ioc._key}>
-                    <td><span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 3, fontWeight: 600, textTransform: 'uppercase', background: `${typeColor[ioc.type] ?? '#4fa3e0'}22`, color: typeColor[ioc.type] ?? '#4fa3e0' }}>{ioc.type}</span></td>
+                    <td><span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 3, fontWeight: 600, textTransform: 'uppercase', background: `${typeColor[ioc.type] ?? 'var(--accent-blue)'}22`, color: typeColor[ioc.type] ?? 'var(--accent-blue)' }}>{ioc.type}</span></td>
                     <td style={{ fontFamily: 'monospace', fontSize: 11.5, maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: verdictConfig[ioc.verdict?.toLowerCase()]?.color ?? 'var(--text-secondary)' }}>{ioc.value}</td>
                     <td><判定结论Badge verdict={ioc.verdict} /></td>
                     <td style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>{ioc.confidence ?? 0}%</td>
@@ -1059,11 +1059,11 @@ export default function ThreatIntel() {
                 {rules.filter(r => !rulesSearch || r.name.toLowerCase().includes(rulesSearch.toLowerCase()) || (r.mitre_tactic ?? '').toLowerCase().includes(rulesSearch.toLowerCase())).map(r => (
                   <tr key={r._key}>
                     <td style={{ fontSize: 12.5, fontWeight: 500 }}>{r.name}</td>
-                    <td><span style={{ fontSize: 10.5, padding: '2px 7px', borderRadius: 3, background: 'rgba(79,163,224,.12)', color: '#4fa3e0', textTransform: 'capitalize' }}>{r.rule_type || '-'}</span></td>
+                    <td><span style={{ fontSize: 10.5, padding: '2px 7px', borderRadius: 3, background: 'rgba(79,163,224,.12)', color: 'var(--accent-blue)', textTransform: 'capitalize' }}>{r.rule_type || '-'}</span></td>
                     <td>
                       <span style={{ fontSize: 10.5, padding: '2px 7px', borderRadius: 3, textTransform: 'capitalize',
-                        background: r.severity === 'critical' ? 'rgba(229,57,53,.12)' : r.severity === 'high' ? 'rgba(255,111,0,.12)' : r.severity === 'medium' ? 'rgba(249,168,37,.12)' : 'rgba(79,163,224,.12)',
-                        color: r.severity === 'critical' ? '#ef5350' : r.severity === 'high' ? '#ffa726' : r.severity === 'medium' ? '#f9a825' : '#4fa3e0',
+                        background: r.severity === 'critical' ? 'rgba(224,80,80,.12)' : r.severity === 'high' ? 'rgba(224,128,64,.12)' : r.severity === 'medium' ? 'rgba(200,160,48,.12)' : 'rgba(79,163,224,.12)',
+                        color: r.severity === 'critical' ? 'var(--critical)' : r.severity === 'high' ? 'var(--high)' : r.severity === 'medium' ? 'var(--medium)' : 'var(--accent-blue)',
                       }}>{r.severity || 'medium'}</span>
                     </td>
                     <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{r.mitre_tactic || '-'}{r.mitre_technique ? ` / ${r.mitre_technique}` : ''}</td>
@@ -1120,10 +1120,10 @@ export default function ThreatIntel() {
               <span style={{ fontSize: 11, color: 'var(--text-muted)', marginRight: 4 }}>判定结论:</span>
               {[
                 { key: '', label: '全部', color: 'var(--text-secondary)', bg: 'var(--bg-card2)', border: 'var(--border)' },
-                { key: 'malicious', label: '🔴 恶意', color: '#ef5350', bg: 'rgba(229,57,53,.08)', border: 'rgba(229,57,53,.3)' },
-                { key: 'suspicious', label: '🟠 可疑', color: '#ffa726', bg: 'rgba(255,111,0,.08)', border: 'rgba(255,111,0,.3)' },
-                { key: 'benign', label: '🟢 无害', color: '#66bb6a', bg: 'rgba(67,160,71,.08)', border: 'rgba(67,160,71,.3)' },
-                { key: 'unknown', label: '⚪ 未知', color: '#90a4ae', bg: 'rgba(84,110,122,.08)', border: 'rgba(84,110,122,.3)' },
+                { key: 'malicious', label: '🔴 恶意', color: 'var(--critical)', bg: 'rgba(224,80,80,.08)', border: 'rgba(224,80,80,.3)' },
+                { key: 'suspicious', label: '🟠 可疑', color: 'var(--high)', bg: 'rgba(224,128,64,.08)', border: 'rgba(224,128,64,.3)' },
+                { key: 'benign', label: '🟢 无害', color: 'var(--accent-green)', bg: 'rgba(47,176,122,.08)', border: 'rgba(47,176,122,.3)' },
+                { key: 'unknown', label: '⚪ 未知', color: 'var(--text-muted)', bg: 'rgba(84,110,122,.08)', border: 'rgba(84,110,122,.3)' },
               ].map(v => (
                 <button key={v.key} onClick={() => setSamplesVerdictFilter(v.key)} style={{
                   padding: '3px 12px', borderRadius: 20, fontSize: 11, cursor: 'pointer', border: `1px solid ${samplesVerdictFilter === v.key ? v.color : v.border}`,
@@ -1163,7 +1163,7 @@ export default function ThreatIntel() {
                   )}
                   {filteredSamples.map(s => {
                     const conf = s.confidence ?? 0
-                    const confColor = conf >= 80 ? '#ef5350' : conf >= 60 ? '#ffa726' : conf >= 40 ? '#f9a825' : '#66bb6a'
+                    const confColor = conf >= 80 ? 'var(--critical)' : conf >= 60 ? 'var(--high)' : conf >= 40 ? 'var(--medium)' : 'var(--accent-green)'
                     const iocType = (s as any).type as string | undefined
                     const icon = iocType ? (typeIcon[iocType] ?? '🔐') : '🔐'
                     return (
@@ -1184,8 +1184,8 @@ export default function ThreatIntel() {
                         </td>
                         <td>
                           <span style={{ fontSize: 10.5, padding: '2px 7px', borderRadius: 3, textTransform: 'capitalize',
-                            background: s.severity === 'critical' ? 'rgba(229,57,53,.12)' : s.severity === 'high' ? 'rgba(255,111,0,.12)' : s.severity === 'medium' ? 'rgba(249,168,37,.12)' : 'rgba(79,163,224,.12)',
-                            color: s.severity === 'critical' ? '#ef5350' : s.severity === 'high' ? '#ffa726' : s.severity === 'medium' ? '#f9a825' : '#4fa3e0',
+                            background: s.severity === 'critical' ? 'rgba(224,80,80,.12)' : s.severity === 'high' ? 'rgba(224,128,64,.12)' : s.severity === 'medium' ? 'rgba(200,160,48,.12)' : 'rgba(79,163,224,.12)',
+                            color: s.severity === 'critical' ? 'var(--critical)' : s.severity === 'high' ? 'var(--high)' : s.severity === 'medium' ? 'var(--medium)' : 'var(--accent-blue)',
                           }}>{s.severity || '-'}</span>
                         </td>
                         <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.source_name || '-'}</td>
@@ -1243,15 +1243,15 @@ export default function ThreatIntel() {
                 )}
                 {identityRisks.map(ir => {
                   const score = ir.risk_score ?? 0
-                  const scoreColor = score >= 80 ? '#ef5350' : score >= 50 ? '#ffa726' : score >= 30 ? '#f9a825' : '#66bb6a'
-                  const rowBg = score >= 80 ? 'rgba(229,57,53,.06)' : score >= 50 ? 'rgba(255,111,0,.05)' : 'transparent'
+                  const scoreColor = score >= 80 ? 'var(--critical)' : score >= 50 ? 'var(--high)' : score >= 30 ? 'var(--medium)' : 'var(--accent-green)'
+                  const rowBg = score >= 80 ? 'rgba(224,80,80,.06)' : score >= 50 ? 'rgba(224,128,64,.05)' : 'transparent'
                   const signalCount = (ir.risk_signals ?? []).length
                   // Determine session status from risk score
                   const sessionStatus = score >= 80 ? 'suspended' : score >= 50 ? 'active' : 'normal'
                   const statusConfig: Record<string, { color: string; label: string; bg: string }> = {
-                    suspended: { color: '#ef5350', label: '已挂起', bg: 'rgba(229,57,53,.12)' },
-                    active: { color: '#ffa726', label: '活跃', bg: 'rgba(255,111,0,.12)' },
-                    normal: { color: '#66bb6a', label: '正常', bg: 'rgba(67,160,71,.12)' },
+                    suspended: { color: 'var(--critical)', label: '已挂起', bg: 'rgba(224,80,80,.12)' },
+                    active: { color: 'var(--high)', label: '活跃', bg: 'rgba(224,128,64,.12)' },
+                    normal: { color: 'var(--accent-green)', label: '正常', bg: 'rgba(47,176,122,.12)' },
                   }
                   const sc = statusConfig[sessionStatus]
                   return (
@@ -1281,7 +1281,7 @@ export default function ThreatIntel() {
                         </div>
                       </td>
                       <td>
-                        <span style={{ fontSize: 12, color: signalCount > 0 ? '#ffa726' : 'var(--text-muted)', fontWeight: signalCount > 0 ? 600 : 400 }}>
+                        <span style={{ fontSize: 12, color: signalCount > 0 ? 'var(--high)' : 'var(--text-muted)', fontWeight: signalCount > 0 ? 600 : 400 }}>
                           {signalCount > 0 ? `⚡ ${signalCount}` : '—'}
                         </span>
                       </td>
@@ -1348,23 +1348,23 @@ export default function ThreatIntel() {
               {
                 label: '活跃威胁',
                 value: trcLoading ? '…' : trcIncidents.length,
-                color: trcIncidents.length > 0 ? '#ef5350' : '#66bb6a',
-                bg: trcIncidents.length > 0 ? 'rgba(229,57,53,.08)' : 'rgba(67,160,71,.08)',
-                border: trcIncidents.length > 0 ? 'rgba(229,57,53,.25)' : 'rgba(67,160,71,.25)',
+                color: trcIncidents.length > 0 ? 'var(--critical)' : 'var(--accent-green)',
+                bg: trcIncidents.length > 0 ? 'rgba(224,80,80,.08)' : 'rgba(47,176,122,.08)',
+                border: trcIncidents.length > 0 ? 'rgba(224,80,80,.25)' : 'rgba(47,176,122,.25)',
                 icon: '🔥',
               },
               {
                 label: '今日已解决',
                 value: trcStats.resolvedToday,
-                color: '#66bb6a',
-                bg: 'rgba(67,160,71,.08)',
-                border: 'rgba(67,160,71,.25)',
+                color: 'var(--accent-green)',
+                bg: 'rgba(47,176,122,.08)',
+                border: 'rgba(47,176,122,.25)',
                 icon: '✅',
               },
               {
                 label: 'MTTR (平均响应时间)',
                 value: trcStats.mttrHours > 0 ? `${trcStats.mttrHours}h` : '—',
-                color: trcStats.mttrHours > 24 ? '#ef5350' : trcStats.mttrHours > 8 ? '#ffa726' : '#66bb6a',
+                color: trcStats.mttrHours > 24 ? 'var(--critical)' : trcStats.mttrHours > 8 ? 'var(--high)' : 'var(--accent-green)',
                 bg: 'rgba(79,163,224,.08)',
                 border: 'rgba(79,163,224,.25)',
                 icon: '⏱',
@@ -1418,12 +1418,12 @@ export default function ThreatIntel() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>
                         <span>活动进度</span>
-                        <span style={{ color: progressPct >= 100 ? '#ef5350' : cfg.color, fontWeight: 600 }}>{daysActive}d / {c.expectedDays}d ({progressPct}%)</span>
+                        <span style={{ color: progressPct >= 100 ? 'var(--critical)' : cfg.color, fontWeight: 600 }}>{daysActive}d / {c.expectedDays}d ({progressPct}%)</span>
                       </div>
                       <div style={{ height: 5, background: 'var(--bg-card2)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{
                           height: '100%', width: `${progressPct}%`,
-                          background: progressPct >= 100 ? '#ef5350' : cfg.color,
+                          background: progressPct >= 100 ? 'var(--critical)' : cfg.color,
                           borderRadius: 3, transition: 'width .3s',
                         }} />
                       </div>
@@ -1459,7 +1459,7 @@ export default function ThreatIntel() {
                         关联事件: <strong style={{ color: cfg.color }}>{c.relatedIncidents}</strong>
                       </span>
                       <span style={{ color: 'var(--text-muted)' }}>
-                        受影响资产: <strong style={{ color: c.affectedAssets > 20 ? '#ef5350' : c.affectedAssets > 10 ? '#ffa726' : '#66bb6a' }}>{c.affectedAssets}</strong>
+                        受影响资产: <strong style={{ color: c.affectedAssets > 20 ? 'var(--critical)' : c.affectedAssets > 10 ? 'var(--high)' : 'var(--accent-green)' }}>{c.affectedAssets}</strong>
                       </span>
                     </div>
 
@@ -1502,8 +1502,8 @@ export default function ThreatIntel() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {trcIncidents.map(inc => {
                   const sev = inc.severity?.toLowerCase() ?? 'medium'
-                  const sevColor = sev === 'critical' ? '#ef5350' : sev === 'high' ? '#ffa726' : sev === 'medium' ? '#f9a825' : '#66bb6a'
-                  const sevBorder = sev === 'critical' ? 'rgba(229,57,53,.3)' : sev === 'high' ? 'rgba(255,111,0,.25)' : 'rgba(249,168,37,.2)'
+                  const sevColor = sev === 'critical' ? 'var(--critical)' : sev === 'high' ? 'var(--high)' : sev === 'medium' ? 'var(--medium)' : 'var(--accent-green)'
+                  const sevBorder = sev === 'critical' ? 'rgba(224,80,80,.3)' : sev === 'high' ? 'rgba(224,128,64,.25)' : 'rgba(200,160,48,.2)'
                   const smart = inc.smart_score
                   return (
                     <div key={inc._key} style={{
@@ -1523,14 +1523,14 @@ export default function ThreatIntel() {
                             {sev}
                           </span>
                           {smart != null && (
-                            <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 3, fontWeight: 600, background: 'rgba(79,163,224,.12)', color: '#4fa3e0' }}>
+                            <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 3, fontWeight: 600, background: 'rgba(79,163,224,.12)', color: 'var(--accent-blue)' }}>
                               ⚡ {smart}
                             </span>
                           )}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
-                        <span style={{ background: 'rgba(79,163,224,.08)', color: '#4fa3e0', padding: '1px 6px', borderRadius: 3 }}>
+                        <span style={{ background: 'rgba(79,163,224,.08)', color: 'var(--accent-blue)', padding: '1px 6px', borderRadius: 3 }}>
                           {inc.status}
                         </span>
                         {inc.alert_count != null && (
@@ -1557,7 +1557,7 @@ export default function ThreatIntel() {
                       <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 8 }}>{t.desc}</div>
                       <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 8 }}>
                         <span>IOCs: <strong style={{ color: 'var(--text-primary)' }}>{t.iocs}</strong></span>
-                        <span>影响资产: <strong style={{ color: t.assets > 0 ? '#ef5350' : 'var(--text-primary)' }}>{t.assets}</strong></span>
+                        <span>影响资产: <strong style={{ color: t.assets > 0 ? 'var(--critical)' : 'var(--text-primary)' }}>{t.assets}</strong></span>
                         <span>{t.date}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
@@ -1580,9 +1580,9 @@ export default function ThreatIntel() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                   {[
-                    { label: '隔离主机 →', path: '/actions', color: '#ef5350', bg: 'rgba(229,57,53,.08)', border: 'rgba(229,57,53,.25)', icon: '🔒' },
-                    { label: '封锁 IOC →', path: '/iocs', color: '#ffa726', bg: 'rgba(255,111,0,.08)', border: 'rgba(255,111,0,.25)', icon: '🛡️' },
-                    { label: '查看事件 →', path: '/incidents', color: '#4fa3e0', bg: 'rgba(79,163,224,.08)', border: 'rgba(79,163,224,.25)', icon: '🔎' },
+                    { label: '隔离主机 →', path: '/actions', color: 'var(--critical)', bg: 'rgba(224,80,80,.08)', border: 'rgba(224,80,80,.25)', icon: '🔒' },
+                    { label: '封锁 IOC →', path: '/iocs', color: 'var(--high)', bg: 'rgba(224,128,64,.08)', border: 'rgba(224,128,64,.25)', icon: '🛡️' },
+                    { label: '查看事件 →', path: '/incidents', color: 'var(--accent-blue)', bg: 'rgba(79,163,224,.08)', border: 'rgba(79,163,224,.25)', icon: '🔎' },
                   ].map(action => (
                     <button key={action.label}
                       onClick={() => navigate(action.path)}
@@ -1608,14 +1608,14 @@ export default function ThreatIntel() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 7 }}>
                     <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>今日已解决事件</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: trcStats.resolvedToday > 0 ? '#66bb6a' : 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: trcStats.resolvedToday > 0 ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
                       {trcStats.resolvedToday}
                     </div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>件 · {new Date().toLocaleDateString('zh-CN')}</div>
                   </div>
                   <div style={{ padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 7 }}>
                     <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>平均响应时间 (MTTR)</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: trcStats.mttrHours > 24 ? '#ef5350' : trcStats.mttrHours > 8 ? '#ffa726' : '#66bb6a' }}>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: trcStats.mttrHours > 24 ? 'var(--critical)' : trcStats.mttrHours > 8 ? 'var(--high)' : 'var(--accent-green)' }}>
                       {trcStats.mttrHours > 0 ? `${trcStats.mttrHours}h` : '—'}
                     </div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -1624,7 +1624,7 @@ export default function ThreatIntel() {
                   </div>
                   <div style={{ padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 7 }}>
                     <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>当前活跃威胁</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: trcIncidents.length > 0 ? '#ef5350' : '#66bb6a' }}>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: trcIncidents.length > 0 ? 'var(--critical)' : 'var(--accent-green)' }}>
                       {trcLoading ? '…' : trcIncidents.length}
                     </div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -1685,8 +1685,8 @@ export default function ThreatIntel() {
                     style={{
                       padding: '14px 16px',
                       background: 'var(--bg-card)',
-                      border: `1px solid ${isActive ? 'rgba(239,83,80,.2)' : 'var(--border)'}`,
-                      borderLeft: `3px solid ${isActive ? '#ef5350' : '#546e7a'}`,
+                      border: `1px solid ${isActive ? 'rgba(224,80,80,.2)' : 'var(--border)'}`,
+                      borderLeft: `3px solid ${isActive ? 'var(--critical)' : 'var(--text-muted)'}`,
                       borderRadius: 8,
                       cursor: 'pointer',
                       transition: 'background .15s, box-shadow .15s',
@@ -1716,8 +1716,8 @@ export default function ThreatIntel() {
                           </span>
                           <span style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>{actor.country}</span>
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5 }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? '#66bb6a' : '#546e7a', boxShadow: isActive ? '0 0 4px #66bb6a' : 'none', display: 'inline-block' }} />
-                            <span style={{ color: isActive ? '#66bb6a' : '#546e7a', fontWeight: 600 }}>{actor.status}</span>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? 'var(--accent-green)' : 'var(--text-muted)', boxShadow: isActive ? '0 0 4px rgba(47,176,122,.7)' : 'none', display: 'inline-block' }} />
+                            <span style={{ color: isActive ? 'var(--accent-green)' : 'var(--text-muted)', fontWeight: 600 }}>{actor.status}</span>
                           </span>
                         </div>
                       </div>
@@ -1742,7 +1742,7 @@ export default function ThreatIntel() {
                     {/* Footer: last activity + targets */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
                       <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
-                        最近活动: <strong style={{ color: isActive ? '#ffa726' : 'var(--text-secondary)' }}>{daysAgo(actor.lastActivity)}</strong>
+                        最近活动: <strong style={{ color: isActive ? 'var(--high)' : 'var(--text-secondary)' }}>{daysAgo(actor.lastActivity)}</strong>
                       </span>
                       <span style={{ fontSize: 10, color: 'var(--accent-blue)', cursor: 'pointer' }}>查看详情 →</span>
                     </div>
@@ -1766,15 +1766,15 @@ export default function ThreatIntel() {
             {/* Legend */}
             <div style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <svg width="14" height="14" viewBox="0 0 14 14"><polygon points="7,1 13,7 7,13 1,7" fill="rgba(239,83,80,.7)" stroke="#ef5350" strokeWidth="1.2" /></svg>
+                <svg width="14" height="14" viewBox="0 0 14 14"><polygon points="7,1 13,7 7,13 1,7" fill="rgba(224,80,80,.7)" stroke="#c04040" strokeWidth="1.2" /></svg>
                 威胁行为者
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="rgba(255,167,38,.7)" stroke="#ffa726" strokeWidth="1.2" /></svg>
+                <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="rgba(224,128,64,.7)" stroke="#c07030" strokeWidth="1.2" /></svg>
                 恶意软件
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="3" width="12" height="8" rx="2" fill="rgba(79,163,224,.7)" stroke="#4fa3e0" strokeWidth="1.2" /></svg>
+                <svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="3" width="12" height="8" rx="2" fill="rgba(79,163,224,.7)" stroke="var(--accent-blue)" strokeWidth="1.2" /></svg>
                 攻击活动
               </span>
             </div>
@@ -1843,16 +1843,16 @@ export default function ThreatIntel() {
               {/* ── THREAT ACTOR nodes (red diamond) ── */}
               {/* APT29 */}
               <g transform="translate(160,130)">
-                <polygon points="0,-38 38,0 0,38 -38,0" fill="rgba(239,83,80,0.18)" stroke="#ef5350" strokeWidth="2" />
-                <text y="-46" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#ef5350">APT29</text>
+                <polygon points="0,-38 38,0 0,38 -38,0" fill="rgba(224,80,80,0.18)" stroke="#c04040" strokeWidth="2" />
+                <text y="-46" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#c04040">APT29</text>
                 <text y="-33" textAnchor="middle" fontSize="9" fill="rgba(144,164,174,0.8)">Cozy Bear</text>
                 <text y="54" textAnchor="middle" fontSize="9" fill="rgba(144,164,174,0.65)">🇷🇺 Russia · Espionage</text>
               </g>
 
               {/* APT41 */}
               <g transform="translate(150,270)">
-                <polygon points="0,-36 36,0 0,36 -36,0" fill="rgba(249,168,37,0.18)" stroke="#f9a825" strokeWidth="2" />
-                <text y="-44" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#f9a825">APT41</text>
+                <polygon points="0,-36 36,0 0,36 -36,0" fill="rgba(200,160,48,0.18)" stroke="#a88028" strokeWidth="2" />
+                <text y="-44" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#a88028">APT41</text>
                 <text y="-31" textAnchor="middle" fontSize="9" fill="rgba(144,164,174,0.8)">Double Dragon</text>
                 <text y="52" textAnchor="middle" fontSize="9" fill="rgba(144,164,174,0.65)">🇨🇳 China · Financial</text>
               </g>
@@ -1868,76 +1868,76 @@ export default function ThreatIntel() {
               {/* ── MALWARE nodes (orange circle) ── */}
               {/* WellMess */}
               <g transform="translate(340,220)">
-                <circle r="28" fill="rgba(255,167,38,0.15)" stroke="#ffa726" strokeWidth="1.8" />
-                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#ffa726">WellMess</text>
+                <circle r="28" fill="rgba(224,128,64,0.15)" stroke="#c07030" strokeWidth="1.8" />
+                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#c07030">WellMess</text>
                 <text y="40" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">Backdoor</text>
               </g>
 
               {/* CozyDuke */}
               <g transform="translate(330,310)">
-                <circle r="26" fill="rgba(255,167,38,0.15)" stroke="#ffa726" strokeWidth="1.8" />
-                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#ffa726">CozyDuke</text>
+                <circle r="26" fill="rgba(224,128,64,0.15)" stroke="#c07030" strokeWidth="1.8" />
+                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#c07030">CozyDuke</text>
                 <text y="38" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">RAT</text>
               </g>
 
               {/* PlugX */}
               <g transform="translate(460,200)">
-                <circle r="26" fill="rgba(255,167,38,0.15)" stroke="#ffa726" strokeWidth="1.8" />
-                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#ffa726">PlugX</text>
+                <circle r="26" fill="rgba(224,128,64,0.15)" stroke="#c07030" strokeWidth="1.8" />
+                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#c07030">PlugX</text>
                 <text y="38" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">RAT / Loader</text>
               </g>
 
               {/* ShadowPad */}
               <g transform="translate(320,380)">
-                <circle r="28" fill="rgba(255,167,38,0.15)" stroke="#ffa726" strokeWidth="1.8" />
-                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#ffa726">ShadowPad</text>
+                <circle r="28" fill="rgba(224,128,64,0.15)" stroke="#c07030" strokeWidth="1.8" />
+                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#c07030">ShadowPad</text>
                 <text y="40" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">Modular RAT</text>
               </g>
 
               {/* BLINDINGCAN */}
               <g transform="translate(340,440)">
-                <circle r="30" fill="rgba(255,167,38,0.15)" stroke="#ffa726" strokeWidth="1.8" />
-                <text textAnchor="middle" dy="4" fontSize="10" fontWeight="600" fill="#ffa726">BLINDINGCAN</text>
+                <circle r="30" fill="rgba(224,128,64,0.15)" stroke="#c07030" strokeWidth="1.8" />
+                <text textAnchor="middle" dy="4" fontSize="10" fontWeight="600" fill="#c07030">BLINDINGCAN</text>
                 <text y="42" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">Backdoor</text>
               </g>
 
               {/* AppleJeus */}
               <g transform="translate(350,330)">
-                <circle r="26" fill="rgba(255,167,38,0.15)" stroke="#ffa726" strokeWidth="1.8" />
-                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#ffa726">AppleJeus</text>
+                <circle r="26" fill="rgba(224,128,64,0.15)" stroke="#c07030" strokeWidth="1.8" />
+                <text textAnchor="middle" dy="4" fontSize="10.5" fontWeight="600" fill="#c07030">AppleJeus</text>
                 <text y="38" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">Trojan</text>
               </g>
 
               {/* ── CAMPAIGN nodes (blue rectangle) ── */}
               {/* APT29 Spear Phishing */}
               <g transform="translate(620,100)">
-                <rect x="-82" y="-22" width="164" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="#4fa3e0" strokeWidth="1.6" />
-                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="#4fa3e0">APT29 Spear</text>
-                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="#4fa3e0">Phishing Campaign</text>
+                <rect x="-82" y="-22" width="164" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="var(--accent-blue)" strokeWidth="1.6" />
+                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="var(--accent-blue)">APT29 Spear</text>
+                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="var(--accent-blue)">Phishing Campaign</text>
                 <text y="32" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">2026-05-10 · High</text>
               </g>
 
               {/* SolarStrike */}
               <g transform="translate(650,210)">
-                <rect x="-80" y="-22" width="160" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="#4fa3e0" strokeWidth="1.6" />
-                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="#4fa3e0">SolarStrike</text>
-                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="#4fa3e0">Campaign</text>
+                <rect x="-80" y="-22" width="160" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="var(--accent-blue)" strokeWidth="1.6" />
+                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="var(--accent-blue)">SolarStrike</text>
+                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="var(--accent-blue)">Campaign</text>
                 <text y="32" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">2026-01-10 · Resolved</text>
               </g>
 
               {/* CloudHopper Redux */}
               <g transform="translate(630,330)">
-                <rect x="-82" y="-22" width="164" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="#4fa3e0" strokeWidth="1.6" />
-                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="#4fa3e0">CloudHopper</text>
-                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="#4fa3e0">Redux</text>
+                <rect x="-82" y="-22" width="164" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="var(--accent-blue)" strokeWidth="1.6" />
+                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="var(--accent-blue)">CloudHopper</text>
+                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="var(--accent-blue)">Redux</text>
                 <text y="32" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">2026-04-20 · Investigating</text>
               </g>
 
               {/* Operation BlackShadow */}
               <g transform="translate(635,435)">
-                <rect x="-84" y="-22" width="168" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="#4fa3e0" strokeWidth="1.6" />
-                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="#4fa3e0">Operation</text>
-                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="#4fa3e0">BlackShadow</text>
+                <rect x="-84" y="-22" width="168" height="44" rx="6" fill="rgba(79,163,224,0.12)" stroke="var(--accent-blue)" strokeWidth="1.6" />
+                <text textAnchor="middle" dy="-3" fontSize="10" fontWeight="600" fill="var(--accent-blue)">Operation</text>
+                <text textAnchor="middle" dy="11" fontSize="10" fontWeight="600" fill="var(--accent-blue)">BlackShadow</text>
                 <text y="32" textAnchor="middle" fontSize="8.5" fill="rgba(144,164,174,0.7)">2026-03-15 · Ongoing</text>
               </g>
 
@@ -1976,11 +1976,11 @@ export default function ThreatIntel() {
       {/* Threat Actor Detail Modal */}
       {selectedActor && (
         <>
-          <div onClick={() => setSelectedActor(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 400 }} />
+          <div onClick={() => setSelectedActor(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
             width: 580, maxHeight: '80vh', overflowY: 'auto',
-            background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
+            background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 10,
             zIndex: 500, padding: 28,
           }}>
             {(() => {
@@ -1999,8 +1999,8 @@ export default function ThreatIntel() {
                         <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{actor.name}</span>
                         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/ {actor.alias}</span>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: isActive ? '#66bb6a' : '#546e7a', boxShadow: isActive ? '0 0 5px #66bb6a' : 'none', display: 'inline-block' }} />
-                          <span style={{ color: isActive ? '#66bb6a' : '#546e7a', fontWeight: 700 }}>{actor.status}</span>
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: isActive ? 'var(--accent-green)' : 'var(--text-muted)', boxShadow: isActive ? '0 0 5px rgba(47,176,122,.7)' : 'none', display: 'inline-block' }} />
+                          <span style={{ color: isActive ? 'var(--accent-green)' : 'var(--text-muted)', fontWeight: 700 }}>{actor.status}</span>
                         </span>
                       </div>
                       <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
@@ -2020,8 +2020,8 @@ export default function ThreatIntel() {
                   {/* Confidence + IOC count row */}
                   <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
                     {(() => {
-                      const confColor = actor.confidence === 'High' ? '#66bb6a' : actor.confidence === 'Medium' ? '#ffa726' : '#90a4ae'
-                      const confBg = actor.confidence === 'High' ? 'rgba(67,160,71,.12)' : actor.confidence === 'Medium' ? 'rgba(255,111,0,.12)' : 'rgba(84,110,122,.12)'
+                      const confColor = actor.confidence === 'High' ? 'var(--accent-green)' : actor.confidence === 'Medium' ? 'var(--high)' : 'var(--text-muted)'
+                      const confBg = actor.confidence === 'High' ? 'rgba(47,176,122,.12)' : actor.confidence === 'Medium' ? 'rgba(224,128,64,.12)' : 'rgba(84,110,122,.12)'
                       return (
                         <>
                           <div style={{ flex: 1, padding: '10px 14px', background: confBg, border: `1px solid ${confColor}44`, borderRadius: 6 }}>
@@ -2030,7 +2030,7 @@ export default function ThreatIntel() {
                           </div>
                           <div style={{ flex: 1, padding: '10px 14px', background: 'rgba(79,163,224,.08)', border: '1px solid rgba(79,163,224,.25)', borderRadius: 6 }}>
                             <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 4 }}>关联 IOC 数量</div>
-                            <div style={{ fontSize: 16, fontWeight: 700, color: '#4fa3e0' }}>{actor.iocCount.toLocaleString()}</div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent-blue)' }}>{actor.iocCount.toLocaleString()}</div>
                           </div>
                         </>
                       )
@@ -2062,8 +2062,8 @@ export default function ThreatIntel() {
                       {actor.malwareFamilies.map(m => (
                         <span key={m} style={{
                           fontSize: 11, padding: '3px 10px', borderRadius: 4,
-                          background: 'rgba(239,83,80,.1)', border: '1px solid rgba(239,83,80,.25)',
-                          color: '#ef5350', fontFamily: 'monospace', fontWeight: 600,
+                          background: 'rgba(224,80,80,.1)', border: '1px solid rgba(224,80,80,.25)',
+                          color: 'var(--critical)', fontFamily: 'monospace', fontWeight: 600,
                         }}>{m}</span>
                       ))}
                     </div>
@@ -2079,7 +2079,7 @@ export default function ThreatIntel() {
                         <span key={t} style={{
                           fontSize: 11, padding: '3px 10px', borderRadius: 4,
                           background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.25)',
-                          color: '#4fa3e0',
+                          color: 'var(--accent-blue)',
                         }}>{t}</span>
                       ))}
                     </div>
@@ -2107,7 +2107,7 @@ export default function ThreatIntel() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontSize: 24 }}>{isActive ? '⚡' : '💤'}</span>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? '#ffa726' : 'var(--text-secondary)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? 'var(--high)' : 'var(--text-secondary)' }}>
                           {daysAgo(actor.lastActivity)} ({actor.lastActivity})
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -2147,8 +2147,8 @@ export default function ThreatIntel() {
       {/* IOC Modal */}
       {showIocModal && (
         <>
-          <div onClick={() => setShowIocModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 480, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShowIocModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 480, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editIoc ? 'Edit Indicator' : 'Add Indicator'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -2188,8 +2188,8 @@ export default function ThreatIntel() {
       {/* Feed Modal */}
       {showFeedModal && (
         <>
-          <div onClick={() => setShowFeedModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 480, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShowFeedModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 480, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editFeed ? 'Edit Feed' : 'Add Feed'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>订阅源名称 *</div>
@@ -2223,8 +2223,8 @@ export default function ThreatIntel() {
       {/* Indicator Rule Modal */}
       {showRuleModal && (
         <>
-          <div onClick={() => setShowRuleModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 460, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShowRuleModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 460, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editRule ? 'Edit Rule' : 'New Indicator Rule'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>规则名称 *</div>
@@ -2255,8 +2255,8 @@ export default function ThreatIntel() {
       {/* 提交 样本 Modal */}
       {show提交Modal && (
         <>
-          <div onClick={() => setShow提交Modal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 440, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShow提交Modal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 440, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>提交样本进行分析</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>文件路径/名称</div>
@@ -2276,8 +2276,8 @@ export default function ThreatIntel() {
       {/* 创建报告 Modal */}
       {showReportModal && (
         <>
-          <div onClick={() => setShowReportModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 440, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShowReportModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 440, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>创建威胁情报报告</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>报告名称 *</div>

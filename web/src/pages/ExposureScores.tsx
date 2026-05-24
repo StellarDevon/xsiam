@@ -76,19 +76,19 @@ function FixProgressDashboard({ items }: { items: Exposure[] }) {
         display: 'flex',
         marginBottom: 10,
       }}>
-        {seg(parseFloat(pct(fixed)), '#22c55e')}
-        {seg(parseFloat(pct(inProgress)), '#3b82f6')}
-        {seg(parseFloat(pct(accepted)), '#6b7280')}
-        {seg(parseFloat(pct(unresolved)), '#ef4444')}
+        {seg(parseFloat(pct(fixed)), 'var(--accent-green)')}
+        {seg(parseFloat(pct(inProgress)), 'var(--accent-blue)')}
+        {seg(parseFloat(pct(accepted)), 'var(--text-muted)')}
+        {seg(parseFloat(pct(unresolved)), 'var(--critical)')}
       </div>
 
       {/* Stat chips */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {([
-          ['已修复', fixed, '#22c55e'],
-          ['处理中', inProgress, '#3b82f6'],
-          ['已接受', accepted, '#6b7280'],
-          ['未处理', unresolved, '#ef4444'],
+          ['已修复', fixed, 'var(--accent-green)'],
+          ['处理中', inProgress, 'var(--accent-blue)'],
+          ['已接受', accepted, 'var(--text-muted)'],
+          ['未处理', unresolved, 'var(--critical)'],
         ] as [string, number, string][]).map(([label, count, color]) => (
           <div key={label} style={{
             display: 'flex',
@@ -145,10 +145,10 @@ function cellColor(count: number): string {
 
 function cellTextColor(count: number): string {
   if (count === 0) return 'var(--text-muted)'
-  if (count <= 3) return '#22c55e'
-  if (count <= 6) return '#f59e0b'
-  if (count <= 9) return '#f97316'
-  return '#ef4444'
+  if (count <= 3) return 'var(--accent-green)'
+  if (count <= 6) return 'var(--medium)'
+  if (count <= 9) return 'var(--high)'
+  return 'var(--critical)'
 }
 
 const AXIS_LABELS = ['Low', 'Med', 'High', 'Crit']
@@ -364,7 +364,7 @@ function deriveAttackSurface(items: Exposure[]): AttackSurfaceCategory[] {
       id: 'external',
       name: '外部暴露',
       icon: '🌐',
-      color: '#ef4444',
+      color: 'var(--critical)',
       count: externalCount || Math.floor(seededRandom(seed, 7) * 12 + 1),
       detail: `${openPorts} 个开放端口`,
     },
@@ -372,7 +372,7 @@ function deriveAttackSurface(items: Exposure[]): AttackSurfaceCategory[] {
       id: 'internal',
       name: '内部横向',
       icon: '🔀',
-      color: '#f97316',
+      color: 'var(--high)',
       count: internalCount || Math.floor(seededRandom(seed, 3) * 8 + 2),
       detail: `管理共享/弱凭据`,
     },
@@ -380,7 +380,7 @@ function deriveAttackSurface(items: Exposure[]): AttackSurfaceCategory[] {
       id: 'cloud',
       name: '云配置',
       icon: '☁',
-      color: '#8b5cf6',
+      color: 'var(--accent-blue)',
       count: cloudCount || Math.floor(seededRandom(seed, 5) * 5 + 1),
       detail: `${publicBuckets} 公开桶·超权角色`,
     },
@@ -388,7 +388,7 @@ function deriveAttackSurface(items: Exposure[]): AttackSurfaceCategory[] {
       id: 'supply',
       name: '软件供应链',
       icon: '📦',
-      color: '#f59e0b',
+      color: 'var(--medium)',
       count: supplyCount || Math.floor(seededRandom(seed, 6) * 15 + 3),
       detail: `含已知CVE的依赖包`,
     },
@@ -424,7 +424,7 @@ function AttackSurfaceGauge({ score }: { score: number }) {
     return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`
   }
 
-  const gaugeColor = score >= 70 ? '#ef4444' : score >= 40 ? '#f97316' : '#22c55e'
+  const gaugeColor = score >= 70 ? 'var(--critical)' : score >= 40 ? 'var(--high)' : 'var(--accent-green)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -463,11 +463,11 @@ function AttackSurfaceGauge({ score }: { score: number }) {
 
 // Fixed attack surface breakdown data for the enhanced bar chart
 const ATTACK_SURFACE_BREAKDOWN = [
-  { label: '互联网暴露', count: 23, risk: '高危' as const, color: '#ef4444' },
-  { label: '未修补系统', count: 15, risk: '高危' as const, color: '#f97316' },
-  { label: '过度权限账户', count: 12, risk: '中危' as const, color: '#f59e0b' },
-  { label: '云配置错误', count: 8, risk: '严重' as const, color: '#dc2626' },
-  { label: '影子IT', count: 4, risk: '中危' as const, color: '#8b5cf6' },
+  { label: '互联网暴露', count: 23, risk: '高危' as const, color: 'var(--critical)' },
+  { label: '未修补系统', count: 15, risk: '高危' as const, color: 'var(--high)' },
+  { label: '过度权限账户', count: 12, risk: '中危' as const, color: 'var(--medium)' },
+  { label: '云配置错误', count: 8, risk: '严重' as const, color: 'var(--critical)' },
+  { label: '影子IT', count: 4, risk: '中危' as const, color: 'var(--accent-blue)' },
 ]
 
 // Enhanced attack paths for the step sequence display
@@ -558,8 +558,8 @@ function ExposureTrend30d() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>暴露评分趋势（近30天）</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#22c55e' }}>
-          <span style={{ width: 20, height: 2, background: '#22c55e', display: 'inline-block', borderRadius: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--accent-green)' }}>
+          <span style={{ width: 20, height: 2, background: 'var(--accent-green)', display: 'inline-block', borderRadius: 1 }} />
           安全态势持续改善 ▼{(TREND_30D[0].score - TREND_30D[TREND_30D.length - 1].score).toFixed(1)} 分
         </div>
       </div>
@@ -584,13 +584,13 @@ function ExposureTrend30d() {
           )
         })}
         {/* Area fill */}
-        <path d={areaD} fill="#22c55e" fillOpacity={0.08} />
+        <path d={areaD} fill="var(--accent-green)" fillOpacity={0.08} />
         {/* Line */}
-        <path d={pathD} fill="none" stroke="#22c55e" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={pathD} fill="none" stroke="var(--accent-green)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         {/* Start and end dots */}
         {[0, TREND_30D.length - 1].map(i => {
           const { x, y } = toXY(i, TREND_30D[i].score)
-          return <circle key={i} cx={x} cy={y} r={3} fill="#22c55e" />
+          return <circle key={i} cx={x} cy={y} r={3} fill="var(--accent-green)" />
         })}
         {/* Start label */}
         {(() => {
@@ -600,7 +600,7 @@ function ExposureTrend30d() {
         {/* End label */}
         {(() => {
           const { x, y } = toXY(TREND_30D.length - 1, TREND_30D[TREND_30D.length - 1].score)
-          return <text x={x - 6} y={y - 4} fontSize={9} fill="#22c55e" fontWeight={700} textAnchor="end">{TREND_30D[TREND_30D.length - 1].score}</text>
+          return <text x={x - 6} y={y - 4} fontSize={9} fill="var(--accent-green)" fontWeight={700} textAnchor="end">{TREND_30D[TREND_30D.length - 1].score}</text>
         })()}
       </svg>
     </div>
@@ -610,9 +610,9 @@ function ExposureTrend30d() {
 function AttackSurfaceBarChart() {
   const maxCount = Math.max(...ATTACK_SURFACE_BREAKDOWN.map(d => d.count))
   const riskBadge: Record<string, { bg: string; text: string }> = {
-    '严重': { bg: '#dc262620', text: '#dc2626' },
-    '高危': { bg: '#ef444420', text: '#ef4444' },
-    '中危': { bg: '#f59e0b20', text: '#f59e0b' },
+    '严重': { bg: '#dc262620', text: 'var(--critical)' },
+    '高危': { bg: '#ef444420', text: 'var(--critical)' },
+    '中危': { bg: '#f59e0b20', text: 'var(--medium)' },
   }
 
   return (
@@ -656,7 +656,7 @@ function AttackSurfaceBarChart() {
               padding: '1px 5px',
               borderRadius: 3,
               background: riskBadge[item.risk]?.bg ?? '#88888820',
-              color: riskBadge[item.risk]?.text ?? '#888',
+              color: riskBadge[item.risk]?.text ?? 'var(--text-muted)',
               letterSpacing: 0.3,
             }}>
               {item.risk}
@@ -669,7 +669,7 @@ function AttackSurfaceBarChart() {
 }
 
 function EnhancedAttackPaths() {
-  const severityColor = { critical: '#ef4444', high: '#f97316' }
+  const severityColor = { critical: 'var(--critical)', high: 'var(--high)' }
   const severityLabel = { critical: 'CRITICAL', high: 'HIGH' }
 
   return (
@@ -730,7 +730,7 @@ function EnhancedAttackPaths() {
                       fontSize: 11,
                       fontWeight: step.isEntry || step.isCrown ? 700 : 500,
                       color: step.isEntry
-                        ? '#3b82f6'
+                        ? 'var(--accent-blue)'
                         : step.isCrown
                           ? severityColor[path.severity]
                           : 'var(--text-secondary)',
@@ -753,7 +753,7 @@ function EnhancedAttackPaths() {
                     {step.cve && (
                       <span style={{
                         fontSize: 8.5,
-                        color: '#f59e0b',
+                        color: 'var(--medium)',
                         fontFamily: 'monospace',
                         background: '#f59e0b14',
                         border: '1px solid #f59e0b30',
@@ -821,7 +821,7 @@ function AttackSurfaceTab({ items }: { items: Exposure[] }) {
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: gaugeScore >= 70 ? '#ef4444' : gaugeScore >= 40 ? '#f97316' : '#22c55e',
+            color: gaugeScore >= 70 ? 'var(--critical)' : gaugeScore >= 40 ? 'var(--high)' : 'var(--accent-green)',
             textAlign: 'center',
           }}>
             {gaugeScore >= 70 ? '⚠ 高风险' : gaugeScore >= 40 ? '中等风险' : '低风险'}
@@ -878,7 +878,7 @@ function TrendSparkline({ scoreKey, currentScore }: { scoreKey: string; currentS
   // Industry benchmark: seeded pseudo value
   const benchmark = 40 + Math.floor(seededRandom(scoreKey, 99) * 30)
   const diff = currentScore - benchmark
-  const lineColor = weekChange > 5 ? '#ef4444' : weekChange < -5 ? '#22c55e' : '#3b82f6'
+  const lineColor = weekChange > 5 ? 'var(--critical)' : weekChange < -5 ? 'var(--accent-green)' : 'var(--accent-blue)'
 
   return (
     <div style={{
@@ -904,13 +904,13 @@ function TrendSparkline({ scoreKey, currentScore }: { scoreKey: string; currentS
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
             本周变化:{' '}
-            <span style={{ fontWeight: 700, color: weekChange > 0 ? '#ef4444' : weekChange < 0 ? '#22c55e' : 'var(--text-muted)' }}>
+            <span style={{ fontWeight: 700, color: weekChange > 0 ? 'var(--critical)' : weekChange < 0 ? 'var(--accent-green)' : 'var(--text-muted)' }}>
               ▲{weekUp} / ▼{weekDown}
             </span>
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
             行业基准对比:{' '}
-            <span style={{ fontWeight: 700, color: diff > 10 ? '#ef4444' : diff > 0 ? '#f97316' : '#22c55e' }}>
+            <span style={{ fontWeight: 700, color: diff > 10 ? 'var(--critical)' : diff > 0 ? 'var(--high)' : 'var(--accent-green)' }}>
               {diff > 0 ? `高于 ${diff}%` : diff < 0 ? `低于 ${Math.abs(diff)}%` : '持平'}
             </span>
           </div>
@@ -954,7 +954,7 @@ function RemediationStepper({ currentStatus, itemKey: _itemKey, onStatusChange, 
         {REMEDIATION_STEPS.map((step, idx) => {
           const isActive = step.id === currentStatus
           const isPast = idx < currentIdx
-          const stepColor = isActive ? 'var(--accent-blue)' : isPast ? '#22c55e' : 'var(--text-muted)'
+          const stepColor = isActive ? 'var(--accent-blue)' : isPast ? 'var(--accent-green)' : 'var(--text-muted)'
 
           return (
             <div key={step.id} style={{ display: 'flex', alignItems: 'center', flex: idx < REMEDIATION_STEPS.length - 1 ? '1 1 0' : undefined }}>
@@ -978,7 +978,7 @@ function RemediationStepper({ currentStatus, itemKey: _itemKey, onStatusChange, 
                   width: 22,
                   height: 22,
                   borderRadius: '50%',
-                  background: isActive ? 'var(--accent-blue)' : isPast ? '#22c55e' : 'var(--bg-card2)',
+                  background: isActive ? 'var(--accent-blue)' : isPast ? 'var(--accent-green)' : 'var(--bg-card2)',
                   border: `2px solid ${stepColor}`,
                   display: 'flex',
                   alignItems: 'center',
@@ -987,7 +987,7 @@ function RemediationStepper({ currentStatus, itemKey: _itemKey, onStatusChange, 
                   color: isActive || isPast ? '#fff' : 'var(--text-muted)',
                   fontWeight: 700,
                   transition: 'all 0.2s',
-                  boxShadow: isActive ? `0 0 0 3px var(--accent-blue)30` : 'none',
+                  boxShadow: isActive ? `0 0 0 3px 'var(--accent-blue)'30` : 'none',
                 }}>
                   {isPast ? '✓' : `${idx + 1}`}
                 </div>
@@ -1005,7 +1005,7 @@ function RemediationStepper({ currentStatus, itemKey: _itemKey, onStatusChange, 
                 <div style={{
                   flex: 1,
                   height: 2,
-                  background: isPast ? '#22c55e' : 'var(--border)',
+                  background: isPast ? 'var(--accent-green)' : 'var(--border)',
                   marginBottom: 14,
                   transition: 'background 0.3s',
                 }} />
@@ -1046,7 +1046,7 @@ function OverviewSparkline({ scoreKey, currentScore }: { scoreKey: string; curre
   const weekUp = points.filter((v, i) => i > 0 && v > points[i - 1]).length
   const weekDown = points.filter((v, i) => i > 0 && v < points[i - 1]).length
   const weekChange = points[6] - points[0]
-  const lineColor = weekChange > 5 ? '#ef4444' : weekChange < -5 ? '#22c55e' : '#3b82f6'
+  const lineColor = weekChange > 5 ? 'var(--critical)' : weekChange < -5 ? 'var(--accent-green)' : 'var(--accent-blue)'
 
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
@@ -1062,7 +1062,7 @@ function OverviewSparkline({ scoreKey, currentScore }: { scoreKey: string; curre
         <span style={{
           fontSize: 11,
           fontWeight: 600,
-          color: weekChange > 0 ? '#ef4444' : weekChange < 0 ? '#22c55e' : 'var(--text-muted)',
+          color: weekChange > 0 ? 'var(--critical)' : weekChange < 0 ? 'var(--accent-green)' : 'var(--text-muted)',
           background: 'var(--bg-card2)',
           border: '1px solid var(--border)',
           borderRadius: 4,
@@ -1187,7 +1187,7 @@ function DetailPanel({ item, onClose, onSaved }: DetailPanelProps) {
       right: 0,
       bottom: 0,
       width: 400,
-      background: 'var(--bg-panel, var(--bg-card))',
+      background: 'var(--bg-drawer)',
       borderLeft: '1px solid var(--border)',
       zIndex: 200,
       display: 'flex',
@@ -1198,6 +1198,8 @@ function DetailPanel({ item, onClose, onSaved }: DetailPanelProps) {
       <div style={{
         padding: '12px 16px',
         borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-card2)',
+        flexShrink: 0, minHeight: 48,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -1366,7 +1368,7 @@ function DetailPanel({ item, onClose, onSaved }: DetailPanelProps) {
               style={{
                 fontSize: 12,
                 padding: '7px 16px',
-                background: '#22c55e',
+                background: 'var(--accent-green)',
                 border: 'none',
                 borderRadius: 6,
                 color: '#fff',
@@ -1408,7 +1410,7 @@ function DetailPanel({ item, onClose, onSaved }: DetailPanelProps) {
                     <div style={{
                       width: `${Math.min(Number(pct), 100)}%`,
                       height: '100%',
-                      background: Number(pct) >= 70 ? '#ef4444' : Number(pct) >= 40 ? '#f97316' : '#3b82f6',
+                      background: Number(pct) >= 70 ? 'var(--critical)' : Number(pct) >= 40 ? 'var(--high)' : 'var(--accent-blue)',
                       borderRadius: 2,
                       transition: 'width 0.4s',
                     }} />
@@ -1614,24 +1616,24 @@ const KANBAN_CARDS: KanbanCard[] = [
 ]
 
 const KANBAN_COLUMNS: Array<{ id: KanbanCard['column']; label: string; color: string }> = [
-  { id: 'backlog', label: '待处理', color: '#6b7280' },
-  { id: 'in_progress', label: '进行中', color: '#3b82f6' },
-  { id: 'verification', label: '验证中', color: '#f59e0b' },
-  { id: 'completed', label: '已完成', color: '#22c55e' },
+  { id: 'backlog', label: '待处理', color: 'var(--text-muted)' },
+  { id: 'in_progress', label: '进行中', color: 'var(--accent-blue)' },
+  { id: 'verification', label: '验证中', color: 'var(--medium)' },
+  { id: 'completed', label: '已完成', color: 'var(--accent-green)' },
 ]
 
 const CATEGORY_COLOR: Record<KanbanCard['category'], string> = {
-  CVE: '#ef4444',
-  Misconfiguration: '#f97316',
-  Privilege: '#8b5cf6',
-  Exposure: '#3b82f6',
-  'Shadow IT': '#6b7280',
+  CVE: 'var(--critical)',
+  Misconfiguration: 'var(--high)',
+  Privilege: 'var(--accent-blue)',
+  Exposure: 'var(--accent-blue)',
+  'Shadow IT': 'var(--text-muted)',
 }
 
 const PRIORITY_COLOR: Record<KanbanCard['priority'], string> = {
-  P1: '#ef4444',
-  P2: '#f59e0b',
-  P3: '#6b7280',
+  P1: 'var(--critical)',
+  P2: 'var(--medium)',
+  P3: 'var(--text-muted)',
 }
 
 function initials(name: string): string {
@@ -1644,9 +1646,9 @@ function dueDateColor(dateStr: string): string {
   const d = new Date(dateStr)
   const diff = d.getTime() - now.getTime()
   const days = diff / (1000 * 60 * 60 * 24)
-  if (diff < 0) return '#ef4444'
-  if (days <= 3) return '#f97316'
-  if (days <= 7) return '#f59e0b'
+  if (diff < 0) return 'var(--critical)'
+  if (days <= 3) return 'var(--high)'
+  if (days <= 7) return 'var(--medium)'
   return 'var(--text-muted)'
 }
 

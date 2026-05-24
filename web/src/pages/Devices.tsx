@@ -128,7 +128,7 @@ function deriveHealthMetrics(d: Device): { cpu: number; mem: number; disk: numbe
 
 function metricColor(pct: number) {
   if (pct < 60) return 'var(--accent-green)'
-  if (pct < 80) return '#ffa726'
+  if (pct < 80) return 'var(--high)'
   return 'var(--critical)'
 }
 
@@ -207,23 +207,23 @@ function AgentLogViewer({ deviceKey }: { deviceKey: string }) {
         </div>
       </div>
       <div style={{
-        background: '#0d1117', border: '1px solid rgba(255,255,255,.08)', borderRadius: 5,
+        background: 'var(--bg-code)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 5,
         padding: '8px 10px', maxHeight: 200, overflowY: 'auto', fontFamily: 'monospace', fontSize: 10.5,
         lineHeight: 1.7,
       }}>
         {loading && logs.length === 0 && (
-          <span style={{ color: '#888' }}>加载中...</span>
+          <span style={{ color: 'var(--text-muted)' }}>加载中...</span>
         )}
         {!loading && logs.length === 0 && (
-          <span style={{ color: '#555' }}>暂无日志数据</span>
+          <span style={{ color: 'var(--text-muted)' }}>暂无日志数据</span>
         )}
         {logs.map((l, i) => {
           const ts  = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('zh-CN', { hour12: false }) : '--:--:--'
           const msg = l.message ?? l.event ?? JSON.stringify(l)
           return (
             <div key={i} style={{ display: 'flex', gap: 8 }}>
-              <span style={{ color: '#555', flexShrink: 0 }}>{ts}</span>
-              <span style={{ color: '#9cdcfe' }}>{String(msg)}</span>
+              <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{ts}</span>
+              <span style={{ color: 'var(--accent-blue)' }}>{String(msg)}</span>
             </div>
           )
         })}
@@ -258,7 +258,7 @@ function HealthArcGauge({ score, label }: { score: number; label: string }) {
   const cy = 62
   const circumference = Math.PI * r  // half-circle arc length
   const filled = (score / 100) * circumference
-  const color = score >= 70 ? 'var(--accent-green)' : score >= 40 ? '#ffa726' : 'var(--critical)'
+  const color = score >= 70 ? 'var(--accent-green)' : score >= 40 ? 'var(--high)' : 'var(--critical)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -297,7 +297,7 @@ function DeviceHealthCard({ d }: { d: Device }) {
   const { cpu, mem, disk } = deriveHealthMetrics(d)
   const score = computeHealthScore(d)
   const isLatest = d.agent_version?.startsWith('7.4.2')
-  const versionColor = isLatest ? 'var(--accent-green)' : '#ffa726'
+  const versionColor = isLatest ? 'var(--accent-green)' : 'var(--high)'
 
   return (
     <div className="card" style={{ padding: '12px 14px' }}>
@@ -457,9 +457,9 @@ function RemoteExecutePanel({ deviceKey }: { deviceKey: string }) {
           placeholder="输入 shell 命令...（↑↓ 翻历史，Enter 执行）"
           style={{
             width: '100%', boxSizing: 'border-box',
-            background: '#0d1117', border: '1px solid rgba(255,255,255,.1)',
+            background: 'var(--bg-code)', border: '1px solid rgba(255,255,255,.1)',
             borderRadius: 5, padding: '7px 10px',
-            color: '#9cdcfe', fontFamily: 'monospace', fontSize: 11.5,
+            color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 11.5,
             lineHeight: 1.6, outline: 'none',
           }}
         />
@@ -540,15 +540,15 @@ function RemoteExecutePanel({ deviceKey }: { deviceKey: string }) {
 
       {/* Output area */}
       <div style={{
-        background: '#0d1117', border: '1px solid rgba(255,255,255,.08)',
+        background: 'var(--bg-code)', border: '1px solid rgba(255,255,255,.08)',
         borderRadius: 5, padding: '8px 10px', minHeight: 120,
         fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.7,
-        color: output.startsWith('[错误]') ? 'var(--critical)' : '#9cdcfe',
+        color: output.startsWith('[错误]') ? 'var(--critical)' : 'var(--accent-blue)',
         whiteSpace: 'pre-wrap', wordBreak: 'break-all',
         overflowY: 'auto', maxHeight: 200,
       }}>
-        {running && <span style={{ color: '#888' }}>执行中...</span>}
-        {!running && !output && <span style={{ color: '#555' }}>输出将显示在此处</span>}
+        {running && <span style={{ color: 'var(--text-muted)' }}>执行中...</span>}
+        {!running && !output && <span style={{ color: 'var(--text-muted)' }}>输出将显示在此处</span>}
         {!running && output && output}
       </div>
     </div>
@@ -630,11 +630,11 @@ function PolicyEditorModal({ policy, onClose, onSaved }: {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 600 }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 600 }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
         width: 520, maxHeight: '85vh', overflowY: 'auto',
-        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        background: 'var(--bg-modal)', border: '1px solid var(--border)',
         borderRadius: 10, zIndex: 700, padding: '20px 24px',
         display: 'flex', flexDirection: 'column', gap: 14,
       }}>
@@ -983,7 +983,7 @@ function AgentHealthTab({ d }: { d: Device }) {
     { label: 'CPU 使用率',   value: `${cpu}%`,         color: metricColor(cpu) },
     { label: '内存使用率',   value: `${mem}%`,          color: metricColor(mem) },
     { label: '磁盘使用率',   value: `${disk}%`,         color: metricColor(disk) },
-    { label: '网络延迟',     value: `${netLatency} ms`, color: netLatency < 50 ? 'var(--accent-green)' : netLatency < 100 ? '#ffa726' : 'var(--critical)' },
+    { label: '网络延迟',     value: `${netLatency} ms`, color: netLatency < 50 ? 'var(--accent-green)' : netLatency < 100 ? 'var(--high)' : 'var(--critical)' },
     { label: '日志/秒',      value: String(logEventsPerSec), color: 'var(--accent-blue)' },
     { label: '最近心跳',     value: fmtRelative(lastSeen),   color: 'var(--text-secondary)' },
   ]
@@ -1103,7 +1103,7 @@ function SummaryBar({ items, liveness }: { items: Device[], liveness: LivenessMa
   return (
     <div style={{
       flexShrink: 0, padding: '10px 20px',
-      background: 'var(--bg-secondary)',
+      background: 'var(--bg-card2)',
       borderBottom: '1px solid var(--border)',
       display: 'flex', alignItems: 'center', gap: 0,
     }}>
@@ -1211,14 +1211,14 @@ function DetailPanel({ d, liveness, onClose, onAction }: {
   return (
     <div style={{
       width: 340, flexShrink: 0, borderLeft: '1px solid var(--border)',
-      background: 'var(--bg-card)', display: 'flex', flexDirection: 'column',
+      background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
       {/* Panel header */}
       <div style={{
         padding: '10px 14px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'var(--bg-sidebar)',
+        background: 'var(--bg-card2)', minHeight: 48,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 18 }}>{osIcon(d.os_type || d.os)}</span>
@@ -1450,10 +1450,10 @@ function ConfirmModal({ title, body, danger, onConfirm, onCancel }: {
 }) {
   return (
     <>
-      <div onClick={onCancel} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+      <div onClick={onCancel} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        width: 380, background: 'var(--bg-card)', border: '1px solid var(--border)',
+        width: 380, background: 'var(--bg-modal)', border: '1px solid var(--border)',
         borderRadius: 8, zIndex: 500, padding: 24,
       }}>
         <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>{title}</div>
@@ -1954,7 +1954,7 @@ export default function Devices() {
       {allTags.length > 0 && (
         <div style={{
           padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
-          borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0,
+          borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0,
         }}>
           <span style={{ fontSize: 10.5, color: 'var(--text-muted)', flexShrink: 0 }}>标签筛选：</span>
           <button
@@ -2225,10 +2225,10 @@ export default function Devices() {
       {/* Enrollment Token Modal */}
       {showToken && (
         <>
-          <div onClick={() => setShowToken(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowToken(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 500, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 500, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>🔑 设备注册令牌</div>
@@ -2294,10 +2294,10 @@ export default function Devices() {
       {/* Bulk progress overlay */}
       {bulkProgress && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 300, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 300, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 28, textAlign: 'center',
           }}>
             <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 16 }}>

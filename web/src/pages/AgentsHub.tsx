@@ -32,7 +32,7 @@ interface AgentPolicy {
 
 const CATEGORY_COLORS: Record<string, { gradient: string; iconBg: string }> = {
   Agentic:   { gradient: 'linear-gradient(90deg,#1565c0,#0078d4)', iconBg: 'rgba(0,120,212,.15)' },
-  detection: { gradient: 'linear-gradient(90deg,#c0392b,#e53935)', iconBg: 'rgba(217,64,64,.12)' },
+  detection: { gradient: 'linear-gradient(90deg,#8a2020,#c04040)', iconBg: 'rgba(192,64,64,.12)' },
   cloud:     { gradient: 'linear-gradient(90deg,#0077b6,#023e8a)', iconBg: 'rgba(0,119,182,.13)' },
   automation:{ gradient: 'linear-gradient(90deg,#1976d2,#00838f)', iconBg: 'rgba(25,118,210,.12)' },
   identity:  { gradient: 'linear-gradient(90deg,#4a5faa,#2255c0)', iconBg: 'rgba(74,95,170,.14)' },
@@ -501,14 +501,14 @@ function AgentDetailModal({ agent, stats, onClose }: AgentDetailModalProps) {
   }, [onClose])
 
   const statusInfo = (() => {
-    if (!agent.active) return { label: 'Offline', color: '#546e7a' }
-    return { label: '运行中', color: '#43a047' }
+    if (!agent.active) return { label: 'Offline', color: 'var(--text-muted)' }
+    return { label: '运行中', color: 'var(--accent-green)' }
   })()
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1100,
-      background: 'rgba(0,0,0,.65)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       backdropFilter: 'blur(2px)',
     }} onClick={onClose}>
       <div style={{
@@ -659,10 +659,10 @@ function AgentDetailModal({ agent, stats, onClose }: AgentDetailModalProps) {
 
           {/* 触发条件 */}
           <div style={{
-            padding: '10px 14px', background: 'rgba(255,167,38,.05)',
-            border: '1px solid rgba(255,167,38,.2)', borderRadius: 7,
+            padding: '10px 14px', background: 'rgba(224,128,64,.05)',
+            border: '1px solid rgba(224,128,64,.2)', borderRadius: 7,
           }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#ffa726', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>触发条件</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--high)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>触发条件</div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{capData.triggers}</div>
           </div>
 
@@ -726,7 +726,7 @@ function ConfigModal({ device, policies, onClose }: ConfigModalProps) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center',
     }} onClick={onClose}>
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
@@ -811,9 +811,9 @@ function DeviceCard({ device, policies }: DeviceCardProps) {
   const deviceRoute = `/assets`
 
   const statusDot: Record<string, { color: string; glow: string; label: string; pulse: boolean }> = {
-    running: { color: '#43a047', glow: '0 0 6px #43a047', label: '运行中', pulse: true },
-    standby: { color: '#1976d2', glow: '0 0 6px #1976d2', label: '待命', pulse: false },
-    offline: { color: '#546e7a', glow: 'none', label: '离线', pulse: false },
+    running: { color: 'var(--accent-green)', glow: '0 0 6px rgba(47,176,122,.7)', label: '运行中', pulse: true },
+    standby: { color: 'var(--accent-blue)', glow: '0 0 6px #1976d2', label: '待命', pulse: false },
+    offline: { color: 'var(--text-muted)', glow: 'none', label: '离线', pulse: false },
   }
   const dot = statusDot[status] ?? statusDot.offline
 
@@ -860,7 +860,7 @@ function DeviceCard({ device, policies }: DeviceCardProps) {
         <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 10 }}>
           任务:{' '}
           {taskCount > 0
-            ? <span style={{ color: '#ffa726', fontWeight: 600 }}>{taskCount} 个运行中</span>
+            ? <span style={{ color: 'var(--high)', fontWeight: 600 }}>{taskCount} 个运行中</span>
             : <span style={{ color: 'var(--text-muted)' }}>空闲</span>
           }
         </div>
@@ -868,22 +868,22 @@ function DeviceCard({ device, policies }: DeviceCardProps) {
         {/* Health bars */}
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3, display: 'flex', justifyContent: 'space-between' }}>
-            <span>CPU</span><span style={{ color: cpu > 80 ? '#e53935' : 'var(--text-secondary)' }}>{cpu}%</span>
+            <span>CPU</span><span style={{ color: cpu > 80 ? 'var(--critical)' : 'var(--text-secondary)' }}>{cpu}%</span>
           </div>
           <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
             <div style={{
               height: '100%', width: `${cpu}%`,
-              background: cpu > 80 ? '#e53935' : cpu > 60 ? '#ffa726' : '#43a047',
+              background: cpu > 80 ? 'var(--critical)' : cpu > 60 ? 'var(--high)' : 'var(--accent-green)',
               borderRadius: 2, transition: 'width .4s',
             }} />
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3, display: 'flex', justifyContent: 'space-between' }}>
-            <span>Memory</span><span style={{ color: mem > 85 ? '#e53935' : 'var(--text-secondary)' }}>{mem}%</span>
+            <span>Memory</span><span style={{ color: mem > 85 ? 'var(--critical)' : 'var(--text-secondary)' }}>{mem}%</span>
           </div>
           <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{
               height: '100%', width: `${mem}%`,
-              background: mem > 85 ? '#e53935' : mem > 70 ? '#ffa726' : '#1976d2',
+              background: mem > 85 ? 'var(--critical)' : mem > 70 ? 'var(--high)' : 'var(--accent-blue)',
               borderRadius: 2, transition: 'width .4s',
             }} />
           </div>
@@ -919,11 +919,11 @@ function DeviceCard({ device, policies }: DeviceCardProps) {
 // ─── Detection Funnel ─────────────────────────────────────────
 
 const FUNNEL_STAGES = [
-  { label: 'Raw Events',    count: '1,234,567', unit: '/day', color: '#4a90d9' },
-  { label: 'After ETL',     count: '987,234',   unit: '',     color: '#5ba04e' },
-  { label: 'Rule Matches',  count: '4,521',     unit: '',     color: '#c8932a' },
-  { label: 'Alerts',        count: '234',        unit: '',     color: '#c85a2a' },
-  { label: 'Incidents',     count: '18',         unit: '',     color: '#c82a2a' },
+  { label: 'Raw Events',    count: '1,234,567', unit: '/day', color: 'var(--accent-blue)' },
+  { label: 'After ETL',     count: '987,234',   unit: '',     color: 'var(--accent-green)' },
+  { label: 'Rule Matches',  count: '4,521',     unit: '',     color: 'var(--medium)' },
+  { label: 'Alerts',        count: '234',        unit: '',     color: 'var(--high)' },
+  { label: 'Incidents',     count: '18',         unit: '',     color: 'var(--critical)' },
 ]
 
 const FUNNEL_REDUCTIONS = ['↓ 20%', '↓ 99.5%', '↓ 94.8%', '↓ 92.3%']
@@ -971,7 +971,7 @@ function DetectionFunnel({ hasActiveAiAgent }: { hasActiveAiAgent: boolean }) {
             {/* Reduction ratio between stages */}
             {i < FUNNEL_STAGES.length - 1 && (
               <div style={{ paddingLeft: 110, marginBottom: 2 }}>
-                <span style={{ fontSize: 10, color: '#ffa726', fontWeight: 600 }}>{FUNNEL_REDUCTIONS[i]}</span>
+                <span style={{ fontSize: 10, color: 'var(--high)', fontWeight: 600 }}>{FUNNEL_REDUCTIONS[i]}</span>
               </div>
             )}
           </div>
@@ -986,9 +986,9 @@ function DetectionFunnel({ hasActiveAiAgent }: { hasActiveAiAgent: boolean }) {
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {[
-              { label: 'Precision', value: '87.3%', color: '#5ba04e' },
-              { label: 'Recall',    value: '92.1%', color: '#4a90d9' },
-              { label: 'F1-Score',  value: '89.6%', color: '#c8932a' },
+              { label: 'Precision', value: '87.3%', color: 'var(--accent-green)' },
+              { label: 'Recall',    value: '92.1%', color: 'var(--accent-blue)' },
+              { label: 'F1-Score',  value: '89.6%', color: 'var(--medium)' },
             ].map(m => (
               <div key={m.label} style={{
                 flex: '1 1 120px', padding: '12px 16px',
@@ -1074,7 +1074,7 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
   // Progress bar: 0-30min green, 30-60min orange, >60min red
   const SESSION_MAX = 90 * 60 // cap bar at 90 min
   const sessionPct = Math.min((sessionElapsed / SESSION_MAX) * 100, 100)
-  const sessionBarColor = sessionMins < 30 ? '#43a047' : sessionMins < 60 ? '#ffa726' : '#e53935'
+  const sessionBarColor = sessionMins < 30 ? 'var(--accent-green)' : sessionMins < 60 ? 'var(--high)' : 'var(--critical)'
 
   // Aggregate stats
   const total = devices.length || AI_AGENTS.length
@@ -1101,17 +1101,17 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
       const val = stats[statKey]
       const count = typeof val === 'number' ? val : 0
       if (count > 0) {
-        return { label: '运行中', color: '#43a047', glow: '0 0 6px #43a047' }
+        return { label: '运行中', color: 'var(--accent-green)', glow: '0 0 6px rgba(47,176,122,.7)' }
       }
-      return { label: '待命', color: '#ffa726', glow: '0 0 6px #ffa726' }
+      return { label: '待命', color: 'var(--high)', glow: '0 0 6px rgba(224,128,64,.7)' }
     }
     if (agentId === 'cloud-posture' || agentId === 'automation-engineer') {
       if (onlineCount != null && onlineCount > 0) {
-        return { label: '运行中', color: '#43a047', glow: '0 0 6px #43a047' }
+        return { label: '运行中', color: 'var(--accent-green)', glow: '0 0 6px rgba(47,176,122,.7)' }
       }
-      return { label: '待命', color: '#ffa726', glow: '0 0 6px #ffa726' }
+      return { label: '待命', color: 'var(--high)', glow: '0 0 6px rgba(224,128,64,.7)' }
     }
-    return { label: '待命', color: '#ffa726', glow: '0 0 6px #ffa726' }
+    return { label: '待命', color: 'var(--high)', glow: '0 0 6px rgba(224,128,64,.7)' }
   }
 
   function handleCta(agent: typeof AI_AGENTS[number]) {
@@ -1167,7 +1167,7 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
         </button>
         {sessionRefreshMsg && (
           <span style={{
-            fontSize: 10, color: sessionRefreshMsg === '会话已刷新' ? '#43a047' : '#e53935',
+            fontSize: 10, color: sessionRefreshMsg === '会话已刷新' ? 'var(--accent-green)' : 'var(--critical)',
             whiteSpace: 'nowrap', fontWeight: 600,
           }}>
             {sessionRefreshMsg === '会话已刷新' ? '✓ ' : '✗ '}{sessionRefreshMsg}
@@ -1183,10 +1183,10 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
       }}>
         {[
           { label: 'Agent总数', value: total, color: 'var(--text-primary)', bg: 'rgba(255,255,255,.04)', border: 'var(--border)' },
-          { label: '在线', value: onlineCnt, color: '#43a047', bg: 'rgba(67,160,71,.07)', border: 'rgba(67,160,71,.25)' },
-          { label: '待命', value: standbyCnt, color: '#1976d2', bg: 'rgba(25,118,210,.07)', border: 'rgba(25,118,210,.25)' },
-          { label: '离线', value: offlineCnt, color: '#78909c', bg: 'rgba(120,144,156,.06)', border: 'rgba(120,144,156,.2)' },
-          { label: '运行中任务', value: runningTasksCnt, color: '#ffa726', bg: 'rgba(255,167,38,.07)', border: 'rgba(255,167,38,.25)' },
+          { label: '在线', value: onlineCnt, color: 'var(--accent-green)', bg: 'rgba(47,176,122,.07)', border: 'rgba(47,176,122,.25)' },
+          { label: '待命', value: standbyCnt, color: 'var(--accent-blue)', bg: 'rgba(25,118,210,.07)', border: 'rgba(25,118,210,.25)' },
+          { label: '离线', value: offlineCnt, color: 'var(--text-muted)', bg: 'rgba(120,144,156,.06)', border: 'rgba(120,144,156,.2)' },
+          { label: '运行中任务', value: runningTasksCnt, color: 'var(--high)', bg: 'rgba(224,128,64,.07)', border: 'rgba(224,128,64,.25)' },
         ].map(s => (
           <div key={s.label} style={{
             padding: '10px 18px', borderRadius: 8, background: s.bg,
@@ -1244,7 +1244,7 @@ function AgentsTab({ onSwitchTab, stats, onlineCount, devices, policies }: {
                   if (!Agent.active) {
                     return (
                       <>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', background: '#546e7a' }} />
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', background: 'var(--text-muted)' }} />
                         <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Idle</span>
                       </>
                     )
@@ -1366,7 +1366,7 @@ function AssistantTab() {
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-blue)' }}>XSIAM AI Agent助手</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Powered by XSIAM 3.x · All actions are audited</div>
           </div>
-          <div style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>Compare with Cortex Assistant ↗</div>
+          <div style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>Compare with Agentix ↗</div>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1493,7 +1493,7 @@ function McpTab() {
           const name = prompt('MCP Integration name (e.g. PagerDuty, Zoom):')
           if (name) alert(`MCP Integration "${name}" added.\n\n配置 the endpoint URL and authentication in the integration settings.`)
         }}>+ Add MCP Integration</button>
-        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => alert('Cortex MCP Server\n\nDownload and install the Cortex MCP server package to enable Agent tool use against your internal systems.')}>Install Cortex MCP Server</button>
+        <button className="btn-secondary" style={{ fontSize: 11 }} onClick={() => alert('XSIAM MCP Server\n\nDownload and install the XSIAM MCP server package to enable Agent tool use against your internal systems.')}>Install XSIAM MCP Server</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {MCP_INTEGRATIONS.map(m => (
@@ -1661,7 +1661,7 @@ export default function AgentsHub() {
               更新中...
             </span>
           ) : justUpdated ? (
-            <span style={{ fontSize: 11, color: '#43a047', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 11, color: 'var(--accent-green)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               ✓ 已更新
             </span>
           ) : (
@@ -1691,7 +1691,7 @@ export default function AgentsHub() {
               <span style={{
                 width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
                 background: onlineCount! > 0 ? 'var(--accent-green)' : 'var(--text-muted)',
-                boxShadow: onlineCount! > 0 ? '0 0 5px #43a047' : 'none',
+                boxShadow: onlineCount! > 0 ? '0 0 5px rgba(47,176,122,.7)' : 'none',
               }} />
               {onlineLabel}
             </span>

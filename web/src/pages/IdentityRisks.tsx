@@ -86,16 +86,16 @@ const SIGNAL_TYPE_OPTIONS = [
 const SEVERITY_OPTIONS = ['critical', 'high', 'medium', 'low', 'info']
 
 const SIGNAL_TYPE_COLOR: Record<string, string> = {
-  login_failure: '#ef4444',
-  impossible_travel: '#f97316',
-  privilege_escalation: '#a855f7',
-  lateral_movement: '#eab308',
-  data_exfiltration: '#ef4444',
-  anomalous_hours: '#3b82f6',
+  login_failure: 'var(--critical)',
+  impossible_travel: 'var(--high)',
+  privilege_escalation: 'var(--accent-blue)',
+  lateral_movement: 'var(--medium)',
+  data_exfiltration: 'var(--critical)',
+  anomalous_hours: 'var(--accent-blue)',
 }
 
 function signalTypeColor(type: string): string {
-  return SIGNAL_TYPE_COLOR[type] ?? '#6b7280'
+  return SIGNAL_TYPE_COLOR[type] ?? 'var(--text-muted)'
 }
 
 const RESTRICTION_TYPE_LABEL: Record<string, string> = {
@@ -148,10 +148,10 @@ function relativeTime(iso: string): string {
 
 /** Dot color based on signal score */
 function signalDotColor(score: number): string {
-  if (score >= 80) return '#e53935'
-  if (score >= 60) return '#fb8c00'
-  if (score >= 40) return '#fdd835'
-  return '#43a047'
+  if (score >= 80) return 'var(--critical)'
+  if (score >= 60) return 'var(--high)'
+  if (score >= 40) return 'var(--medium)'
+  return 'var(--accent-green)'
 }
 
 // ─── ScoreBreakdown ────────────────────────────────────────────────────────────
@@ -272,14 +272,14 @@ function ImpossibleTravelBanner({ signals, onDismiss }: TravelBannerProps) {
       gap: 8,
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 11.5, color: '#fdba74', lineHeight: 1.5 }}>
+      <span style={{ fontSize: 11.5, color: 'var(--high)', lineHeight: 1.5 }}>
         ⚠️ {message}
       </span>
       <button
         onClick={onDismiss}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#fdba74', fontSize: 15, lineHeight: 1, padding: '0 2px',
+          color: 'var(--high)', fontSize: 15, lineHeight: 1, padding: '0 2px',
           flexShrink: 0, marginTop: 1,
         }}
         title="关闭"
@@ -448,7 +448,7 @@ function PrivilegeRestrictionsPanel({ userId }: PrivilegeRestrictionsPanelProps)
   const restrictionTypeChipStyle = (active: boolean): React.CSSProperties => ({
     fontSize: 10, padding: '2px 8px', borderRadius: 3, cursor: 'pointer',
     background: active ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.06)',
-    color: active ? '#c084fc' : 'var(--text-muted)',
+    color: active ? 'var(--accent-blue)' : 'var(--text-muted)',
     border: `1px solid ${active ? 'rgba(168,85,247,0.4)' : 'rgba(255,255,255,0.1)'}`,
     userSelect: 'none',
   })
@@ -459,7 +459,7 @@ function PrivilegeRestrictionsPanel({ userId }: PrivilegeRestrictionsPanelProps)
         <div style={{
           position: 'absolute', bottom: 16, right: 16, zIndex: 100,
           background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.35)',
-          borderRadius: 6, padding: '6px 14px', fontSize: 12, color: '#86efac',
+          borderRadius: 6, padding: '6px 14px', fontSize: 12, color: 'var(--accent-green)',
         }}>
           {toast}
         </div>
@@ -472,7 +472,7 @@ function PrivilegeRestrictionsPanel({ userId }: PrivilegeRestrictionsPanelProps)
             <span style={{
               fontSize: 10, padding: '1px 6px', borderRadius: 10, fontWeight: 600,
               background: restrictions.length > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.15)',
-              color: restrictions.length > 0 ? '#fca5a5' : '#86efac',
+              color: restrictions.length > 0 ? 'var(--critical)' : 'var(--accent-green)',
             }}>
               {restrictions.length}
             </span>
@@ -482,7 +482,7 @@ function PrivilegeRestrictionsPanel({ userId }: PrivilegeRestrictionsPanelProps)
           {restrictions.length > 0 && (
             <button
               className="btn-secondary"
-              style={{ fontSize: 10, padding: '2px 10px', color: '#fca5a5', borderColor: 'rgba(239,68,68,0.3)' }}
+              style={{ fontSize: 10, padding: '2px 10px', color: 'var(--critical)', borderColor: 'rgba(239,68,68,0.3)' }}
               disabled={releasing}
               onClick={releaseAll}
             >
@@ -502,7 +502,7 @@ function PrivilegeRestrictionsPanel({ userId }: PrivilegeRestrictionsPanelProps)
       {loading ? (
         <div style={{ fontSize: 11.5, color: 'var(--text-muted)', padding: '8px 0' }}>加载中...</div>
       ) : restrictions.length === 0 && !showAddForm ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#86efac' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--accent-green)' }}>
           <span>✓</span>
           <span>当前无权限限制</span>
         </div>
@@ -639,7 +639,7 @@ function AddSignalForm({ userId, onSuccess }: AddSignalFormProps) {
         <div style={{
           position: 'absolute', top: -40, right: 0, zIndex: 100,
           background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.35)',
-          borderRadius: 6, padding: '5px 14px', fontSize: 12, color: '#86efac',
+          borderRadius: 6, padding: '5px 14px', fontSize: 12, color: 'var(--accent-green)',
           whiteSpace: 'nowrap',
         }}>
           ✓ 信号已添加
@@ -723,7 +723,7 @@ function AddSignalForm({ userId, onSuccess }: AddSignalFormProps) {
             onChange={e => { setSigMeta(e.target.value); if (metaErr) validateMeta(e.target.value) }}
             onBlur={() => validateMeta(sigMeta)}
           />
-          {metaErr && <div style={{ fontSize: 10.5, color: '#fca5a5', marginTop: -4 }}>{metaErr}</div>}
+          {metaErr && <div style={{ fontSize: 10.5, color: 'var(--critical)', marginTop: -4 }}>{metaErr}</div>}
 
           <button
             className="btn-primary"
@@ -749,10 +749,10 @@ interface AnomalyType {
 }
 
 const ANOMALY_TYPES: AnomalyType[] = [
-  { key: 'unusual_hours',      label: '异常时段',   icon: '🕐', color: '#3b82f6' },
-  { key: 'impossible_travel',  label: '不可能旅行', icon: '🌍', color: '#f97316' },
-  { key: 'new_device',         label: '新设备',     icon: '💻', color: '#a855f7' },
-  { key: 'data_exfiltration',  label: '数据渗漏',   icon: '📊', color: '#ef4444' },
+  { key: 'unusual_hours',      label: '异常时段',   icon: '🕐', color: 'var(--accent-blue)' },
+  { key: 'impossible_travel',  label: '不可能旅行', icon: '🌍', color: 'var(--high)' },
+  { key: 'new_device',         label: '新设备',     icon: '💻', color: 'var(--accent-blue)' },
+  { key: 'data_exfiltration',  label: '数据渗漏',   icon: '📊', color: 'var(--critical)' },
 ]
 
 function AnomalyDetectionSummary({ signals }: { signals: RiskSignal[] }) {
@@ -763,13 +763,13 @@ function AnomalyDetectionSummary({ signals }: { signals: RiskSignal[] }) {
   return (
     <div className="card" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: count > 0 ? '#93c5fd' : 'var(--text-secondary)' }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: count > 0 ? 'var(--accent-blue)' : 'var(--text-secondary)' }}>
           {count > 0 ? `检测到 ${count} 个行为异常` : '未检测到行为异常'}
         </span>
         {count > 0 && (
           <span style={{
             fontSize: 10, padding: '1px 7px', borderRadius: 10, fontWeight: 700,
-            background: 'rgba(239,68,68,0.2)', color: '#fca5a5',
+            background: 'rgba(239,68,68,0.2)', color: 'var(--critical)',
           }}>{count}</span>
         )}
       </div>
@@ -800,10 +800,10 @@ function AnomalyDetectionSummary({ signals }: { signals: RiskSignal[] }) {
 // ─── RiskScoreHistoryChart ────────────────────────────────────────────────────
 
 function scoreColor(score: number): string {
-  if (score >= 85) return '#ef4444'
-  if (score >= 70) return '#f97316'
-  if (score >= 40) return '#eab308'
-  return '#22c55e'
+  if (score >= 85) return 'var(--critical)'
+  if (score >= 70) return 'var(--high)'
+  if (score >= 40) return 'var(--medium)'
+  return 'var(--accent-green)'
 }
 
 function generateHistory(key: string, currentScore: number): number[] {
@@ -987,8 +987,8 @@ function RiskScoreHistoryChart({
         display: 'flex', gap: 16, marginTop: 8,
         fontSize: 11, color: 'var(--text-muted)',
       }}>
-        <span>最高: <strong style={{ color: '#ef4444' }}>{max}</strong></span>
-        <span>最低: <strong style={{ color: '#22c55e' }}>{min}</strong></span>
+        <span>最高: <strong style={{ color: 'var(--critical)' }}>{max}</strong></span>
+        <span>最低: <strong style={{ color: 'var(--accent-green)' }}>{min}</strong></span>
         <span>平均: <strong style={{ color: lineColor }}>{avg}</strong></span>
       </div>
     </div>
@@ -1031,7 +1031,7 @@ function PeerComparisonWidget({ identity }: { identity: IdentityRisk }) {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{
                 fontSize: 10.5, minWidth: 52, textAlign: 'right',
-                color: p.isSelf ? '#93c5fd' : 'var(--text-muted)',
+                color: p.isSelf ? 'var(--accent-blue)' : 'var(--text-muted)',
                 fontWeight: p.isSelf ? 700 : 400,
               }}>
                 {p.name}
@@ -1047,7 +1047,7 @@ function PeerComparisonWidget({ identity }: { identity: IdentityRisk }) {
               </div>
               <span style={{
                 fontSize: 10.5, minWidth: 24, textAlign: 'right',
-                color: p.isSelf ? '#93c5fd' : 'var(--text-muted)',
+                color: p.isSelf ? 'var(--accent-blue)' : 'var(--text-muted)',
                 fontWeight: p.isSelf ? 700 : 400,
               }}>
                 {p.score}
@@ -1061,7 +1061,7 @@ function PeerComparisonWidget({ identity }: { identity: IdentityRisk }) {
         borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8,
       }}>
         该用户风险高于{' '}
-        <strong style={{ color: pct >= 75 ? '#ef4444' : pct >= 50 ? '#f97316' : '#22c55e' }}>
+        <strong style={{ color: pct >= 75 ? 'var(--critical)' : pct >= 50 ? 'var(--high)' : 'var(--accent-green)' }}>
           {pct}%
         </strong>
         {' '}的同组成员
@@ -1144,7 +1144,7 @@ function AutomatedResponsePanel({ userId }: { userId: string }) {
               transition: left .2s;
             }
             .auto-toggle-input:checked + .auto-toggle-label {
-              background: #22c55e;
+              background: var(--accent-green);
             }
             .auto-toggle-input:checked + .auto-toggle-label::after {
               left: 20px;
@@ -1166,7 +1166,7 @@ function AutomatedResponsePanel({ userId }: { userId: string }) {
                   <span style={{
                     fontSize: 9.5, padding: '1px 6px', borderRadius: 10, fontWeight: 600,
                     background: active ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)',
-                    color: active ? '#86efac' : 'var(--text-muted)',
+                    color: active ? 'var(--accent-green)' : 'var(--text-muted)',
                   }}>
                     {active ? '已激活' : '未激活'}
                   </span>
@@ -1267,7 +1267,7 @@ function AnomalyTimeline({ userKey }: { userKey: string }) {
   const today = new Date()
   const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1
 
-  const riskColor = { high: '#ef4444', medium: '#f97316', low: '#3b82f6' }
+  const riskColor = { high: 'var(--critical)', medium: 'var(--high)', low: 'var(--accent-blue)' }
   const COL_W = 100 / 7 // percent per day
 
   return (
@@ -1317,7 +1317,7 @@ function AnomalyTimeline({ userKey }: { userKey: string }) {
           top: 18,
           transform: 'translateX(-50%)',
           fontSize: 8,
-          color: '#93c5fd',
+          color: 'var(--accent-blue)',
           fontWeight: 700,
           pointerEvents: 'none',
         }}>今</div>
@@ -1511,17 +1511,17 @@ function UBAPeerComparison({ userKey }: { userKey: string }) {
             <div key={m.label}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                 <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{m.label}</span>
-                <span style={{ fontSize: 10.5, color: isHigh ? '#fca5a5' : 'var(--text-secondary)' }}>
+                <span style={{ fontSize: 10.5, color: isHigh ? 'var(--critical)' : 'var(--text-secondary)' }}>
                   {m.userVal} vs {m.peerAvg} <span style={{ color: 'var(--text-muted)' }}>{m.unit}</span>
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ fontSize: 9, color: isHigh ? '#ef4444' : '#93c5fd', minWidth: 40 }}>该用户</span>
+                  <span style={{ fontSize: 9, color: isHigh ? 'var(--critical)' : 'var(--accent-blue)', minWidth: 40 }}>该用户</span>
                   <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{
                       width: `${userPct}%`, height: '100%',
-                      background: isHigh ? '#ef4444' : '#3b82f6',
+                      background: isHigh ? 'var(--critical)' : 'var(--accent-blue)',
                       borderRadius: 3, transition: 'width .4s',
                     }} />
                   </div>
@@ -1611,7 +1611,7 @@ function generatePrivOps(key: string): Array<{
 
 function PrivilegedOpLog({ userKey }: { userKey: string }) {
   const ops = generatePrivOps(userKey)
-  const riskColor = { critical: '#ef4444', high: '#f97316', medium: '#eab308' }
+  const riskColor = { critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)' }
   return (
     <div className="card">
       <div className="card-title" style={{ marginBottom: 8 }}>特权操作日志 (近5条)</div>
@@ -1692,12 +1692,12 @@ function hasMFA(key: string): boolean {
 function getSessionRiskFactors(key: string): Array<{ icon: string; label: string; color: string }> {
   const rand = seededRand(hashKey(key + '_srf'))
   const allFactors = [
-    { icon: '🕒', label: '非常规登录时间', color: '#3b82f6' },
-    { icon: '📍', label: '异常地理位置', color: '#f97316' },
-    { icon: '🔑', label: '特权账户访问', color: '#a855f7' },
-    { icon: '💻', label: '未知设备', color: '#eab308' },
-    { icon: '🌐', label: '境外IP访问', color: '#ef4444' },
-    { icon: '🔄', label: '频繁会话切换', color: '#06b6d4' },
+    { icon: '🕒', label: '非常规登录时间', color: 'var(--accent-blue)' },
+    { icon: '📍', label: '异常地理位置', color: 'var(--high)' },
+    { icon: '🔑', label: '特权账户访问', color: 'var(--accent-blue)' },
+    { icon: '💻', label: '未知设备', color: 'var(--medium)' },
+    { icon: '🌐', label: '境外IP访问', color: 'var(--critical)' },
+    { icon: '🔄', label: '频繁会话切换', color: 'var(--accent-blue)' },
   ]
   const count = 1 + Math.floor(rand() * 3)
   const shuffled = [...allFactors].sort(() => rand() - 0.5)
@@ -1744,7 +1744,7 @@ function SessionDetailCard({ userKey }: { userKey: string }) {
           <span style={{
             fontSize: 10.5, padding: '2px 10px', borderRadius: 10, fontWeight: 600,
             background: mfa ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-            color: mfa ? '#86efac' : '#fca5a5',
+            color: mfa ? 'var(--accent-green)' : 'var(--critical)',
             border: `1px solid ${mfa ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
           }}>
             {mfa ? '✓ 已通过MFA' : '✗ 未使用MFA'}
@@ -1813,7 +1813,7 @@ function DetailPanel({
 
   return (
     <div style={{
-      width: 380, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)',
+      width: 380, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)',
       display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
     }}>
       {/* Panel header */}
@@ -1828,7 +1828,7 @@ function DetailPanel({
       {/* Detail sub-tabs */}
       <div style={{
         display: 'flex', borderBottom: '1px solid var(--border)',
-        background: 'rgba(0,0,0,0.15)',
+        background: 'var(--bg-card)',
       }}>
         {([['overview', '概览'], ['history', '风险历史'], ['uba', '行为分析']] as const).map(([tab, label]) => (
           <button

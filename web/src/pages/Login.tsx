@@ -316,7 +316,7 @@ export default function Login() {
             alignItems: 'center',
             justifyContent: 'space-between',
             fontSize: 12,
-            color: '#f0b429',
+            color: 'var(--medium)',
             padding: '8px 12px',
             background: 'rgba(251,191,36,0.10)',
             border: '1px solid rgba(251,191,36,0.35)',
@@ -330,7 +330,7 @@ export default function Login() {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#f0b429',
+                color: 'var(--medium)',
                 fontSize: 16,
                 lineHeight: 1,
                 padding: '0 0 0 8px',
@@ -403,7 +403,7 @@ export default function Login() {
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleOtpSubmit() } }}
               />
               {otpErr && (
-                <span style={{ fontSize: 11, color: '#ef5350', marginTop: 5, display: 'block' }}>
+                <span style={{ fontSize: 11, color: 'var(--critical)', marginTop: 5, display: 'block' }}>
                   {otpErr}
                 </span>
               )}
@@ -412,10 +412,10 @@ export default function Login() {
             {successMsg && (
               <div style={{
                 fontSize: 12,
-                color: '#4caf50',
+                color: 'var(--accent-green)',
                 padding: '8px 12px',
-                background: 'rgba(76,175,80,0.1)',
-                border: '1px solid rgba(76,175,80,0.3)',
+                background: 'rgba(47,176,122,0.1)',
+                border: '1px solid rgba(47,176,122,0.3)',
                 borderRadius: 8,
                 fontWeight: 600,
               }}>
@@ -457,7 +457,7 @@ export default function Login() {
                 className="xsiam-input"
               />
               {usernameErr && (
-                <span style={{ fontSize: 11, color: '#ef5350', marginTop: 5, display: 'block' }}>
+                <span style={{ fontSize: 11, color: 'var(--critical)', marginTop: 5, display: 'block' }}>
                   {usernameErr}
                 </span>
               )}
@@ -477,7 +477,7 @@ export default function Login() {
                 className="xsiam-input"
               />
               {passwordErr && (
-                <span style={{ fontSize: 11, color: '#ef5350', marginTop: 5, display: 'block' }}>
+                <span style={{ fontSize: 11, color: 'var(--critical)', marginTop: 5, display: 'block' }}>
                   {passwordErr}
                 </span>
               )}
@@ -497,7 +497,7 @@ export default function Login() {
                   checked={rememberMe}
                   onChange={e => setRememberMe(e.target.checked)}
                   disabled={loading || isLocked}
-                  style={{ accentColor: '#4fa3e0', cursor: 'inherit', width: 13, height: 13 }}
+                  style={{ accentColor: 'var(--accent-blue)', cursor: 'inherit', width: 13, height: 13 }}
                 />
                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>记住我</span>
               </label>
@@ -512,10 +512,10 @@ export default function Login() {
             {successMsg && (
               <div style={{
                 fontSize: 12,
-                color: '#4caf50',
+                color: 'var(--accent-green)',
                 padding: '8px 12px',
-                background: 'rgba(76,175,80,0.1)',
-                border: '1px solid rgba(76,175,80,0.3)',
+                background: 'rgba(47,176,122,0.1)',
+                border: '1px solid rgba(47,176,122,0.3)',
                 borderRadius: 8,
                 fontWeight: 600,
               }}>
@@ -527,10 +527,10 @@ export default function Login() {
             {error && !successMsg && (
               <div style={{
                 fontSize: 12,
-                color: '#ef5350',
+                color: 'var(--critical)',
                 padding: '8px 12px',
-                background: 'rgba(229,57,53,0.10)',
-                border: '1px solid rgba(229,57,53,0.30)',
+                background: 'rgba(224,80,80,0.10)',
+                border: '1px solid rgba(224,80,80,0.30)',
                 borderRadius: 8,
               }}>
                 {error}
@@ -541,10 +541,10 @@ export default function Login() {
             {isLocked && (
               <div style={{
                 fontSize: 12,
-                color: '#ff9800',
+                color: 'var(--medium)',
                 padding: '8px 12px',
-                background: 'rgba(255,152,0,0.10)',
-                border: '1px solid rgba(255,152,0,0.30)',
+                background: 'rgba(200,160,48,0.10)',
+                border: '1px solid rgba(200,160,48,0.30)',
                 borderRadius: 8,
                 textAlign: 'center',
               }}>

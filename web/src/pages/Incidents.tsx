@@ -59,14 +59,14 @@ const STATUS_LABELS: Record<string, string> = {
   contained: '已遏制', resolved: '已解决', closed: '已关闭',
 }
 const STATUS_COLORS: Record<string, string> = {
-  new: '#e53935', investigating: '#4fa3e0', in_progress: '#4fa3e0',
-  contained: '#f9a825', resolved: '#2fb07a', closed: '#546e7a',
+  new: 'var(--critical)', investigating: 'var(--accent-blue)', in_progress: 'var(--accent-blue)',
+  contained: 'var(--medium)', resolved: 'var(--accent-green)', closed: 'var(--text-muted)',
 }
 const SEV_LABELS: Record<string, string> = {
   critical: '严重', high: '高危', medium: '中危', low: '低危', info: '信息',
 }
 const SEV_COLORS: Record<string, string> = {
-  critical: '#e53935', high: '#ff6f00', medium: '#f9a825', low: '#2fb07a', info: '#546e7a',
+  critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)', low: 'var(--accent-green)', info: 'var(--text-muted)',
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ function fmtSlaRemain(ms: number): string {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function SevBadge({ sev }: { sev: string }) {
-  const color = SEV_COLORS[sev] ?? '#546e7a'
+  const color = SEV_COLORS[sev] ?? 'var(--text-muted)'
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -168,7 +168,7 @@ function SevBadge({ sev }: { sev: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const c = STATUS_COLORS[status] ?? '#546e7a'
+  const c = STATUS_COLORS[status] ?? 'var(--text-muted)'
   const pulsing = status === 'new' || status === 'in_progress' || status === 'investigating'
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5 }}>
@@ -186,7 +186,7 @@ function StatusBadge({ status }: { status: string }) {
 function ScoreBadge({ score }: { score?: number }) {
   const s = score ?? 0
   if (s === 0) return <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>-</span>
-  const color = s >= 80 ? '#e53935' : s >= 60 ? '#ff6f00' : s >= 40 ? '#f9a825' : '#2fb07a'
+  const color = s >= 80 ? 'var(--critical)' : s >= 60 ? 'var(--high)' : s >= 40 ? 'var(--medium)' : 'var(--accent-green)'
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -203,7 +203,7 @@ function ScoreBadge({ score }: { score?: number }) {
 
 function SmartScoreGauge({ score }: { score?: number }) {
   const s = score ?? 0
-  const color = s >= 80 ? '#e53935' : s >= 60 ? '#ff6f00' : s >= 40 ? '#f9a825' : s > 0 ? '#2fb07a' : '#3f4e6a'
+  const color = s >= 80 ? 'var(--critical)' : s >= 60 ? 'var(--high)' : s >= 40 ? 'var(--medium)' : s > 0 ? 'var(--accent-green)' : 'var(--border)'
   const TOOLTIP = '基于告警数量、严重程度、资产价值和MITRE战术加权计算'
 
   // SVG arc: center (60,60), radius 48, arc from 210° to 330° (240° sweep)
@@ -303,8 +303,8 @@ function MitreHeatmap({ activeTactics }: { activeTactics?: string[] }) {
               style={{
                 padding: '7px 5px 5px',
                 borderRadius: 4,
-                background: isActive ? '#e5393522' : 'rgba(255,255,255,.04)',
-                border: `1px solid ${isActive ? '#e5393555' : 'rgba(255,255,255,.07)'}`,
+                background: isActive ? 'rgba(224,80,80,.13)' : 'rgba(255,255,255,.04)',
+                border: `1px solid ${isActive ? 'rgba(224,80,80,.33)' : 'rgba(255,255,255,.07)'}`,
                 textAlign: 'center',
                 cursor: 'default',
                 transition: 'background .15s',
@@ -315,17 +315,17 @@ function MitreHeatmap({ activeTactics }: { activeTactics?: string[] }) {
                 <span style={{
                   position: 'absolute', top: -5, right: -5,
                   width: 14, height: 14, borderRadius: '50%',
-                  background: '#e53935', color: '#fff',
+                  background: 'var(--critical)', color: '#fff',
                   fontSize: 8, fontWeight: 800,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 0 4px #e53935',
+                  boxShadow: '0 0 4px rgba(224,80,80,.6)',
                 }}>
                   {count}
                 </span>
               )}
               <div style={{
                 width: '100%', height: 28, borderRadius: 3,
-                background: isActive ? '#e5393540' : '#1e2a3a',
+                background: isActive ? 'rgba(224,80,80,.25)' : 'var(--bg-card)',
                 marginBottom: 5,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
@@ -335,7 +335,7 @@ function MitreHeatmap({ activeTactics }: { activeTactics?: string[] }) {
               </div>
               <div style={{
                 fontSize: 8.5,
-                color: isActive ? '#ff8a80' : 'var(--text-muted)',
+                color: isActive ? 'var(--critical)' : 'var(--text-muted)',
                 fontWeight: isActive ? 700 : 400,
                 lineHeight: 1.25,
                 wordBreak: 'break-word',
@@ -354,7 +354,7 @@ function MitreHeatmap({ activeTactics }: { activeTactics?: string[] }) {
 
 function SlaDot({ inc }: { inc: Incident }) {
   const { status, remainMs } = slaInfo(inc)
-  const color = status === 'breached' ? '#e53935' : status === 'at-risk' ? '#ff6f00' : '#2fb07a'
+  const color = status === 'breached' ? 'var(--critical)' : status === 'at-risk' ? 'var(--high)' : 'var(--accent-green)'
   const tooltip = `SLA: ${fmtSlaRemain(remainMs)}`
   return (
     <span
@@ -569,7 +569,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
 
   const open = !!inc
   const score = scoreData?.score ?? inc?.smart_score ?? 0
-  const scoreColor = score >= 80 ? '#e53935' : score >= 60 ? '#ff6f00' : score >= 40 ? '#f9a825' : score > 0 ? '#2fb07a' : '#3f4e6a'
+  const scoreColor = score >= 80 ? 'var(--critical)' : score >= 60 ? 'var(--high)' : score >= 40 ? 'var(--medium)' : score > 0 ? 'var(--accent-green)' : 'var(--border)'
   const scoreLabel = score >= 80 ? '立即响应' : score >= 60 ? '尽快调查' : score >= 40 ? '需关注' : score > 0 ? '低风险' : '待评分'
 
   // Unique hosts/users from alerts
@@ -607,10 +607,10 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
   // event_type from backend: 'created' | 'assigned' | 'status' | 'note'
   // from SPA local: 'playbook'
   const evtColor: Record<string, string> = {
-    created: '#4fa3e0', assigned: '#9b59b6',
-    status: '#f9a825', status_change: '#f9a825',
-    note: '#f9a825', playbook: '#e67e22',
-    resolved: '#2fb07a', alert: '#e53935',
+    created: 'var(--accent-blue)', assigned: 'var(--accent-blue)',
+    status: 'var(--medium)', status_change: 'var(--medium)',
+    note: 'var(--medium)', playbook: 'var(--accent-orange)',
+    resolved: 'var(--accent-green)', alert: 'var(--critical)',
   }
   const evtLabel: Record<string, string> = {
     created: '创建', assigned: '分配', status: '状态变更',
@@ -628,7 +628,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
           onClick={onClose}
           style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,.52)',
+            background: 'var(--bg-overlay)',
             backdropFilter: 'blur(2px)',
             zIndex: 400,
           }}
@@ -640,7 +640,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
         position: 'fixed', top: 0, bottom: 0,
         right: open ? 0 : '-61.8vw',
         width: '61.8vw',
-        background: 'var(--bg-primary)',
+        background: 'var(--bg-drawer)',
         borderLeft: '1px solid var(--border-light)',
         zIndex: 500,
         transition: 'right .26s cubic-bezier(.4,0,.2,1)',
@@ -652,8 +652,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
             {/* ── Header ────────────────────────────────────────── */}
             <div style={{
               padding: '14px 20px 12px',
-              borderBottom: '1px solid var(--border)',
-              background: 'var(--bg-secondary)',
+              background: 'var(--bg-card2)',
               flexShrink: 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
@@ -690,7 +689,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     </span>
                     {(inc.host_count ?? 0) > 0 && (
                       <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        主机&nbsp;<span style={{ color: '#4fa3e0', fontWeight: 600 }}>{inc.host_count}</span>
+                        主机&nbsp;<span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{inc.host_count}</span>
                       </span>
                     )}
                     {primaryTactic && (
@@ -706,7 +705,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                       ? <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                           负责人:&nbsp;<span style={{ color: 'var(--text-secondary)' }}>{inc.assigned_to}</span>
                         </span>
-                      : <span style={{ fontSize: 11, color: '#ff6f00', fontWeight: 500 }}>未分配</span>
+                      : <span style={{ fontSize: 11, color: 'var(--high)', fontWeight: 500 }}>未分配</span>
                     }
                   </div>
                 </div>
@@ -737,7 +736,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                   {canResolve && (
                     <button
                       className="btn-primary"
-                      style={{ fontSize: 11, background: '#2fb07a', border: 'none' }}
+                      style={{ fontSize: 11, background: 'var(--accent-green)', border: 'none' }}
                       disabled={resolving}
                       onClick={resolve}
                     >
@@ -843,7 +842,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         {scoreData?.factors && Object.keys(scoreData.factors).length > 0 ? (
                           Object.entries(scoreData.factors).map(([k, v]) => {
                             const val = Math.round(v * 100) / 100
-                            const barColor = val > 70 ? '#e53935' : val > 40 ? '#ff6f00' : '#f9a825'
+                            const barColor = val > 70 ? 'var(--critical)' : val > 40 ? 'var(--high)' : 'var(--medium)'
                             return (
                               <div key={k} style={{ marginBottom: 7 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
@@ -943,7 +942,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                             {a.name}
                           </span>
                           {(a.host ?? a.asset_name) && (
-                            <span style={{ fontSize: 10.5, color: '#4fa3e0', flexShrink: 0 }}>{a.host ?? a.asset_name}</span>
+                            <span style={{ fontSize: 10.5, color: 'var(--accent-blue)', flexShrink: 0 }}>{a.host ?? a.asset_name}</span>
                           )}
                         </div>
                       ))}
@@ -959,7 +958,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
 
                     {/* Root cause */}
                     {inc.root_cause && (
-                      <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid #e53935' }}>
+                      <div className="card" style={{ padding: '14px 16px', borderLeft: '3px solid var(--critical)' }}>
                         <div className="card-title" style={{ marginBottom: 6 }}>根因分析</div>
                         <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                           {inc.root_cause}
@@ -984,7 +983,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                       return (
                         <div className="card" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>处置耗时:</span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#2fb07a' }}>{dur}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-green)' }}>{dur}</span>
                         </div>
                       )
                     })()}
@@ -1005,12 +1004,12 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                         <span style={{ fontSize: 18 }}>🤖</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#4fa3e0' }}>AI 事件摘要</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-blue)' }}>AI 事件摘要</span>
                         {aiSummaryLoading && (
                           <span style={{ fontSize: 10.5, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <svg width={12} height={12} viewBox="0 0 12 12"
                               style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
-                              <circle cx={6} cy={6} r={4} fill="none" stroke="#4fa3e0" strokeWidth={2} strokeDasharray="14 6" />
+                              <circle cx={6} cy={6} r={4} fill="none" stroke="var(--accent-blue)" strokeWidth={2} strokeDasharray="14 6" />
                             </svg>
                             分析中...
                           </span>
@@ -1035,8 +1034,8 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                       {!aiSummaryLoading && aiSummaryError && (
                         <div style={{
                           padding: '12px 14px', borderRadius: 5,
-                          background: 'rgba(229,57,53,.06)', border: '1px solid rgba(229,57,53,.2)',
-                          fontSize: 12.5, color: '#e57373', lineHeight: 1.6,
+                          background: 'rgba(224,80,80,.06)', border: '1px solid rgba(224,80,80,.20)',
+                          fontSize: 12.5, color: 'var(--critical)', lineHeight: 1.6,
                         }}>
                           AI摘要暂时不可用，请稍后重试。
                         </div>
@@ -1071,27 +1070,27 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         {
                           label: '严重程度', weight: '40%',
                           detail: `${SEV_LABELS[sev] ?? sev} → +${sevScore}分`,
-                          score: sevScore, color: SEV_COLORS[sev] ?? '#f9a825',
+                          score: sevScore, color: SEV_COLORS[sev] ?? 'var(--medium)',
                         },
                         {
                           label: '告警数量', weight: '20%',
                           detail: `${alertCnt}个告警 → +${alertScore}分`,
-                          score: alertScore, color: '#ff6f00',
+                          score: alertScore, color: 'var(--high)',
                         },
                         {
                           label: '资产价值', weight: '15%',
                           detail: `${assetType} → +${assetScore}分`,
-                          score: assetScore, color: '#4fa3e0',
+                          score: assetScore, color: 'var(--accent-blue)',
                         },
                         {
                           label: 'MITRE覆盖', weight: '15%',
                           detail: `${tacticCnt}个战术 → +${mitreScore}分`,
-                          score: mitreScore, color: '#9b59b6',
+                          score: mitreScore, color: 'var(--accent-blue)',
                         },
                         {
                           label: '时间因素', weight: '10%',
                           detail: `${timeLabel} → +${timeScore}分`,
-                          score: timeScore, color: '#2fb07a',
+                          score: timeScore, color: 'var(--accent-green)',
                         },
                       ]
 
@@ -1146,7 +1145,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>综合得分</span>
                             <span style={{
                               fontSize: 16, fontWeight: 800,
-                              color: score >= 80 ? '#e53935' : score >= 60 ? '#ff6f00' : score >= 40 ? '#f9a825' : '#2fb07a',
+                              color: score >= 80 ? 'var(--critical)' : score >= 60 ? 'var(--high)' : score >= 40 ? 'var(--medium)' : 'var(--accent-green)',
                             }}>
                               {sevScore + alertScore + assetScore + mitreScore + timeScore} 分
                             </span>
@@ -1175,8 +1174,8 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                           {/* Colored severity dot */}
                           <span style={{
                             width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                            background: SEV_COLORS[a.severity] ?? '#546e7a',
-                            boxShadow: `0 0 4px ${SEV_COLORS[a.severity] ?? '#546e7a'}80`,
+                            background: SEV_COLORS[a.severity] ?? 'var(--text-muted)',
+                            boxShadow: `0 0 4px ${SEV_COLORS[a.severity] ?? 'var(--text-muted)'}80`,
                           }} />
                           <SevBadge sev={a.severity} />
                           <span style={{ flex: 1, fontSize: 12.5, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1190,7 +1189,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         <div style={{ display: 'flex', gap: 14, fontSize: 11, color: 'var(--text-muted)' }}>
                           {(a.host ?? a.asset_name) && <span>🖥 {a.host ?? a.asset_name}</span>}
                           {(a.user ?? a.user_name) && <span>👤 {a.user ?? a.user_name}</span>}
-                          {a.mitre_tactic && <span style={{ color: '#4fa3e0' }}>🎯 {a.mitre_tactic}</span>}
+                          {a.mitre_tactic && <span style={{ color: 'var(--accent-blue)' }}>🎯 {a.mitre_tactic}</span>}
                           {a.source_type && <span>{a.source_type}</span>}
                         </div>
                       </div>
@@ -1217,11 +1216,11 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                         {/* Vertical line */}
                         <div style={{
                           position: 'absolute', left: 9, top: 8, bottom: 8, width: 1,
-                          background: 'linear-gradient(to bottom, #e5393580, transparent)',
+                          background: 'linear-gradient(to bottom, rgba(224,80,80,.5), transparent)',
                         }} />
                         {alertFeed.map((a: any, i: number) => {
                           const sev = a.severity ?? 'info'
-                          const sevColor = SEV_COLORS[sev] ?? '#546e7a'
+                          const sevColor = SEV_COLORS[sev] ?? 'var(--text-muted)'
                           const ts = a.triggered_at ?? a.created_at
                           return (
                             <div key={a._key ?? i} style={{ marginBottom: 16, position: 'relative' }}>
@@ -1253,7 +1252,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                                 <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
                                   {(a.host ?? a.asset_name) && <span>🖥 {a.host ?? a.asset_name}</span>}
                                   {(a.user ?? a.user_name) && <span>👤 {a.user ?? a.user_name}</span>}
-                                  {a.mitre_tactic && <span style={{ color: '#4fa3e0' }}>🎯 {a.mitre_tactic}</span>}
+                                  {a.mitre_tactic && <span style={{ color: 'var(--accent-blue)' }}>🎯 {a.mitre_tactic}</span>}
                                 </div>
                               </div>
                             </div>
@@ -1278,12 +1277,12 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     {inc && !timelineLoading && (
                       <div style={{
                         marginBottom: 20, padding: '13px 16px',
-                        background: 'rgba(229,57,53,.05)',
-                        border: '1px solid rgba(229,57,53,.2)',
-                        borderLeft: '3px solid #e53935',
+                        background: 'rgba(224,80,80,.05)',
+                        border: '1px solid rgba(224,80,80,.2)',
+                        borderLeft: '3px solid var(--critical)',
                         borderRadius: 6,
                       }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 600, color: '#e57373', marginBottom: 6 }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--critical)', marginBottom: 6 }}>
                           攻击链叙述
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.75 }}>
@@ -1304,7 +1303,7 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     <div style={{ position: 'relative', paddingLeft: 28 }}>
                       <div style={{ position: 'absolute', left: 7, top: 8, bottom: 8, width: 1, background: 'var(--border)' }} />
                       {timeline.map((item, i) => {
-                        const color = evtColor[item.event_type] ?? '#4fa3e0'
+                        const color = evtColor[item.event_type] ?? 'var(--accent-blue)'
                         const label = evtLabel[item.event_type] ?? item.event_type.replace(/_/g, ' ')
                         // Icon per event type
                         const icon = item.event_type === 'alert' ? '🚨'
@@ -1438,9 +1437,9 @@ function IncidentDrawer({ inc, onClose, onRefresh }: DrawerProps) {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                       {[
-                        { label: '关联告警', value: inc.alert_count, color: '#e53935' },
-                        { label: '涉及主机', value: inc.host_count ?? (alertHosts.length || '-'), color: '#4fa3e0' },
-                        { label: '持续时间', value: fmtDuration(inc.first_seen ?? inc.created_at), color: '#f9a825' },
+                        { label: '关联告警', value: inc.alert_count, color: 'var(--critical)' },
+                        { label: '涉及主机', value: inc.host_count ?? (alertHosts.length || '-'), color: 'var(--accent-blue)' },
+                        { label: '持续时间', value: fmtDuration(inc.first_seen ?? inc.created_at), color: 'var(--medium)' },
                       ].map(({ label, value, color }) => (
                         <div key={label} style={{
                           padding: '12px', background: 'var(--bg-card)',
@@ -1734,10 +1733,10 @@ export default function Incidents() {
           flexShrink: 0,
         }}>
           {[
-            { label: '新建', value: pageStats.new,        color: '#e53935' },
-            { label: '处理中', value: pageStats.active,   color: '#4fa3e0' },
-            { label: '严重', value: pageStats.critical,   color: '#e53935' },
-            { label: '未分配', value: pageStats.unassigned, color: '#ff6f00' },
+            { label: '新建', value: pageStats.new,        color: 'var(--critical)' },
+            { label: '处理中', value: pageStats.active,   color: 'var(--accent-blue)' },
+            { label: '严重', value: pageStats.critical,   color: 'var(--critical)' },
+            { label: '未分配', value: pageStats.unassigned, color: 'var(--high)' },
           ].map(({ label, value, color }) => (
             <div key={label} style={{
               padding: '6px 18px', fontSize: 11.5, borderRight: '1px solid var(--border)',
@@ -1867,12 +1866,12 @@ export default function Incidents() {
         }}>
           <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>已选 {checked.size} 条</span>
           <button className="btn-secondary" style={{ fontSize: 11 }} onClick={bulkAssign}>批量分配</button>
-          <button className="btn-secondary" style={{ fontSize: 11, color: '#2fb07a', borderColor: '#2fb07a' }}
+          <button className="btn-secondary" style={{ fontSize: 11, color: 'var(--accent-green)', borderColor: 'var(--accent-green)' }}
             onClick={() => bulkStatus('resolved', '已解决')}>批量解决</button>
           <button className="btn-secondary" style={{ fontSize: 11 }}
             onClick={() => bulkStatus('closed', '已关闭')}>批量关闭</button>
           {checked.size >= 2 && (
-            <button className="btn-secondary" style={{ fontSize: 11, color: '#9b59b6', borderColor: '#9b59b6' }}
+            <button className="btn-secondary" style={{ fontSize: 11, color: 'var(--accent-blue)', borderColor: 'var(--accent-blue)' }}
               onClick={mergeIncidents}>合并事件</button>
           )}
           <button
@@ -1965,7 +1964,7 @@ export default function Incidents() {
                   <input type="checkbox" checked={checked.has(inc._key)} onChange={() => toggleCheck(inc._key)} />
                 </td>
                 <td>
-                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#4fa3e0', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)', fontWeight: 600 }}>
                     INC-{inc._key.slice(-6).padStart(6, '0')}
                   </span>
                 </td>
@@ -1989,7 +1988,7 @@ export default function Incidents() {
                     <SevBadge sev={inc.severity} />
                     {(inc.smart_score ?? 0) > 0 && (() => {
                       const ss = inc.smart_score!
-                      const ssColor = ss >= 80 ? '#e53935' : ss >= 60 ? '#ff6f00' : '#f9a825'
+                      const ssColor = ss >= 80 ? 'var(--critical)' : ss >= 60 ? 'var(--high)' : 'var(--medium)'
                       return (
                         <span style={{
                           display: 'inline-flex', alignItems: 'center',
@@ -2014,7 +2013,7 @@ export default function Incidents() {
                 <td style={{ fontSize: 11.5 }}>
                   {inc.assigned_to
                     ? <span style={{ color: 'var(--text-secondary)' }}>{inc.assigned_to}</span>
-                    : <span style={{ fontSize: 11, color: '#ff6f00' }}>未分配</span>
+                    : <span style={{ fontSize: 11, color: 'var(--high)' }}>未分配</span>
                   }
                 </td>
                 <td>
@@ -2095,11 +2094,11 @@ export default function Incidents() {
           <div
             onClick={() => setShowNew(false)}
             onKeyDown={e => e.key === 'Escape' && setShowNew(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 400 }}
+            style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }}
           />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 460, background: 'var(--bg-card)',
+            width: 460, background: 'var(--bg-modal)',
             border: '1px solid var(--border-light)', borderRadius: 8,
             zIndex: 600, padding: '24px 24px 20px',
             boxShadow: '0 8px 32px rgba(0,0,0,.4)',

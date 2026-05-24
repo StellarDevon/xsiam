@@ -71,7 +71,7 @@ const GEO_COUNTRIES: {
 ]
 
 function geoThreatColor(level: 'critical' | 'high' | 'medium'): string {
-  return level === 'critical' ? '#e53935' : level === 'high' ? '#ff6f00' : '#f9a825'
+  return level === 'critical' ? 'var(--critical)' : level === 'high' ? 'var(--high)' : 'var(--medium)'
 }
 
 // ─── Deterministic incident resolution trend (7 days) ─────────────────────
@@ -100,8 +100,8 @@ function truncate(s: string, max: number): string {
 }
 
 function severityDotColor(severity: string): string {
-  const m: Record<string, string> = { critical: '#e53935', high: '#ff6f00', medium: '#f9a825', low: '#2a9060' }
-  return m[severity?.toLowerCase()] ?? '#9ea3b0'
+  const m: Record<string, string> = { critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)', low: 'var(--low)' }
+  return m[severity?.toLowerCase()] ?? 'var(--text-muted)'
 }
 
 function timeAgo(isoStr: string): string {
@@ -121,21 +121,21 @@ const YESTERDAY_COMPARISON = [
 ]
 
 const SOURCES = [
-  { label: '// NGFW', color: '#e05a2b' },
+  { label: '// NGFW', color: 'var(--high)' },
   { label: 'Google Cloud', color: '#4285f4' },
   { label: '▶ amazon webservices', color: '#ff9900' },
-  { label: '◼ Azure', color: '#0078d4' },
-  { label: '▶ Office 365', color: '#d83b01' },
+  { label: '◼ Azure', color: 'var(--accent-blue)' },
+  { label: '▶ Office 365', color: 'var(--high)' },
   { label: 'okta', color: '#009bde' },
   { label: '▶ Proofpoint', color: '#1a73e8' },
-  { label: '✦ PRISMA CLOUD', color: '#fa582d' },
-  { label: '/ APACHE', color: '#d22128' },
+  { label: '✦ PRISMA CLOUD', color: 'var(--high)' },
+  { label: '/ APACHE', color: 'var(--critical)' },
 ]
 
 // ─── Security Score Gauge ──────────────────────────────────────────────────
 function SecurityScoreGauge({ score }: { score: number }) {
   const clamped = Math.min(100, Math.max(0, score))
-  const color = clamped < 40 ? '#e53935' : clamped < 70 ? '#ff6f00' : '#2a9060'
+  const color = clamped < 40 ? 'var(--critical)' : clamped < 70 ? 'var(--high)' : 'var(--low)'
 
   // SVG arc math: full circle = 2πr, use 270° arc
   const r = 26
@@ -376,12 +376,12 @@ function TopAlertsByHost({ navigate }: { navigate: (path: string) => void }) {
                 <div style={{
                   height: '100%',
                   width: `${Math.round((h.alert_count / maxCount) * 100)}%`,
-                  background: '#e53935',
+                  background: 'var(--critical)',
                   borderRadius: 3,
                   transition: 'width .3s ease',
                 }}/>
               </div>
-              <span style={{ width: 28, textAlign: 'right', fontSize: 10, color: '#e53935', fontWeight: 700, flexShrink: 0 }}>
+              <span style={{ width: 28, textAlign: 'right', fontSize: 10, color: 'var(--critical)', fontWeight: 700, flexShrink: 0 }}>
                 {h.alert_count}
               </span>
             </div>
@@ -431,9 +431,9 @@ function ensureFlashStyle() {
     style.id = FLASH_STYLE_ID
     style.textContent = `
 @keyframes alertFlash {
-  0%   { background-color: rgba(249,168,37,0.35); border-color: #f9a825; }
-  60%  { background-color: rgba(249,168,37,0.15); border-color: rgba(249,168,37,0.5); }
-  100% { background-color: transparent; border-color: var(--border); }
+  0%   { background-color: rgba(200,160,48,0.35); border-color: 'var(--medium)'; }
+  60%  { background-color: rgba(200,160,48,0.15); border-color: rgba(200,160,48,0.5); }
+  100% { background-color: transparent; border-color: 'var(--border)'; }
 }
 .alert-feed-new {
   animation: alertFlash 1.2s ease forwards;
@@ -674,7 +674,7 @@ export default function Dashboard() {
       {toast && (
         <div style={{
           position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-          background: '#2a9060', color: '#fff', padding: '6px 18px', borderRadius: 20,
+          background: 'var(--accent-green)', color: '#fff', padding: '6px 18px', borderRadius: 20,
           fontSize: 12, fontWeight: 600, zIndex: 500, pointerEvents: 'none',
           boxShadow: '0 2px 12px rgba(0,0,0,.35)',
         }}>
@@ -729,8 +729,8 @@ export default function Dashboard() {
           </span>
           {/* Live pulse indicator */}
           <span style={{
-            width: 6, height: 6, borderRadius: '50%', background: '#e53935',
-            boxShadow: '0 0 6px #e53935',
+            width: 6, height: 6, borderRadius: '50%', background: 'var(--critical)',
+            boxShadow: '0 0 6px var(--critical)',
             animation: 'none',
             display: 'inline-block',
           }}/>
@@ -813,13 +813,13 @@ export default function Dashboard() {
             borderBottom: '1px solid var(--border)',
           }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>41.7K</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a8fa0" strokeWidth="1.8">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8">
               <rect x="2" y="3" width="20" height="14" rx="2"/>
               <line x1="8" y1="21" x2="16" y2="21"/>
               <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
             <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1, color: 'var(--text-muted)', textTransform: 'uppercase' }}>终端</span>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#0078d4', boxShadow: '0 0 4px #0078d4', marginLeft: 'auto', flexShrink: 0 }} />
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent-blue)', boxShadow: '0 0 4px #0078d4', marginLeft: 'auto', flexShrink: 0 }} />
           </div>
 
           {/* Vendor list */}
@@ -871,7 +871,7 @@ export default function Dashboard() {
             <path d="M0,190 C90,190 140,206 205,211" stroke="#d83b01" strokeWidth="5" fill="none" opacity="0.3"/>
             <path d="M0,215 C90,215 140,208 205,212" stroke="#009bde" strokeWidth="5" fill="none" opacity="0.25"/>
             <path d="M0,238 C90,238 140,210 205,212" stroke="#1a73e8" strokeWidth="4" fill="none" opacity="0.25"/>
-            <path d="M0,260 C90,258 140,212 205,213" stroke="#fa582d" strokeWidth="4" fill="none" opacity="0.25"/>
+            <path d="M0,260 C90,258 140,212 205,213" stroke="#c06030" strokeWidth="4" fill="none" opacity="0.25"/>
             <path d="M0,280 C90,275 140,214 205,213" stroke="#d22128" strokeWidth="3" fill="none" opacity="0.2"/>
             <path d="M0,298 C90,290 140,215 205,214" stroke="#6b7280" strokeWidth="2.5" fill="none" opacity="0.15"/>
 
@@ -879,9 +879,9 @@ export default function Dashboard() {
             <text x="210" y="196" fontSize="26" fontWeight="700" fill="white" fontFamily="'Segoe UI',sans-serif" opacity="0.95">{issues.toLocaleString()}</text>
             <text x="218" y="214" fontSize="10" fill="#9ea3b0" fontFamily="'Segoe UI',sans-serif" letterSpacing="1">ISSUES</text>
             {/* Spark dots */}
-            <circle cx="260" cy="200" r="3" fill="#e53935" opacity="0.8"/>
-            <circle cx="268" cy="192" r="2" fill="#ff9900" opacity="0.7"/>
-            <circle cx="275" cy="205" r="2.5" fill="#4fa3e0" opacity="0.7"/>
+            <circle cx="260" cy="200" r="3" fill="#c04040" opacity="0.8"/>
+            <circle cx="268" cy="192" r="2" fill="#c08030" opacity="0.7"/>
+            <circle cx="275" cy="205" r="2.5" fill="var(--accent-blue)" opacity="0.7"/>
             <circle cx="255" cy="210" r="2" fill="#0078d4" opacity="0.6"/>
 
             {/* Arrow to CASES */}
@@ -902,9 +902,9 @@ export default function Dashboard() {
             <circle cx="314" cy="210" r="3" fill="#0078d4" opacity="0.5"/>
             <circle cx="332" cy="148" r="3.5" fill="#0078d4" opacity="0.7"/>
             {/* Alert dots */}
-            <circle cx="420" cy="136" r="3" fill="#e53935" opacity="0.85" filter="url(#glow)"/>
-            <circle cx="460" cy="170" r="2.5" fill="#ff6f00" opacity="0.7"/>
-            <circle cx="360" cy="284" r="2.5" fill="#f9a825" opacity="0.7"/>
+            <circle cx="420" cy="136" r="3" fill="#c04040" opacity="0.85" filter="url(#glow)"/>
+            <circle cx="460" cy="170" r="2.5" fill="#c08030" opacity="0.7"/>
+            <circle cx="360" cy="284" r="2.5" fill="#b09030" opacity="0.7"/>
             {/* Inner arrows */}
             <path d="M350,210 L380,210" stroke="#0078d4" strokeWidth="1.5" opacity="0.4" markerEnd="url(#arr)"/>
 
@@ -933,16 +933,16 @@ export default function Dashboard() {
             {/* Open cases severity */}
             <path d="M608,295 C640,295 645,270 670,265" stroke="#5a6a7a" strokeWidth="3" fill="none" opacity="0.4"/>
             <path d="M608,295 C640,295 645,300 670,308" stroke="#5a6a7a" strokeWidth="2" fill="none" opacity="0.3"/>
-            <rect x="672" y="255" width="14" height="14" rx="3" fill="#e53935"/>
+            <rect x="672" y="255" width="14" height="14" rx="3" fill="#c04040"/>
             <text x="679" y="265" textAnchor="middle" fontSize="8" fontWeight="700" fill="white">C</text>
             <text x="690" y="265" fontSize="10" fill="#e8e9ed" fontFamily="'Segoe UI',sans-serif">3</text>
-            <rect x="672" y="273" width="14" height="14" rx="3" fill="#ff6f00"/>
+            <rect x="672" y="273" width="14" height="14" rx="3" fill="#c07030"/>
             <text x="679" y="283" textAnchor="middle" fontSize="8" fontWeight="700" fill="white">H</text>
             <text x="690" y="283" fontSize="10" fill="#e8e9ed" fontFamily="'Segoe UI',sans-serif">4</text>
-            <rect x="672" y="291" width="14" height="14" rx="3" fill="#f9a825"/>
+            <rect x="672" y="291" width="14" height="14" rx="3" fill="#a88028"/>
             <text x="679" y="301" textAnchor="middle" fontSize="8" fontWeight="700" fill="white">M</text>
             <text x="690" y="301" fontSize="10" fill="#e8e9ed" fontFamily="'Segoe UI',sans-serif">8</text>
-            <rect x="672" y="309" width="14" height="14" rx="3" fill="#00897b"/>
+            <rect x="672" y="309" width="14" height="14" rx="3" fill="#28906a"/>
             <text x="679" y="319" textAnchor="middle" fontSize="8" fontWeight="700" fill="white">L</text>
             <text x="690" y="319" fontSize="10" fill="#e8e9ed" fontFamily="'Segoe UI',sans-serif">0</text>
             <text x="718" y="285" fontSize="22" fontWeight="700" fill="white" fontFamily="'Segoe UI',sans-serif">{openCases}</text>
@@ -1010,9 +1010,9 @@ export default function Dashboard() {
                 </span>
                 {stats?.mttr_hours != null && !isNaN(stats.mttr_hours) && stats.mttr_hours > 0 && (() => {
                   const h = stats.mttr_hours
-                  if (h < 2) return <span style={{ fontSize: 11, fontWeight: 600, color: '#2a9060' }}>↓ 优秀</span>
-                  if (h < 8) return <span style={{ fontSize: 11, fontWeight: 600, color: '#f9a825' }}>→ 正常</span>
-                  return <span style={{ fontSize: 11, fontWeight: 600, color: '#e53935' }}>↑ 需关注</span>
+                  if (h < 2) return <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--low)' }}>↓ 优秀</span>
+                  if (h < 8) return <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--medium)' }}>→ 正常</span>
+                  return <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--critical)' }}>↑ 需关注</span>
                 })()}
               </div>
             </div>
@@ -1024,7 +1024,7 @@ export default function Dashboard() {
             <div style={{ padding: '8px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, minWidth: 140 }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>严重漏洞</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 28, fontWeight: 700, color: '#e53935', lineHeight: 1 }}>{stats?.critical_vulns ?? '—'}</span>
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--critical)', lineHeight: 1 }}>{stats?.critical_vulns ?? '—'}</span>
               </div>
             </div>
           </div>
@@ -1037,7 +1037,7 @@ export default function Dashboard() {
               {playbookStats ? (
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                   <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{playbookStats.total}</span>
-                  <span style={{ fontSize: 10, color: '#2a9060', fontWeight: 600 }}>
+                  <span style={{ fontSize: 10, color: 'var(--accent-green)', fontWeight: 600 }}>
                     活跃 {playbookStats.active}
                   </span>
                 </div>
@@ -1046,7 +1046,7 @@ export default function Dashboard() {
               )}
               {playbookStats && (
                 <div style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>
-                  执行率 <span style={{ color: '#4fa3e0', fontWeight: 600 }}>{playbookStats.executionRate}%</span>
+                  执行率 <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{playbookStats.executionRate}%</span>
                 </div>
               )}
             </div>
@@ -1064,7 +1064,7 @@ export default function Dashboard() {
                 <span style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>IOC</span>
               </div>
               <div style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>
-                活跃情报源 <span style={{ color: '#f9a825', fontWeight: 600 }}>{activeFeedsCount ?? '—'}</span>
+                活跃情报源 <span style={{ color: 'var(--medium)', fontWeight: 600 }}>{activeFeedsCount ?? '—'}</span>
               </div>
             </div>
           </div>
@@ -1075,7 +1075,7 @@ export default function Dashboard() {
             <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4, display: 'flex', alignItems: 'center', gap: 6 }}>
               告警趋势 (7天)
               {trendIndicator && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: trendIndicator.up ? '#e53935' : '#2a9060' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: trendIndicator.up ? 'var(--critical)' : 'var(--accent-green)' }}>
                   {trendIndicator.label}
                 </span>
               )}
@@ -1104,8 +1104,8 @@ export default function Dashboard() {
                 dataKey="value" isAnimationActive={false} strokeWidth={0}
               >
                 {Object.keys(stats?.alerts_by_severity ?? {}).map((key) => {
-                  const COLOR: Record<string, string> = { critical: '#e53935', high: '#ff6f00', medium: '#f9a825', low: '#2a9060' }
-                  return <Cell key={key} fill={COLOR[key] ?? '#4fa3e0'}/>
+                  const COLOR: Record<string, string> = { critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)', low: 'var(--accent-green)' }
+                  return <Cell key={key} fill={COLOR[key] ?? 'var(--accent-blue)'}/>
                 })}
               </Pie>
             </PieChart>
@@ -1130,11 +1130,11 @@ export default function Dashboard() {
                         <div style={{
                           height: '100%',
                           width: `${Math.round((t.count / maxVal) * 100)}%`,
-                          background: '#e53935',
+                          background: 'var(--critical)',
                           borderRadius: 3,
                         }} />
                       </div>
-                      <span style={{ width: 24, textAlign: 'right', fontSize: 9, color: '#e53935', fontWeight: 600, flexShrink: 0 }}>{t.count}</span>
+                      <span style={{ width: 24, textAlign: 'right', fontSize: 9, color: 'var(--critical)', fontWeight: 600, flexShrink: 0 }}>{t.count}</span>
                     </div>
                   ))
                 })()}
@@ -1184,7 +1184,7 @@ export default function Dashboard() {
             <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>MTTD</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{mttdValue.toFixed(1)}h</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#2a9060' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent-green)' }}>
                 ↓{Math.abs(socKpis.mttdTrend)}%
               </span>
             </div>
@@ -1199,7 +1199,7 @@ export default function Dashboard() {
                 {mttrValue >= 0 && !isNaN(mttrValue) ? mttrValue.toFixed(1) + 'h' : '—'}
               </span>
               {mttrValue > 0 && !isNaN(mttrValue) && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#2a9060' }}>↓8%</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent-green)' }}>↓8%</span>
               )}
             </div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>Mean time to Respond</div>
@@ -1210,7 +1210,7 @@ export default function Dashboard() {
             <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>误报率</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{socKpis.fpr}%</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#2a9060' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent-green)' }}>
                 ↓{Math.abs(socKpis.fprTrend)}%
               </span>
             </div>
@@ -1221,8 +1221,8 @@ export default function Dashboard() {
           <div style={{ flex: 1, padding: '8px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, minWidth: 130 }}>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>自动化率</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#2a9060', lineHeight: 1 }}>{socKpis.autoRate}%</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#2a9060' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--accent-green)', lineHeight: 1 }}>{socKpis.autoRate}%</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent-green)' }}>
                 ↑{socKpis.autoRateTrend}%
               </span>
             </div>
@@ -1242,10 +1242,10 @@ export default function Dashboard() {
           </span>
           {/* Divider helper */}
           {([
-            { label: '自动响应', value: `${soarMocks.weeklyRuns}次`, color: '#4fa3e0' },
+            { label: '自动响应', value: `${soarMocks.weeklyRuns}次`, color: 'var(--accent-blue)' },
             { label: '平均执行时间', value: `${soarMocks.avgExecSec}秒`, color: 'var(--text-primary)' },
-            { label: '成功率', value: `${soarMocks.successRate}%`, color: '#2a9060' },
-            { label: '待审批操作', value: pendingActionsCount != null ? String(pendingActionsCount) : '—', color: pendingActionsCount != null && pendingActionsCount > 3 ? '#f9a825' : 'var(--text-primary)' },
+            { label: '成功率', value: `${soarMocks.successRate}%`, color: 'var(--accent-green)' },
+            { label: '待审批操作', value: pendingActionsCount != null ? String(pendingActionsCount) : '—', color: pendingActionsCount != null && pendingActionsCount > 3 ? 'var(--medium)' : 'var(--text-primary)' },
           ] as { label: string; value: string; color: string }[]).map((item, i) => (
             <div key={item.label} style={{ display: 'flex', alignItems: 'center' }}>
               {i > 0 && (
@@ -1274,7 +1274,7 @@ export default function Dashboard() {
       }}>
         <span style={{ fontSize: 9.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8, flexShrink: 0 }}>vs 昨日</span>
         {YESTERDAY_COMPARISON.map(item => (
-          <span key={item.label} style={{ fontSize: 11, fontWeight: 600, color: item.up ? '#e53935' : '#2a9060', whiteSpace: 'nowrap' }}>
+          <span key={item.label} style={{ fontSize: 11, fontWeight: 600, color: item.up ? 'var(--critical)' : 'var(--accent-green)', whiteSpace: 'nowrap' }}>
             {item.label} {item.up ? '↑' : '↓'}{item.pct}%
           </span>
         ))}
@@ -1324,8 +1324,8 @@ export default function Dashboard() {
                 wrapperStyle={{ fontSize: 9, paddingTop: 4 }}
                 formatter={(value: string) => value === 'new_incidents' ? '新增' : '已处置'}
               />
-              <Bar dataKey="new_incidents" fill="#e53935" radius={[2, 2, 0, 0]} isAnimationActive={false} barSize={8}/>
-              <Bar dataKey="resolved"      fill="#43a047" radius={[2, 2, 0, 0]} isAnimationActive={false} barSize={8}/>
+              <Bar dataKey="new_incidents" fill="#c04040" radius={[2, 2, 0, 0]} isAnimationActive={false} barSize={8}/>
+              <Bar dataKey="resolved"      fill="#28906a" radius={[2, 2, 0, 0]} isAnimationActive={false} barSize={8}/>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1362,7 +1362,7 @@ export default function Dashboard() {
           </thead>
           <tbody>
             {displayTopHosts.map((h, i) => {
-              const riskColor = h.risk_score >= 80 ? '#e53935' : h.risk_score >= 60 ? '#ff6f00' : '#f9a825'
+              const riskColor = h.risk_score >= 80 ? 'var(--critical)' : h.risk_score >= 60 ? 'var(--high)' : 'var(--medium)'
               return (
                 <tr
                   key={h.hostname}
@@ -1380,10 +1380,10 @@ export default function Dashboard() {
                     </div>
                   </td>
                   <td style={{ textAlign: 'right', paddingRight: 16, paddingBottom: 3 }}>
-                    <span style={{ color: '#e53935', fontWeight: 700 }}>{h.alert_count}</span>
+                    <span style={{ color: 'var(--critical)', fontWeight: 700 }}>{h.alert_count}</span>
                   </td>
                   <td style={{ textAlign: 'right', paddingRight: 16, paddingBottom: 3 }}>
-                    <span style={{ color: h.open_incidents > 0 ? '#ff6f00' : 'var(--text-muted)', fontWeight: h.open_incidents > 0 ? 700 : 400 }}>
+                    <span style={{ color: h.open_incidents > 0 ? 'var(--high)' : 'var(--text-muted)', fontWeight: h.open_incidents > 0 ? 700 : 400 }}>
                       {h.open_incidents}
                     </span>
                   </td>
@@ -1471,7 +1471,7 @@ export default function Dashboard() {
       {/* Copilot overlay + panel */}
       {copilotOpen && (
         <div
-          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.4)', zIndex: 300 }}
+          style={{ position: 'absolute', inset: 0, background: 'var(--bg-overlay)', zIndex: 300 }}
           onClick={() => setCopilotOpen(false)}
         />
       )}
@@ -1490,8 +1490,8 @@ export default function Dashboard() {
           background: 'var(--bg-sidebar)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#4fa3e0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>XSIAM Copilot</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent-blue)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>XSIAM Copilot</span>
           </div>
           <button onClick={() => setCopilotOpen(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.5)', cursor: 'pointer', fontSize: 16 }}>✕</button>
         </div>

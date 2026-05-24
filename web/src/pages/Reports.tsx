@@ -302,7 +302,7 @@ function DownloadNotReadyMsg({ status }: DownloadMsgProps) {
       border: '1px solid rgba(255,160,0,.3)',
       borderRadius: 5,
       fontSize: 11.5,
-      color: 'var(--medium, #f59e0b)',
+      color: 'var(--medium)',
       lineHeight: 1.4,
     }}>
       报告尚未就绪，当前状态: <strong>{status}</strong>
@@ -707,9 +707,9 @@ export default function Reports() {
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(1.6); } }
-        @keyframes gallery-card-hover { to { border-color: var(--accent-blue); } }
+        @keyframes gallery-card-hover { to { border-color: 'var(--accent-blue)'; } }
         .gallery-card { transition: border-color 0.15s, box-shadow 0.15s; }
-        .gallery-card:hover { border-color: var(--accent-blue) !important; box-shadow: 0 4px 16px rgba(59,130,246,.12); }
+        .gallery-card:hover { border-color: 'var(--accent-blue)' !important; box-shadow: 0 4px 16px rgba(59,130,246,.12); }
       `}</style>
 
       <PageHeader
@@ -731,13 +731,13 @@ export default function Reports() {
       {/* ── Stats bar ──────────────────────────────────────────────────────── */}
       <div style={{ padding: '8px 16px 4px', flexShrink: 0 }}>
         {statsStale && (
-          <div style={{ fontSize: 11, color: 'var(--medium, #f59e0b)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--medium)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
             ⚠ 数据可能过时
           </div>
         )}
         <div style={{ display: 'flex', gap: 8 }}>
           <StatsTile label="总报告数" value={stats?.total ?? 0} />
-          <StatsTile label="已计划" value={stats?.scheduled ?? 0} color="var(--medium, #f59e0b)" />
+          <StatsTile label="已计划" value={stats?.scheduled ?? 0} color="var(--medium)" />
           <StatsTile
             label="生成中"
             value={generatingCount}
@@ -1086,7 +1086,7 @@ export default function Reports() {
                       <div>
                         <button
                           className="btn-secondary"
-                          style={{ fontSize: 11, padding: '3px 10px', color: 'var(--medium, #f59e0b)' }}
+                          style={{ fontSize: 11, padding: '3px 10px', color: 'var(--medium)' }}
                           disabled={cancellingScheduleKey === selectedReport._key}
                           onClick={() => handleCancelSchedule(selectedReport)}
                         >
@@ -1164,11 +1164,11 @@ export default function Reports() {
       {/* New Report Modal */}
       {showNew && (
         <>
-          <div onClick={() => setShowNew(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNew(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
             width: 500, maxHeight: '90vh', overflowY: 'auto',
-            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>新建报告</div>

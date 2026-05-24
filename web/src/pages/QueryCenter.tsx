@@ -336,15 +336,15 @@ const XQL_OPERATORS = ['=', '!=', '>', '<', '>=', '<=', 'in', 'not in', 'contain
 
 // Kind badge colours and name map
 const KIND_COLORS: Record<string, string> = {
-  process:   '#c792ea',
-  file:      '#f78c6c',
-  registry:  '#82aaff',
-  network:   '#4fa3e0',
-  dns:       '#89ddff',
-  auth:      '#addb67',
-  vuln:      '#fa585d',
-  integrity: '#ffcb6b',
-  syslog:    '#7a7e9a',
+  process:   'var(--accent-blue)',
+  file:      'var(--high)',
+  registry:  'var(--accent-blue)',
+  network:   'var(--accent-blue)',
+  dns:       'var(--accent-blue)',
+  auth:      'var(--accent-green)',
+  vuln:      'var(--critical)',
+  integrity: 'var(--medium)',
+  syslog:    'var(--text-muted)',
 }
 
 const KIND_NAMES_BY_NUM: Record<number, string> = {
@@ -353,19 +353,19 @@ const KIND_NAMES_BY_NUM: Record<number, string> = {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  critical: '#fa585d',
-  high:     '#f78c6c',
-  medium:   '#ffcb6b',
-  low:      '#addb67',
-  info:     '#89ddff',
+  critical: 'var(--critical)',
+  high:     'var(--high)',
+  medium:   'var(--medium)',
+  low:      'var(--accent-green)',
+  info:     'var(--accent-blue)',
 }
 
 // Type badge color
 const TYPE_BADGE_COLORS: Record<string, { bg: string; color: string }> = {
-  string:    { bg: 'rgba(173,219,103,.12)', color: '#addb67' },
-  number:    { bg: 'rgba(130,170,255,.12)', color: '#82aaff' },
-  boolean:   { bg: 'rgba(250,88,93,.12)',   color: '#fa585d' },
-  timestamp: { bg: 'rgba(137,221,255,.12)', color: '#89ddff' },
+  string:    { bg: 'rgba(173,219,103,.12)', color: 'var(--accent-green)' },
+  number:    { bg: 'rgba(130,170,255,.12)', color: 'var(--accent-blue)' },
+  boolean:   { bg: 'rgba(250,88,93,.12)',   color: 'var(--critical)' },
+  timestamp: { bg: 'rgba(137,221,255,.12)', color: 'var(--accent-blue)' },
 }
 
 // ─── Timestamp formatter ───────────────────────────────────────────────────────
@@ -803,7 +803,7 @@ export default function QueryCenter() {
     // Boolean values
     if (typeof val === 'boolean') {
       return (
-        <span style={{ fontSize: 12, color: val ? '#addb67' : '#fa585d', fontWeight: 700 }}>
+        <span style={{ fontSize: 12, color: val ? 'var(--accent-green)' : 'var(--critical)', fontWeight: 700 }}>
           {val ? '✓' : '✗'}
         </span>
       )
@@ -812,7 +812,7 @@ export default function QueryCenter() {
     // Timestamp columns
     if (col === 'event_timestamp' || col === '_ts' || col.includes('timestamp') || col.includes('_at')) {
       return (
-        <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#89ddff' }}>
+        <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)' }}>
           {fmtTimestamp(val)}
         </span>
       )
@@ -826,7 +826,7 @@ export default function QueryCenter() {
       const hh = String(d.getHours()).padStart(2, '0')
       const min = String(d.getMinutes()).padStart(2, '0')
       return (
-        <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#89ddff' }}>
+        <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)' }}>
           {mm}-{dd} {hh}:{min}
         </span>
       )
@@ -835,7 +835,7 @@ export default function QueryCenter() {
     // Numeric values — right-align handled at td level, style here
     if (typeof val === 'number') {
       return (
-        <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#c3e88d' }}>
+        <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--accent-green)' }}>
           {val.toLocaleString()}
         </span>
       )
@@ -871,7 +871,7 @@ export default function QueryCenter() {
 
     if (typeof val === 'object') {
       return (
-        <span style={{ fontFamily: 'monospace', color: '#89ddff', fontSize: 10.5 }}>
+        <span style={{ fontFamily: 'monospace', color: 'var(--accent-blue)', fontSize: 10.5 }}>
           {JSON.stringify(val)}
         </span>
       )
@@ -974,7 +974,7 @@ export default function QueryCenter() {
           maxWidth: 260,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-            <code style={{ fontSize: 12, fontFamily: 'monospace', color: '#7ec8e3' }}>{schemaTooltip.field.name}</code>
+            <code style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--accent-blue)' }}>{schemaTooltip.field.name}</code>
             {schemaTooltip.field.type && (
               <span style={{
                 padding: '1px 5px', borderRadius: 3, fontSize: 9.5,
@@ -1032,7 +1032,7 @@ export default function QueryCenter() {
           id="nl2xql-overlay"
           style={{
             position: 'fixed', inset: 0, zIndex: 10000,
-            background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(2px)',
+            background: 'var(--bg-overlay)', backdropFilter: 'blur(2px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           onClick={e => { if (e.target === e.currentTarget) { setShowNl2Xql(false); setNl2xqlInput('') } }}
@@ -1087,7 +1087,7 @@ export default function QueryCenter() {
                       key={hint}
                       onClick={() => setNl2xqlInput(hint)}
                       style={{
-                        fontSize: 11, color: '#4fa3e0', cursor: 'pointer',
+                        fontSize: 11, color: 'var(--accent-blue)', cursor: 'pointer',
                         padding: '4px 9px', borderRadius: 4,
                         border: '1px solid rgba(79,163,224,.2)',
                         background: 'rgba(79,163,224,.06)',
@@ -1135,7 +1135,7 @@ export default function QueryCenter() {
                 <div style={{
                   padding: '8px 12px', borderRadius: 5, marginBottom: 10,
                   background: 'rgba(250,88,93,.1)', border: '1px solid rgba(250,88,93,.3)',
-                  fontSize: 11.5, color: '#fa585d',
+                  fontSize: 11.5, color: 'var(--critical)',
                 }}>
                   {nl2xqlError}
                 </div>
@@ -1283,7 +1283,7 @@ export default function QueryCenter() {
                         title="运行此查询"
                         style={{
                           background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.25)',
-                          cursor: 'pointer', color: '#4fa3e0', fontSize: 9.5, lineHeight: 1,
+                          cursor: 'pointer', color: 'var(--accent-blue)', fontSize: 9.5, lineHeight: 1,
                           padding: '2px 5px', flexShrink: 0, borderRadius: 3,
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,163,224,.22)' }}
@@ -1321,7 +1321,7 @@ export default function QueryCenter() {
                 textTransform: 'uppercase', letterSpacing: 0.5,
               }}>
                 模板
-                <span style={{ marginLeft: 4, color: '#82aaff' }}>({SECURITY_TEMPLATES.length})</span>
+                <span style={{ marginLeft: 4, color: 'var(--accent-blue)' }}>({SECURITY_TEMPLATES.length})</span>
               </span>
               <button
                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13, lineHeight: 1, padding: '0 2px' }}
@@ -1337,7 +1337,7 @@ export default function QueryCenter() {
                     onClick={() => updateQuery(tpl.query)}
                     style={{
                       padding: '6px 14px', fontSize: 11.5, cursor: 'pointer',
-                      borderLeft: `2px solid ${currentTab?.query === tpl.query ? '#82aaff' : 'transparent'}`,
+                      borderLeft: `2px solid ${currentTab?.query === tpl.query ? 'var(--accent-blue)' : 'transparent'}`,
                       background: currentTab?.query === tpl.query ? 'rgba(130,170,255,.07)' : 'none',
                       color: 'var(--text-secondary)', transition: 'background .1s',
                       display: 'flex', alignItems: 'center', gap: 6,
@@ -1371,7 +1371,7 @@ export default function QueryCenter() {
                   历史
                   <span style={{
                     minWidth: 16, height: 16, padding: '0 5px',
-                    background: 'rgba(130,170,255,.15)', color: '#82aaff',
+                    background: 'rgba(130,170,255,.15)', color: 'var(--accent-blue)',
                     borderRadius: 8, fontSize: 9.5, fontWeight: 700,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   }}>{history.length}</span>
@@ -1416,7 +1416,7 @@ export default function QueryCenter() {
                             {new Date(entry.timestamp).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                           </span>
                           {entry.resultCount > 0 && (
-                            <span style={{ fontSize: 9, color: '#addb67', background: 'rgba(173,219,103,.1)', padding: '0 4px', borderRadius: 2 }}>
+                            <span style={{ fontSize: 9, color: 'var(--accent-green)', background: 'rgba(173,219,103,.1)', padding: '0 4px', borderRadius: 2 }}>
                               {entry.resultCount}行
                             </span>
                           )}
@@ -1426,7 +1426,7 @@ export default function QueryCenter() {
                         onClick={() => { updateQuery(entry.query); setTimeout(() => runQuery(), 0) }}
                         style={{
                           background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.25)',
-                          cursor: 'pointer', color: '#4fa3e0', fontSize: 9.5, lineHeight: 1,
+                          cursor: 'pointer', color: 'var(--accent-blue)', fontSize: 9.5, lineHeight: 1,
                           padding: '2px 6px', borderRadius: 3, marginTop: 1,
                         }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,163,224,.22)')}
@@ -1499,7 +1499,7 @@ export default function QueryCenter() {
                         display: 'flex', alignItems: 'flex-start', gap: 6, padding: '7px 14px',
                         cursor: 'pointer', fontSize: 11.5, color: 'var(--text-secondary)',
                         background: isActive ? 'rgba(79,163,224,.07)' : 'none',
-                        borderLeft: `2px solid ${isActive ? '#4fa3e0' : 'transparent'}`,
+                        borderLeft: `2px solid ${isActive ? 'var(--accent-blue)' : 'transparent'}`,
                         transition: 'background .1s',
                       }}
                       onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,.03)' }}
@@ -1523,7 +1523,7 @@ export default function QueryCenter() {
                         }}
                       >▶</span>
                       {/* DB icon */}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4fa3e0" strokeWidth="1.8" style={{ flexShrink: 0, marginTop: 1 }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="1.8" style={{ flexShrink: 0, marginTop: 1 }}>
                         <ellipse cx="12" cy="5" rx="9" ry="3" />
                         <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
                         <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
@@ -1538,7 +1538,7 @@ export default function QueryCenter() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           <span style={{ fontWeight: 500, fontFamily: 'monospace', fontSize: 11 }}>{ds.id}</span>
                           {ds.fields && (
-                            <span style={{ fontSize: 9, padding: '0 4px', borderRadius: 2, background: 'rgba(79,163,224,.12)', color: '#4fa3e0' }}>
+                            <span style={{ fontSize: 9, padding: '0 4px', borderRadius: 2, background: 'rgba(79,163,224,.12)', color: 'var(--accent-blue)' }}>
                               {Array.isArray(ds.fields) ? ds.fields.length : (ds.fields as string).split(',').length}字段
                             </span>
                           )}
@@ -1555,11 +1555,11 @@ export default function QueryCenter() {
                         title="浏览字段"
                         style={{
                           background: 'none', border: 'none', cursor: 'pointer',
-                          color: isActive ? '#4fa3e0' : 'var(--text-muted)', fontSize: 11,
+                          color: isActive ? 'var(--accent-blue)' : 'var(--text-muted)', fontSize: 11,
                           lineHeight: 1, padding: '2px 3px', borderRadius: 3, flexShrink: 0,
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.color = '#4fa3e0' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = isActive ? '#4fa3e0' : 'var(--text-muted)' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-blue)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = isActive ? 'var(--accent-blue)' : 'var(--text-muted)' }}
                       >⊞</button>
                     </div>
                     {isExpanded && ds.fields && (
@@ -1568,7 +1568,7 @@ export default function QueryCenter() {
                           <div key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 14px', fontSize: 10.5 }}>
                             <span style={{ color: 'var(--text-muted)', fontSize: 9, width: 52, flexShrink: 0 }}>{f.type}</span>
                             <span
-                              style={{ color: '#7ec8e3', fontFamily: 'monospace', cursor: 'pointer' }}
+                              style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', cursor: 'pointer' }}
                               onClick={() => insertFieldAtCursor(f.name)}
                               title="点击插入字段名"
                             >{f.name}</span>
@@ -1639,9 +1639,9 @@ export default function QueryCenter() {
                 }}
                   onClick={() => setFieldsBrowserOpen(o => !o)}
                 >
-                  <span style={{ fontSize: 10, fontWeight: 600, color: '#4fa3e0', textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent-blue)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 4 }}>
                     字段详情
-                    <code style={{ fontFamily: 'monospace', fontSize: 9.5, color: '#89ddff', textTransform: 'none', letterSpacing: 0 }}>{activeDatasetId}</code>
+                    <code style={{ fontFamily: 'monospace', fontSize: 9.5, color: 'var(--accent-blue)', textTransform: 'none', letterSpacing: 0 }}>{activeDatasetId}</code>
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fieldsBrowserOpen ? '▲' : '▼'}</span>
@@ -1689,7 +1689,7 @@ export default function QueryCenter() {
                               onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                               title={f.description ? `${f.name}: ${f.description}` : `点击插入 ${f.name}`}
                             >
-                              <code style={{ fontFamily: 'monospace', fontSize: 11, color: '#7ec8e3', flexShrink: 0 }}>
+                              <code style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent-blue)', flexShrink: 0 }}>
                                 {f.name}
                               </code>
                               <span style={{
@@ -1726,7 +1726,7 @@ export default function QueryCenter() {
           {/* Editor toolbar */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px',
-            borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0,
+            borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0,
           }}>
             <select className="filter-select" style={{ fontSize: 11 }} value={timeRange} onChange={e => setTimeRange(e.target.value)}>
               <option value="24h">Last 24H</option>
@@ -1781,7 +1781,7 @@ export default function QueryCenter() {
                               {new Date(entry.timestamp).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {entry.resultCount > 0 && (
-                              <span style={{ fontSize: 9.5, color: '#addb67', background: 'rgba(173,219,103,.1)', padding: '0 4px', borderRadius: 2 }}>
+                              <span style={{ fontSize: 9.5, color: 'var(--accent-green)', background: 'rgba(173,219,103,.1)', padding: '0 4px', borderRadius: 2 }}>
                                 {entry.resultCount}行
                               </span>
                             )}
@@ -1789,7 +1789,7 @@ export default function QueryCenter() {
                               onClick={e => { e.stopPropagation(); updateQuery(entry.query); setShowHistory(false); setTimeout(() => runQuery(), 0) }}
                               style={{
                                 background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.25)',
-                                cursor: 'pointer', color: '#4fa3e0', fontSize: 9.5, lineHeight: 1,
+                                cursor: 'pointer', color: 'var(--accent-blue)', fontSize: 9.5, lineHeight: 1,
                                 padding: '1px 6px', borderRadius: 3,
                               }}
                               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,163,224,.22)')}
@@ -1863,7 +1863,7 @@ export default function QueryCenter() {
                           title="运行此查询"
                           style={{
                             background: 'rgba(79,163,224,.1)', border: '1px solid rgba(79,163,224,.25)',
-                            cursor: 'pointer', color: '#4fa3e0', fontSize: 9.5, lineHeight: 1,
+                            cursor: 'pointer', color: 'var(--accent-blue)', fontSize: 9.5, lineHeight: 1,
                             padding: '2px 6px', flexShrink: 0, borderRadius: 3, marginRight: 4,
                           }}
                           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,163,224,.22)')}
@@ -1948,11 +1948,11 @@ export default function QueryCenter() {
           </div>
 
           {/* XQL Editor with line numbers */}
-          <div style={{ position: 'relative', flexShrink: 0, background: '#0d1117' }}>
+          <div style={{ position: 'relative', flexShrink: 0, background: 'var(--bg-code)' }}>
             <pre style={{
               position: 'absolute', top: 0, left: 0,
               width: 40, height: '100%',
-              background: '#0d1117', borderRight: '1px solid rgba(79,163,224,.15)',
+              background: 'var(--bg-code)', borderRight: '1px solid rgba(79,163,224,.15)',
               color: 'rgba(230,237,243,.35)', fontSize: 12, lineHeight: '1.7em',
               fontFamily: 'Consolas,"JetBrains Mono",monospace',
               padding: '12px 0', textAlign: 'right', paddingRight: 8,
@@ -1971,11 +1971,11 @@ export default function QueryCenter() {
               style={{
                 width: '100%', minHeight: 140, maxHeight: 260,
                 resize: 'vertical', paddingLeft: 52, paddingTop: 12, paddingBottom: 12, paddingRight: 16,
-                background: '#0d1117', color: '#e6edf3',
+                background: 'var(--bg-code)', color: 'var(--text-primary)',
                 border: '1px solid rgba(79,163,224,.15)', outline: 'none',
                 fontFamily: 'Consolas,"JetBrains Mono",monospace',
                 fontSize: 12.5, lineHeight: '1.7em',
-                caretColor: '#4fa3e0',
+                caretColor: 'var(--accent-blue)',
               }}
               spellCheck={false}
             />
@@ -1986,7 +1986,7 @@ export default function QueryCenter() {
             {/* Result stats bar */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 16, padding: '5px 14px',
-              borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)', flexShrink: 0,
+              borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexShrink: 0,
             }}>
               {error ? (
                 <span style={{ fontSize: 12, color: 'var(--critical)' }}>错误: {error}</span>
@@ -2009,7 +2009,7 @@ export default function QueryCenter() {
 
               {/* Pinned column indicator */}
               {pinnedColumns.length > 0 && (
-                <span style={{ fontSize: 10, color: '#4fa3e0' }}>
+                <span style={{ fontSize: 10, color: 'var(--accent-blue)' }}>
                   📌 {pinnedColumns.length} 列已固定
                   <button
                     onClick={() => setPinnedColumns([])}
@@ -2053,7 +2053,7 @@ export default function QueryCenter() {
                           onClick={item.action}
                           style={{
                             padding: '8px 14px', fontSize: 11.5, cursor: 'pointer',
-                            color: copyFeedback && item.label.startsWith('已复制') ? '#addb67' : 'var(--text-secondary)',
+                            color: copyFeedback && item.label.startsWith('已复制') ? 'var(--accent-green)' : 'var(--text-secondary)',
                             borderBottom: '1px solid rgba(255,255,255,.04)',
                             transition: 'background .1s',
                           }}
@@ -2085,7 +2085,7 @@ export default function QueryCenter() {
                           style={{
                             cursor: 'pointer',
                             whiteSpace: 'nowrap',
-                            color: pinnedColumns.includes(c) ? '#4fa3e0' : undefined,
+                            color: pinnedColumns.includes(c) ? 'var(--accent-blue)' : undefined,
                             userSelect: 'none',
                           }}
                           title="点击排序 · 右键固定列"
@@ -2095,7 +2095,7 @@ export default function QueryCenter() {
                           )}
                           {c}
                           {sortCol === c && (
-                            <span style={{ marginLeft: 3, fontSize: 9, color: '#82aaff' }}>
+                            <span style={{ marginLeft: 3, fontSize: 9, color: 'var(--accent-blue)' }}>
                               {sortDir === 'asc' ? '▲' : '▼'}
                             </span>
                           )}
@@ -2144,12 +2144,12 @@ export default function QueryCenter() {
                               }}>
                                 {Object.entries(row).map(([k, v]) => (
                                   <div key={k} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '2px 0', fontSize: 11 }}>
-                                    <span style={{ color: '#4fa3e0', fontFamily: 'monospace', fontSize: 10.5, flexShrink: 0, minWidth: 100 }}>{k}</span>
+                                    <span style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 10.5, flexShrink: 0, minWidth: 100 }}>{k}</span>
                                     <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: 10.5, wordBreak: 'break-all' }}>
                                       {v === null || v === undefined
                                         ? <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>null</span>
                                         : typeof v === 'boolean'
-                                          ? <span style={{ color: v ? '#addb67' : '#fa585d', fontWeight: 700 }}>{v ? '✓ true' : '✗ false'}</span>
+                                          ? <span style={{ color: v ? 'var(--accent-green)' : 'var(--critical)', fontWeight: 700 }}>{v ? '✓ true' : '✗ false'}</span>
                                           : typeof v === 'object'
                                             ? JSON.stringify(v)
                                             : String(v)
@@ -2219,7 +2219,7 @@ export default function QueryCenter() {
             {XQL_STAGES.map(s => (
               <div key={s} style={{
                 padding: '4px 14px', fontSize: 12, fontFamily: 'Consolas,"JetBrains Mono",monospace',
-                color: '#c792ea', cursor: 'pointer',
+                color: 'var(--accent-blue)', cursor: 'pointer',
               }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
@@ -2234,7 +2234,7 @@ export default function QueryCenter() {
             {XQL_FUNCTIONS.map(f => (
               <div key={f} style={{
                 padding: '4px 14px', fontSize: 12, fontFamily: 'Consolas,"JetBrains Mono",monospace',
-                color: '#82aaff', cursor: 'pointer',
+                color: 'var(--accent-blue)', cursor: 'pointer',
               }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
@@ -2262,8 +2262,8 @@ export default function QueryCenter() {
               background: 'rgba(79,163,224,.06)', border: '1px solid rgba(79,163,224,.2)',
               borderRadius: 6, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6,
             }}>
-              <div style={{ fontWeight: 600, color: '#4fa3e0', marginBottom: 4 }}>语法</div>
-              <code style={{ display: 'block', fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.8, background: 'rgba(0,0,0,.2)', padding: 8, borderRadius: 4, color: '#cdd3de' }}>
+              <div style={{ fontWeight: 600, color: 'var(--accent-blue)', marginBottom: 4 }}>语法</div>
+              <code style={{ display: 'block', fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.8, background: 'rgba(0,0,0,.2)', padding: 8, borderRadius: 4, color: 'var(--text-primary)' }}>
                 dataset = xdr_data{'\n'}| filter kind = "process"{'\n'}| fields hostname, process_name,{'\n'}{'  '}cmdline, event_timestamp{'\n'}| sort desc event_timestamp{'\n'}| limit 50
               </code>
               <div style={{ marginTop: 6 }}>Press <code style={{ background: 'rgba(255,255,255,.08)', padding: '1px 4px', borderRadius: 3, fontSize: 10.5 }}>Ctrl+Enter</code> to run.</div>

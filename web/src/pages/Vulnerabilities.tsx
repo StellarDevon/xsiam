@@ -98,7 +98,7 @@ function getSlaInfo(vuln: Vuln): { label: string; pct: number; status: 'green' |
 // ────────── SlaIndicator ──────────
 function SlaIndicator({ vuln }: { vuln: Vuln }) {
   const { label, pct, status } = getSlaInfo(vuln)
-  const color = status === 'green' ? '#22c55e' : status === 'yellow' ? '#eab308' : '#ef4444'
+  const color = status === 'green' ? 'var(--accent-green)' : status === 'yellow' ? 'var(--medium)' : 'var(--critical)'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} title={`SLA: ${label}`}>
       <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
@@ -127,7 +127,7 @@ function PriorityGauge({ score }: { score: number }) {
   const cy = 36
   const circumference = 2 * Math.PI * r
   const dashOffset = circumference * (1 - score / 100)
-  const color = score >= 75 ? '#ef4444' : score >= 50 ? '#f97316' : score >= 25 ? '#eab308' : '#22c55e'
+  const color = score >= 75 ? 'var(--critical)' : score >= 50 ? 'var(--high)' : score >= 25 ? 'var(--medium)' : 'var(--accent-green)'
   return (
     <svg width={72} height={72} style={{ display: 'block' }}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={6} />
@@ -173,7 +173,7 @@ function hasMockPatch(cveId: string): boolean {
 // ────────── CVSSBar ──────────
 function CVSSBar({ score }: { score: number }) {
   const pct = (score / 10) * 100
-  const color = score >= 9 ? '#ef4444' : score >= 7 ? '#f97316' : score >= 4 ? '#eab308' : '#22c55e'
+  const color = score >= 9 ? 'var(--critical)' : score >= 7 ? 'var(--high)' : score >= 4 ? 'var(--medium)' : 'var(--accent-green)'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <div style={{ width: 60, height: 6, background: 'rgba(255,255,255,.1)', borderRadius: 3 }}>
@@ -191,7 +191,7 @@ function Skeleton({ lines = 3 }: { lines?: number }) {
       {Array.from({ length: lines }).map((_, i) => (
         <div key={i} style={{
           height: 14, borderRadius: 4,
-          background: 'linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-card2,var(--border)) 50%, var(--bg-secondary) 75%)',
+          background: 'linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-card2) 50%, var(--bg-secondary) 75%)',
           backgroundSize: '200% 100%',
           animation: 'skeletonShimmer 1.4s infinite',
           width: i % 3 === 2 ? '60%' : '100%',
@@ -228,7 +228,7 @@ function parseCvssVector(vector: string): Record<string, string> {
 
 function CveDetailTab({ vuln, onNavigateIoc }: { vuln: Vuln; onNavigateIoc: (q: string) => void }) {
   const score = vuln.cvss_score ?? 0
-  const scoreColor = score >= 9 ? '#ef4444' : score >= 7 ? '#f97316' : score >= 4 ? '#eab308' : '#22c55e'
+  const scoreColor = score >= 9 ? 'var(--critical)' : score >= 7 ? 'var(--high)' : score >= 4 ? 'var(--medium)' : 'var(--accent-green)'
   const scoreBg = score >= 9 ? 'rgba(239,68,68,0.1)' : score >= 7 ? 'rgba(249,115,22,0.1)' : score >= 4 ? 'rgba(234,179,8,0.1)' : 'rgba(34,197,94,0.1)'
 
   // Use real vector or derive a plausible mock from CVSS score
@@ -266,10 +266,10 @@ function CveDetailTab({ vuln, onNavigateIoc }: { vuln: Vuln; onNavigateIoc: (q: 
   }, [vuln._key])
 
   function riskColor(s: number) {
-    if (s >= 80) return '#ef4444'
-    if (s >= 60) return '#f97316'
-    if (s >= 40) return '#eab308'
-    return '#22c55e'
+    if (s >= 80) return 'var(--critical)'
+    if (s >= 60) return 'var(--high)'
+    if (s >= 40) return 'var(--medium)'
+    return 'var(--accent-green)'
   }
 
   return (
@@ -356,12 +356,12 @@ function CveDetailTab({ vuln, onNavigateIoc }: { vuln: Vuln; onNavigateIoc: (q: 
           hasMockPatch(vuln.cve_id) ? (
             <span style={{
               fontSize: 11.5, fontWeight: 700, padding: '3px 10px', borderRadius: 12,
-              background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.35)',
+              background: 'rgba(34,197,94,0.12)', color: 'var(--accent-green)', border: '1px solid rgba(34,197,94,0.35)',
             }}>有补丁 ✓</span>
           ) : (
             <span style={{
               fontSize: 11.5, fontWeight: 700, padding: '3px 10px', borderRadius: 12,
-              background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.35)',
+              background: 'rgba(239,68,68,0.12)', color: 'var(--critical)', border: '1px solid rgba(239,68,68,0.35)',
             }}>暂无补丁 ✗</span>
           )
         ) : (
@@ -449,11 +449,11 @@ function CveDetailTab({ vuln, onNavigateIoc }: { vuln: Vuln; onNavigateIoc: (q: 
                   target="_blank" rel="noopener noreferrer"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
-                    fontSize: 12, color: '#22c55e', textDecoration: 'none',
+                    fontSize: 12, color: 'var(--accent-green)', textDecoration: 'none',
                     padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(34,197,94,0.3)',
                     background: 'rgba(34,197,94,0.06)',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#22c55e')}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-green)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)')}
                 >
                   <span style={{ fontSize: 14 }}>✅</span>
@@ -559,13 +559,13 @@ function EnrichmentTab({ vuln }: { vuln: Vuln }) {
   }, [vuln._key])
 
   function riskColor(score: number) {
-    if (score >= 80) return '#ef4444'
-    if (score >= 60) return '#f97316'
-    if (score >= 40) return '#eab308'
-    return '#22c55e'
+    if (score >= 80) return 'var(--critical)'
+    if (score >= 60) return 'var(--high)'
+    if (score >= 40) return 'var(--medium)'
+    return 'var(--accent-green)'
   }
 
-  const verdictColor = (v: string) => v === 'malicious' ? '#ef4444' : v === 'suspicious' ? '#f97316' : 'var(--text-muted)'
+  const verdictColor = (v: string) => v === 'malicious' ? 'var(--critical)' : v === 'suspicious' ? 'var(--high)' : 'var(--text-muted)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -669,10 +669,10 @@ function AffectedAssetsTab({ vuln, onNavigateAsset }: { vuln: Vuln; onNavigateAs
   }, [vuln._key])
 
   function riskColor(s: number) {
-    if (s >= 80) return '#ef4444'
-    if (s >= 60) return '#f97316'
-    if (s >= 40) return '#eab308'
-    return '#22c55e'
+    if (s >= 80) return 'var(--critical)'
+    if (s >= 60) return 'var(--high)'
+    if (s >= 40) return 'var(--medium)'
+    return 'var(--accent-green)'
   }
 
   if (loading) return <Skeleton lines={4} />
@@ -795,7 +795,7 @@ function FixTab({ vuln, onUpdated }: { vuln: Vuln; onUpdated: (updated: Vuln) =>
 
   const priorityScore = calcPriority(vuln)
   const { label: slaLabel, pct: slaPct, status: slaStatus } = getSlaInfo(vuln)
-  const slaColor = slaStatus === 'green' ? '#22c55e' : slaStatus === 'yellow' ? '#eab308' : '#ef4444'
+  const slaColor = slaStatus === 'green' ? 'var(--accent-green)' : slaStatus === 'yellow' ? 'var(--medium)' : 'var(--critical)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1016,8 +1016,8 @@ function BulkBar({ count, items, checkedKeys, onDone, onCancel }: BulkBarProps) 
 
       {modal === 'assign' && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} onClick={() => setModal(null)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 340, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 20 }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} onClick={() => setModal(null)} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 340, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>批量分配负责人</div>
             <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box', marginBottom: 12 }}
               placeholder="负责人姓名..." value={bulkAssign} onChange={e => setBulkAssign(e.target.value)} />
@@ -1034,8 +1034,8 @@ function BulkBar({ count, items, checkedKeys, onDone, onCancel }: BulkBarProps) 
 
       {modal === 'due' && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} onClick={() => setModal(null)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 340, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 20 }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} onClick={() => setModal(null)} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 340, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>批量设截止日期</div>
             <input type="date" className="filter-input" style={{ width: '100%', boxSizing: 'border-box', marginBottom: 12 }}
               value={bulkDue} onChange={e => setBulkDue(e.target.value)} />
@@ -1052,8 +1052,8 @@ function BulkBar({ count, items, checkedKeys, onDone, onCancel }: BulkBarProps) 
 
       {modal === 'status' && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} onClick={() => setModal(null)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 340, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 20 }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} onClick={() => setModal(null)} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 340, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>批量更新修复状态</div>
             <select className="filter-select" style={{ width: '100%', marginBottom: 12 }}
               value={bulkStatus} onChange={e => setBulkStatus(e.target.value)}>
@@ -1153,10 +1153,10 @@ export default function Vulnerabilities() {
   }
 
   function cvssBarColor(score: number) {
-    if (score >= 9) return '#e53935'
-    if (score >= 7) return '#ff6f00'
-    if (score >= 4) return '#f9a825'
-    return '#00897b'
+    if (score >= 9) return 'var(--critical)'
+    if (score >= 7) return 'var(--high)'
+    if (score >= 4) return 'var(--medium)'
+    return 'var(--accent-green)'
   }
 
   function patchStatus(v: Vuln, status: string) {
@@ -1283,10 +1283,10 @@ export default function Vulnerabilities() {
         <div style={{ padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg-sidebar)', flexShrink: 0 }}>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             {[
-              { label: '严重', count: stats.critical, color: '#e53935' },
-              { label: '高危', count: stats.high, color: '#ff6f00' },
-              { label: '中危', count: stats.medium, color: '#f9a825' },
-              { label: '低危', count: stats.low, color: '#00897b' },
+              { label: '严重', count: stats.critical, color: 'var(--critical)' },
+              { label: '高危', count: stats.high, color: 'var(--high)' },
+              { label: '中危', count: stats.medium, color: 'var(--medium)' },
+              { label: '低危', count: stats.low, color: 'var(--accent-green)' },
             ].map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
                 <span style={{ fontSize: 10.5, color: s.color, minWidth: 44 }}>{s.label}</span>
@@ -1302,7 +1302,7 @@ export default function Vulnerabilities() {
             <div style={{ flex: 1, height: 8, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
               <div style={{
                 width: `${stats.total > 0 ? ((stats.patched / stats.total) * 100) : 0}%`,
-                height: '100%', background: '#00897b', borderRadius: 4, transition: 'width 0.4s ease',
+                height: '100%', background: 'var(--accent-green)', borderRadius: 4, transition: 'width 0.4s ease',
               }} />
             </div>
             <span style={{ fontSize: 11, color: 'var(--accent-green)', fontWeight: 600, whiteSpace: 'nowrap' }}>
@@ -1365,7 +1365,7 @@ export default function Vulnerabilities() {
         </div>
 
         {/* Exploitable toggle */}
-        <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, cursor: 'pointer', color: exploitableOnly ? '#ef4444' : 'var(--text-muted)' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, cursor: 'pointer', color: exploitableOnly ? 'var(--critical)' : 'var(--text-muted)' }}>
           <input type="checkbox" checked={exploitableOnly} onChange={e => setExploitableOnly(e.target.checked)} />
           仅显示可利用
         </label>
@@ -1419,8 +1419,8 @@ export default function Vulnerabilities() {
                       {(v.cvss_score ?? 0) >= 9.0 && (
                         <span style={{
                           marginLeft: 6, fontSize: 10,
-                          background: 'rgba(229,57,53,0.15)', color: '#e53935',
-                          border: '1px solid rgba(229,57,53,0.4)', borderRadius: 3,
+                          background: 'rgba(224,80,80,0.15)', color: 'var(--critical)',
+                          border: '1px solid rgba(224,80,80,0.4)', borderRadius: 3,
                           padding: '1px 5px', whiteSpace: 'nowrap', fontFamily: 'sans-serif', verticalAlign: 'middle',
                         }}>🔴 野外利用</span>
                       )}
@@ -1468,9 +1468,9 @@ export default function Vulnerabilities() {
 
         {/* Detail panel */}
         {selected && (
-          <div style={{ width: 400, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
+          <div style={{ width: 400, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
             {/* Panel header */}
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               {selected.cve_id ? (
                 <a href={`https://nvd.nist.gov/vuln/detail/${selected.cve_id}`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: 12, fontWeight: 600, fontFamily: 'monospace', color: 'var(--accent-blue)', textDecoration: 'none' }}
@@ -1515,7 +1515,7 @@ export default function Vulnerabilities() {
                   <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span className={`sev-badge ${selected.severity}`}>{selected.severity}</span>
                     {(selected.cvss_score ?? 0) >= 9.0 && (
-                      <span style={{ fontSize: 10, background: 'rgba(229,57,53,0.15)', color: '#e53935', border: '1px solid rgba(229,57,53,0.4)', borderRadius: 3, padding: '1px 5px' }}>🔴 野外利用</span>
+                      <span style={{ fontSize: 10, background: 'rgba(224,80,80,0.15)', color: 'var(--critical)', border: '1px solid rgba(224,80,80,0.4)', borderRadius: 3, padding: '1px 5px' }}>🔴 野外利用</span>
                     )}
                   </div>
                   <div style={{ marginBottom: 10 }}>
@@ -1556,7 +1556,7 @@ export default function Vulnerabilities() {
                 {selected.fix && (
                   <div className="card">
                     <div className="card-title">修复方案</div>
-                    <div style={{ background: 'var(--bg-card2, var(--bg-secondary))', fontFamily: 'monospace', fontSize: 12, padding: 12, borderRadius: 4, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto' }}>
+                    <div style={{ background: 'var(--bg-card2)', fontFamily: 'monospace', fontSize: 12, padding: 12, borderRadius: 4, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto' }}>
                       {selected.fix}
                     </div>
                   </div>
@@ -1573,7 +1573,7 @@ export default function Vulnerabilities() {
                     {showAssets && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                         {selected.affected_assets.map(a => (
-                          <span key={a} style={{ background: 'var(--bg-card2, var(--bg-secondary))', border: '1px solid var(--border-light, var(--border))', borderRadius: 3, fontSize: 11, padding: '2px 8px', color: 'var(--text-secondary)', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{a}</span>
+                          <span key={a} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border-light)', borderRadius: 3, fontSize: 11, padding: '2px 8px', color: 'var(--text-secondary)', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{a}</span>
                         ))}
                       </div>
                     )}
@@ -1660,8 +1660,8 @@ export default function Vulnerabilities() {
       {/* Create / Edit Modal */}
       {showModal && (
         <>
-          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 520, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 520, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>{editTarget ? '编辑漏洞' : '添加漏洞'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -1722,8 +1722,8 @@ export default function Vulnerabilities() {
 
       {deleteTarget && (
         <>
-          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>确认删除</div>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
               确定要删除漏洞 <strong style={{ color: 'var(--accent-orange)', fontFamily: 'monospace' }}>{deleteTarget.cve_id || deleteTarget.title}</strong> 吗？

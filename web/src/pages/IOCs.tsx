@@ -53,17 +53,17 @@ interface FeedCorrelation {
 
 
 const TYPE_COLORS: Record<string, string> = {
-  ip: '#4fa3e0', domain: '#a78bfa', url: '#00c896',
-  hash: '#f9a825', email: '#fa582d', cve: '#ff7043',
-  cidr: '#4fa3e0', registry: '#ff7043', user_agent: '#00c896', mutex: '#a78bfa',
+  ip: 'var(--accent-blue)', domain: 'var(--accent-blue)', url: 'var(--accent-green)',
+  hash: 'var(--medium)', email: 'var(--high)', cve: 'var(--high)',
+  cidr: 'var(--accent-blue)', registry: 'var(--high)', user_agent: 'var(--accent-green)', mutex: 'var(--accent-blue)',
 }
 
 const VERDICT_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
-  malicious:  { bg: 'rgba(229,57,53,.18)',   color: '#ef5350',  label: 'Malicious' },
-  suspicious: { bg: 'rgba(255,111,0,.15)',   color: '#ffa726',  label: 'Suspicious' },
-  benign:     { bg: 'rgba(67,160,71,.15)',   color: '#66bb6a',  label: 'Benign' },
-  unknown:    { bg: 'rgba(84,110,122,.15)',  color: '#90a4ae',  label: 'Unknown' },
-  false_positive: { bg: 'rgba(120,144,156,.15)', color: '#90a4ae', label: 'False Positive' },
+  malicious:  { bg: 'rgba(224,80,80,.18)',   color: 'var(--critical)',  label: 'Malicious' },
+  suspicious: { bg: 'rgba(224,128,64,.15)',  color: 'var(--high)',  label: 'Suspicious' },
+  benign:     { bg: 'rgba(47,176,122,.15)',  color: 'var(--accent-green)',  label: 'Benign' },
+  unknown:    { bg: 'rgba(84,110,122,.15)',  color: 'var(--text-muted)',  label: 'Unknown' },
+  false_positive: { bg: 'rgba(120,144,156,.15)', color: 'var(--text-muted)', label: 'False Positive' },
 }
 
 // Mock geo data for IP IOCs
@@ -84,10 +84,10 @@ function VerdictBadge({ verdict }: { verdict: string }) {
 }
 
 function confColor(conf: number): string {
-  if (conf >= 81) return '#66bb6a'   // green
-  if (conf >= 61) return '#ffd54f'   // yellow
-  if (conf >= 31) return '#ffa726'   // orange
-  return '#ef5350'                   // red
+  if (conf >= 81) return 'var(--accent-green)'  // green
+  if (conf >= 61) return 'var(--medium)'        // amber
+  if (conf >= 31) return 'var(--high)'          // orange
+  return 'var(--critical)'                       // red
 }
 
 function ConfBadge({ conf }: { conf: number }) {
@@ -118,7 +118,7 @@ function ConfBar({ conf }: { conf: number }) {
 /** SVG gauge for reputation score 0-100 */
 function ReputationGauge({ score }: { score: number }) {
   const clamped = Math.min(100, Math.max(0, score))
-  const color = clamped < 40 ? '#e53935' : clamped < 70 ? '#ff6f00' : '#2a9060'
+  const color = clamped < 40 ? 'var(--critical)' : clamped < 70 ? 'var(--high)' : 'var(--accent-green)'
   const r = 26, cx = 36, cy = 38
   const startAngle = -225 * (Math.PI / 180)
   const startX = cx + r * Math.cos(startAngle)
@@ -200,8 +200,8 @@ function RelationshipGraph({ ioc, alerts, incidents, onNavigateAlert, onNavigate
       ))}
 
       {/* Central IOC node */}
-      <circle cx={cx} cy={cy} r={22} fill="rgba(79,163,224,0.18)" stroke="#4fa3e0" strokeWidth={2} />
-      <text x={cx} y={cy - 4} textAnchor="middle" fontSize="7" fill="#4fa3e0" fontWeight="700" fontFamily="'Segoe UI',sans-serif">
+      <circle cx={cx} cy={cy} r={22} fill="rgba(79,163,224,0.18)" stroke="var(--accent-blue)" strokeWidth={2} />
+      <text x={cx} y={cy - 4} textAnchor="middle" fontSize="7" fill="var(--accent-blue)" fontWeight="700" fontFamily="'Segoe UI',sans-serif">
         {ioc.type.toUpperCase()}
       </text>
       <text x={cx} y={cy + 7} textAnchor="middle" fontSize="6.5" fill="rgba(255,255,255,0.7)" fontFamily="monospace">
@@ -212,8 +212,8 @@ function RelationshipGraph({ ioc, alerts, incidents, onNavigateAlert, onNavigate
       {nodes.map(n => {
         const isHovered = hovered === n.key
         const isAlert = n.type === 'alert'
-        const fillColor = isAlert ? 'rgba(250,88,45,0.18)' : 'rgba(167,139,250,0.18)'
-        const strokeColor = isAlert ? '#fa582d' : '#a78bfa'
+        const fillColor = isAlert ? 'rgba(224,80,80,0.18)' : 'rgba(167,139,250,0.18)'
+        const strokeColor = isAlert ? 'var(--critical)' : 'var(--accent-blue)'
         const bw = 64, bh = 28
 
         // Alerts: rectangle, Incidents: hexagon path
@@ -239,7 +239,7 @@ function RelationshipGraph({ ioc, alerts, incidents, onNavigateAlert, onNavigate
                 x={n.x - bw / 2} y={n.y - bh / 2}
                 width={bw} height={bh}
                 rx={4} ry={4}
-                fill={isHovered ? 'rgba(250,88,45,0.35)' : fillColor}
+                fill={isHovered ? 'rgba(224,80,80,0.35)' : fillColor}
                 stroke={strokeColor} strokeWidth={isHovered ? 2 : 1.5}
               />
             ) : (
@@ -261,7 +261,7 @@ function RelationshipGraph({ ioc, alerts, incidents, onNavigateAlert, onNavigate
 
       {/* Legend */}
       <g transform={`translate(${W - 100}, ${H - 32})`}>
-        <rect x={0} y={0} width={8} height={8} rx={1} fill="none" stroke="#fa582d" strokeWidth={1.5} />
+        <rect x={0} y={0} width={8} height={8} rx={1} fill="none" stroke="#c04040" strokeWidth={1.5} />
         <text x={11} y={7.5} fontSize="7" fill="var(--text-muted)" fontFamily="'Segoe UI',sans-serif">Alert</text>
         <path d="M 36 4 L 39 1 L 44 1 L 47 4 L 44 7 L 39 7 Z" fill="none" stroke="#a78bfa" strokeWidth={1.5} />
         <text x={50} y={7.5} fontSize="7" fill="var(--text-muted)" fontFamily="'Segoe UI',sans-serif">Incident</text>
@@ -644,7 +644,7 @@ export default function IOCs() {
             <span style={{ color: 'var(--text-muted)' }}>·</span>
             <span style={{
               display: 'inline-flex', alignItems: 'center',
-              background: 'rgba(79,163,224,.15)', color: '#4fa3e0',
+              background: 'rgba(79,163,224,.15)', color: 'var(--accent-blue)',
               fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
               border: '1px solid rgba(79,163,224,.3)',
             }}>
@@ -736,7 +736,7 @@ export default function IOCs() {
             type="checkbox"
             checked={activeOnly}
             onChange={e => setActiveOnly(e.target.checked)}
-            style={{ accentColor: '#4fa3e0', cursor: 'pointer' }}
+            style={{ accentColor: 'var(--accent-blue)', cursor: 'pointer' }}
           />
           仅显示活跃
         </label>
@@ -752,13 +752,13 @@ export default function IOCs() {
           borderBottom: '1px solid rgba(79,163,224,0.3)',
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#4fa3e0' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-blue)' }}>
             已选 {checkedKeys.size} 项
           </span>
           <div style={{ display: 'flex', gap: 8, marginLeft: 4 }}>
             <button
               className="btn-secondary"
-              style={{ fontSize: 12, padding: '4px 12px', color: '#ef5350', borderColor: 'rgba(229,57,53,.4)' }}
+              style={{ fontSize: 12, padding: '4px 12px', color: 'var(--critical)', borderColor: 'rgba(224,80,80,.4)' }}
               onClick={() => setShowDeleteConfirm(true)}
               disabled={bulkDeleting}
             >
@@ -773,7 +773,7 @@ export default function IOCs() {
             </button>
             <button
               className="btn-secondary"
-              style={{ fontSize: 12, padding: '4px 12px', color: '#ffa726', borderColor: 'rgba(255,111,0,.4)' }}
+              style={{ fontSize: 12, padding: '4px 12px', color: 'var(--high)', borderColor: 'rgba(224,128,64,.4)' }}
               onClick={doBulkMarkFP}
               disabled={bulkMarkingFP}
             >
@@ -825,7 +825,7 @@ export default function IOCs() {
                     checked={allChecked}
                     onChange={toggleAll}
                     title="全选"
-                    style={{ accentColor: '#4fa3e0', cursor: 'pointer' }}
+                    style={{ accentColor: 'var(--accent-blue)', cursor: 'pointer' }}
                   />
                 </th>
                 <th>类型</th>
@@ -853,14 +853,14 @@ export default function IOCs() {
                       type="checkbox"
                       checked={checkedKeys.has(ioc._key)}
                       onChange={() => toggleRow(ioc._key)}
-                      style={{ accentColor: '#4fa3e0', cursor: 'pointer' }}
+                      style={{ accentColor: 'var(--accent-blue)', cursor: 'pointer' }}
                     />
                   </td>
                   <td>
                     <span style={{
                       fontSize: 10.5, padding: '2px 8px', borderRadius: 3, fontWeight: 600,
-                      background: `${TYPE_COLORS[ioc.type] ?? '#4fa3e0'}22`,
-                      color: TYPE_COLORS[ioc.type] ?? '#4fa3e0',
+                      background: `${TYPE_COLORS[ioc.type] ?? 'var(--accent-blue)'}22`,
+                      color: TYPE_COLORS[ioc.type] ?? 'var(--accent-blue)',
                       textTransform: 'uppercase',
                     }}>
                       {ioc.type || '-'}
@@ -893,11 +893,11 @@ export default function IOCs() {
         {/* ── Detail panel ──────────────────────────────────────────────────── */}
         {selected && (
           <div style={{
-            width: 300, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)',
+            width: 300, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
           }}>
             {/* Panel header */}
-            <div style={{ padding: '14px 16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ padding: '14px 16px 0', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>IOC Detail</div>
@@ -921,8 +921,8 @@ export default function IOCs() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
                 <span style={{
                   fontSize: 10.5, padding: '2px 8px', borderRadius: 3, fontWeight: 700,
-                  background: `${TYPE_COLORS[selected.type] ?? '#4fa3e0'}22`,
-                  color: TYPE_COLORS[selected.type] ?? '#4fa3e0', textTransform: 'uppercase',
+                  background: `${TYPE_COLORS[selected.type] ?? 'var(--accent-blue)'}22`,
+                  color: TYPE_COLORS[selected.type] ?? 'var(--accent-blue)', textTransform: 'uppercase',
                 }}>
                   {selected.type}
                 </span>
@@ -1134,9 +1134,9 @@ export default function IOCs() {
                   {!graphLoading && (
                     <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
-                        <span style={{ fontWeight: 600, color: '#fa582d' }}>{relatedAlerts.length}</span> 个告警
+                        <span style={{ fontWeight: 600, color: 'var(--critical)' }}>{relatedAlerts.length}</span> 个告警
                         &nbsp;&nbsp;
-                        <span style={{ fontWeight: 600, color: '#a78bfa' }}>{relatedIncidents.length}</span> 个事件
+                        <span style={{ fontWeight: 600, color: 'var(--accent-blue)' }}>{relatedIncidents.length}</span> 个事件
                       </div>
                     </div>
                   )}
@@ -1225,8 +1225,8 @@ export default function IOCs() {
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       padding: '8px 12px', borderRadius: 6,
-                      background: 'rgba(100,180,100,0.1)', border: '1px solid rgba(100,180,100,0.3)',
-                      color: '#66bb6a', fontSize: 12, fontWeight: 600, textDecoration: 'none',
+                      background: 'rgba(47,176,122,0.1)', border: '1px solid rgba(47,176,122,0.3)',
+                      color: 'var(--accent-green)', fontSize: 12, fontWeight: 600, textDecoration: 'none',
                     }}
                   >
                     <span>&#128279;</span> 在 VirusTotal 中查看
@@ -1249,21 +1249,21 @@ export default function IOCs() {
       {/* ── Bulk delete confirm dialog ───────────────────────────────────────── */}
       {showDeleteConfirm && (
         <>
-          <div onClick={() => setShowDeleteConfirm(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowDeleteConfirm(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 380, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 380, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>确认批量删除</div>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
-              即将删除 <strong style={{ color: '#ef5350' }}>{checkedKeys.size}</strong> 个IOC，此操作不可撤销。确认继续？
+              即将删除 <strong style={{ color: 'var(--critical)' }}>{checkedKeys.size}</strong> 个IOC，此操作不可撤销。确认继续？
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowDeleteConfirm(false)}>取消</button>
               <button
                 className="btn-primary"
-                style={{ flex: 1, background: '#e53935', borderColor: '#e53935' }}
+                style={{ flex: 1, background: 'var(--critical)', borderColor: 'var(--critical)' }}
                 disabled={bulkDeleting}
                 onClick={doBulkDelete}
               >
@@ -1277,10 +1277,10 @@ export default function IOCs() {
       {/* ── Add single IOC modal ──────────────────────────────────────────────── */}
       {showAdd && (
         <>
-          <div onClick={() => setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 460, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 460, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>添加IOC</div>
@@ -1345,10 +1345,10 @@ export default function IOCs() {
       {/* ── Bulk import modal ─────────────────────────────────────────────────── */}
       {showBulk && (
         <>
-          <div onClick={closeBulk} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={closeBulk} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 520, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 520, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>批量导入 IOC</div>
@@ -1385,7 +1385,7 @@ export default function IOCs() {
             />
 
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
-              共 <strong style={{ color: bulkPreviewCount > 0 ? '#4fa3e0' : 'var(--text-muted)' }}>{bulkPreviewCount}</strong> 条
+              共 <strong style={{ color: bulkPreviewCount > 0 ? 'var(--accent-blue)' : 'var(--text-muted)' }}>{bulkPreviewCount}</strong> 条
             </div>
 
             {bulkError && (
@@ -1394,7 +1394,7 @@ export default function IOCs() {
               </div>
             )}
             {bulkSuccess && (
-              <div style={{ marginTop: 8, fontSize: 12, color: '#66bb6a', background: 'rgba(67,160,71,.1)', border: '1px solid rgba(67,160,71,.3)', borderRadius: 4, padding: '6px 10px' }}>
+              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--accent-green)', background: 'rgba(47,176,122,.1)', border: '1px solid rgba(47,176,122,.3)', borderRadius: 4, padding: '6px 10px' }}>
                 {bulkSuccess}
               </div>
             )}

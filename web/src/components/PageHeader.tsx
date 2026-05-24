@@ -11,7 +11,7 @@ interface Props {
 
 /**
  * PageHeader — 统一的内容页头部导航栏。
- * 高度固定 46px，背景 var(--bg-sidebar)，下边框 var(--border)。
+ * 高度固定 46px，背景 'var(--bg-sidebar)'，下边框 'var(--border)'。
  * 所有内容页都使用此组件，确保视觉一致性。
  */
 export default function PageHeader({ title, subtitle, actions }: Props) {

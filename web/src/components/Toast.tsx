@@ -22,9 +22,9 @@ export function useToast(): ToastContextValue {
 }
 
 const TYPE_STYLES: Record<ToastType, { background: string; border: string; icon: string }> = {
-  success: { background: 'var(--color-success, #16a34a)', border: '#15803d', icon: '✓' },
-  error:   { background: 'var(--color-error, #dc2626)',   border: '#b91c1c', icon: '✕' },
-  info:    { background: 'var(--color-info, #2563eb)',    border: '#1d4ed8', icon: 'ℹ' },
+  success: { background: 'var(--color-success, #16a34a)', border: 'var(--accent-green)', icon: '✓' },
+  error:   { background: 'var(--color-error, #dc2626)',   border: 'var(--critical)', icon: '✕' },
+  info:    { background: 'var(--color-info, #2563eb)',    border: 'var(--accent-blue)', icon: 'ℹ' },
 }
 
 let nextId = 0

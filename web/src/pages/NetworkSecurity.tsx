@@ -145,12 +145,12 @@ const MOCK_DETECTION_RULES: DetectionRule[] = [
 // ─── Helper Components ────────────────────────────────────────────────────────
 
 const SEV_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-  critical: { color: '#e05555', bg: 'rgba(217,64,64,.18)',  label: '高危' },
-  high:     { color: '#dd7a30', bg: 'rgba(208,112,48,.16)', label: '中高' },
-  medium:   { color: '#d4aa28', bg: 'rgba(192,144,32,.14)', label: '中危' },
-  low:      { color: '#3ab07a', bg: 'rgba(42,144,96,.15)',  label: '低危' },
+  critical: { color: 'var(--critical)', bg: 'rgba(217,64,64,.18)',  label: '高危' },
+  high:     { color: 'var(--high)', bg: 'rgba(208,112,48,.16)', label: '中高' },
+  medium:   { color: 'var(--medium)', bg: 'rgba(192,144,32,.14)', label: '中危' },
+  low:      { color: 'var(--accent-green)', bg: 'rgba(42,144,96,.15)',  label: '低危' },
   none:     { color: 'var(--text-muted)', bg: 'rgba(80,100,130,.10)', label: '安全' },
-  clean:    { color: '#3ab07a', bg: 'rgba(42,144,96,.15)',  label: '正常' },
+  clean:    { color: 'var(--accent-green)', bg: 'rgba(42,144,96,.15)',  label: '正常' },
 }
 
 function SevBadge({ level, label }: { level: string; label?: string }) {
@@ -169,12 +169,12 @@ function SevBadge({ level, label }: { level: string; label?: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const MAP: Record<string, { color: string; bg: string; label: string }> = {
-    blocked:      { color: '#e05555', bg: 'rgba(217,64,64,.14)',  label: '已封锁' },
-    alerting:     { color: '#dd7a30', bg: 'rgba(208,112,48,.13)', label: '告警中' },
-    monitoring:   { color: '#d4aa28', bg: 'rgba(192,144,32,.12)', label: '监控中' },
-    active:       { color: '#e05555', bg: 'rgba(217,64,64,.14)',  label: '活跃' },
-    investigating:{ color: '#3b9ede', bg: 'rgba(59,158,222,.14)', label: '调查中' },
-    resolved:     { color: '#3ab07a', bg: 'rgba(42,144,96,.14)',  label: '已解决' },
+    blocked:      { color: 'var(--critical)', bg: 'rgba(217,64,64,.14)',  label: '已封锁' },
+    alerting:     { color: 'var(--high)', bg: 'rgba(208,112,48,.13)', label: '告警中' },
+    monitoring:   { color: 'var(--medium)', bg: 'rgba(192,144,32,.12)', label: '监控中' },
+    active:       { color: 'var(--critical)', bg: 'rgba(217,64,64,.14)',  label: '活跃' },
+    investigating:{ color: 'var(--accent-blue)', bg: 'rgba(59,158,222,.14)', label: '调查中' },
+    resolved:     { color: 'var(--accent-green)', bg: 'rgba(42,144,96,.14)',  label: '已解决' },
   }
   const cfg = MAP[status] ?? MAP.monitoring
   return (
@@ -295,12 +295,12 @@ function TrafficTab() {
           <AreaChart data={MOCK_TRAFFIC_DATA} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gradIn" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b9ede" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#3b9ede" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="var(--accent-blue)" stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="gradOut" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2fb07a" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#2fb07a" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="var(--accent-green)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="var(--accent-green)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <XAxis
@@ -321,11 +321,11 @@ function TrafficTab() {
               wrapperStyle={{ fontSize: 11, color: 'var(--text-secondary)', paddingTop: 8 }}
             />
             <Area
-              type="monotone" dataKey="入站" stroke="#3b9ede"
+              type="monotone" dataKey="入站" stroke="var(--accent-blue)"
               strokeWidth={1.5} fill="url(#gradIn)"
             />
             <Area
-              type="monotone" dataKey="出站" stroke="#2fb07a"
+              type="monotone" dataKey="出站" stroke="var(--accent-green)"
               strokeWidth={1.5} fill="url(#gradOut)"
             />
           </AreaChart>
@@ -372,7 +372,7 @@ function TrafficTab() {
                   <td>
                     <span style={{
                       fontSize: 10, padding: '2px 6px', borderRadius: 3,
-                      background: 'rgba(59,158,222,.12)', color: '#3b9ede',
+                      background: 'rgba(59,158,222,.12)', color: 'var(--accent-blue)',
                       fontWeight: 600, textTransform: 'uppercase',
                     }}>
                       {conn.protocol}
@@ -453,11 +453,11 @@ function DnsTab() {
   }
 
   const DNS_RISK_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-    critical: { color: '#e05555', bg: 'rgba(217,64,64,.15)',  label: '高危' },
-    high:     { color: '#dd7a30', bg: 'rgba(208,112,48,.14)', label: '中高' },
-    medium:   { color: '#d4aa28', bg: 'rgba(192,144,32,.12)', label: '中危' },
-    low:      { color: '#3ab07a', bg: 'rgba(42,144,96,.13)',  label: '低危' },
-    clean:    { color: '#3ab07a', bg: 'rgba(42,144,96,.10)',  label: '正常' },
+    critical: { color: 'var(--critical)', bg: 'rgba(217,64,64,.15)',  label: '高危' },
+    high:     { color: 'var(--high)', bg: 'rgba(208,112,48,.14)', label: '中高' },
+    medium:   { color: 'var(--medium)', bg: 'rgba(192,144,32,.12)', label: '中危' },
+    low:      { color: 'var(--accent-green)', bg: 'rgba(42,144,96,.13)',  label: '低危' },
+    clean:    { color: 'var(--accent-green)', bg: 'rgba(42,144,96,.10)',  label: '正常' },
   }
 
   return (
@@ -738,7 +738,7 @@ function AssetsTab() {
                   {dev.isNew && (
                     <span style={{
                       marginLeft: 6, fontSize: 9, padding: '1px 5px',
-                      background: 'rgba(59,158,222,.18)', color: '#3b9ede',
+                      background: 'rgba(59,158,222,.18)', color: 'var(--accent-blue)',
                       borderRadius: 2, fontWeight: 700, textTransform: 'uppercase',
                     }}>
                       新
@@ -756,7 +756,7 @@ function AssetsTab() {
                   {dev.isUnknown && (
                     <span style={{
                       marginLeft: 6, fontSize: 9, padding: '1px 5px',
-                      background: 'rgba(208,112,48,.18)', color: '#dd7a30',
+                      background: 'rgba(208,112,48,.18)', color: 'var(--high)',
                       borderRadius: 2, fontWeight: 700, textTransform: 'uppercase',
                     }}>
                       未知
@@ -774,7 +774,7 @@ function AssetsTab() {
                     {dev.isUnknown && (
                       <button
                         className="btn-secondary"
-                        style={{ fontSize: 11, padding: '2px 8px', color: '#dd7a30' }}
+                        style={{ fontSize: 11, padding: '2px 8px', color: 'var(--high)' }}
                       >
                         标记
                       </button>
@@ -804,13 +804,13 @@ function ThreatsTab() {
   }
 
   const THREAT_TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
-    '端口扫描': { icon: '🔍', color: '#dd7a30' },
-    'DDoS攻击': { icon: '💥', color: '#e05555' },
-    'ARP欺骗': { icon: '🔀', color: '#dd7a30' },
-    'DNS隧道': { icon: '🕳️', color: '#e05555' },
-    '横向移动': { icon: '↔', color: '#e05555' },
-    '暴力破解': { icon: '🔓', color: '#d4aa28' },
-    '异常出站流量': { icon: '📤', color: '#d4aa28' },
+    '端口扫描': { icon: '🔍', color: 'var(--high)' },
+    'DDoS攻击': { icon: '💥', color: 'var(--critical)' },
+    'ARP欺骗': { icon: '🔀', color: 'var(--high)' },
+    'DNS隧道': { icon: '🕳️', color: 'var(--critical)' },
+    '横向移动': { icon: '↔', color: 'var(--critical)' },
+    '暴力破解': { icon: '🔓', color: 'var(--medium)' },
+    '异常出站流量': { icon: '📤', color: 'var(--medium)' },
   }
 
   return (
@@ -845,7 +845,7 @@ function ThreatsTab() {
           </thead>
           <tbody>
             {MOCK_THREAT_ALERTS.map(alert => {
-              const typeCfg = THREAT_TYPE_CONFIG[alert.threatType] ?? { icon: '⚠', color: '#d4aa28' }
+              const typeCfg = THREAT_TYPE_CONFIG[alert.threatType] ?? { icon: '⚠', color: 'var(--medium)' }
               return (
                 <tr key={alert.id} className={alert.severity === 'critical' ? 'row-critical' : ''}>
                   <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
@@ -917,7 +917,7 @@ function ThreatsTab() {
                 {rule.hitsToday > 0 ? (
                   <span style={{
                     fontSize: 11, padding: '2px 8px', borderRadius: 3,
-                    background: 'rgba(208,112,48,.14)', color: '#dd7a30', fontWeight: 700,
+                    background: 'rgba(208,112,48,.14)', color: 'var(--high)', fontWeight: 700,
                   }}>
                     今日 {rule.hitsToday} 次
                   </span>

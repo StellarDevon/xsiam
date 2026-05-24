@@ -107,7 +107,7 @@ function rawModeLabel(m: string) {
 
 function rawModeColor(m: string) {
   if (m === 'both') return 'var(--accent-blue)'
-  if (m === 'etl_only') return '#a78bfa'
+  if (m === 'etl_only') return 'var(--accent-blue)'
   if (m === 'raw_only') return 'var(--text-muted)'
   return 'var(--text-muted)'
 }
@@ -281,40 +281,40 @@ function PipelineFlowDiagram() {
         {/* ── Source nodes ── */}
         {/* 终端 Agent */}
         <rect x="8" y="16" width="110" height="34" rx="6"
-          fill="rgba(79,163,224,.10)" stroke="rgba(79,163,224,.45)" strokeWidth="1.2" />
-        <text x="63" y="30" textAnchor="middle" fill="#4fa3e0" fontSize="10" fontWeight="700">终端 Agent</text>
-        <text x="63" y="44" textAnchor="middle" fill="rgba(79,163,224,.7)" fontSize="8.5">Wazuh / EDR</text>
+          fill="rgba(63,160,224,.10)" stroke="rgba(63,160,224,.45)" strokeWidth="1.2" />
+        <text x="63" y="30" textAnchor="middle" fill="var(--accent-blue)" fontSize="10" fontWeight="700">终端 Agent</text>
+        <text x="63" y="44" textAnchor="middle" fill="rgba(63,160,224,.7)" fontSize="8.5">Wazuh / EDR</text>
 
         {/* Webhook */}
         <rect x="8" y="63" width="110" height="34" rx="6"
-          fill="rgba(79,163,224,.10)" stroke="rgba(79,163,224,.45)" strokeWidth="1.2" />
-        <text x="63" y="77" textAnchor="middle" fill="#4fa3e0" fontSize="10" fontWeight="700">Webhook</text>
-        <text x="63" y="91" textAnchor="middle" fill="rgba(79,163,224,.7)" fontSize="8.5">HTTP POST</text>
+          fill="rgba(63,160,224,.10)" stroke="rgba(63,160,224,.45)" strokeWidth="1.2" />
+        <text x="63" y="77" textAnchor="middle" fill="var(--accent-blue)" fontSize="10" fontWeight="700">Webhook</text>
+        <text x="63" y="91" textAnchor="middle" fill="rgba(63,160,224,.7)" fontSize="8.5">HTTP POST</text>
 
         {/* REST API */}
         <rect x="8" y="110" width="110" height="34" rx="6"
-          fill="rgba(79,163,224,.10)" stroke="rgba(79,163,224,.45)" strokeWidth="1.2" />
-        <text x="63" y="124" textAnchor="middle" fill="#4fa3e0" fontSize="10" fontWeight="700">REST API</text>
-        <text x="63" y="138" textAnchor="middle" fill="rgba(79,163,224,.7)" fontSize="8.5">ingestion</text>
+          fill="rgba(63,160,224,.10)" stroke="rgba(63,160,224,.45)" strokeWidth="1.2" />
+        <text x="63" y="124" textAnchor="middle" fill="var(--accent-blue)" fontSize="10" fontWeight="700">REST API</text>
+        <text x="63" y="138" textAnchor="middle" fill="rgba(63,160,224,.7)" fontSize="8.5">ingestion</text>
 
         {/* ── Arrows: Sources → ETL Engine ── */}
         {/* Top arrow */}
-        <line x1="118" y1="33" x2="266" y2="55" stroke="#4fa3e0" strokeWidth="1.4" className="etl-flow-arrow" />
-        <polygon points="262,51 270,57 264,62" fill="#4fa3e0" opacity="0.75" />
+        <line x1="118" y1="33" x2="266" y2="55" stroke="var(--accent-blue)" strokeWidth="1.4" className="etl-flow-arrow" />
+        <polygon points="262,51 270,57 264,62" fill="var(--accent-blue)" opacity="0.75" />
 
         {/* Mid arrow */}
-        <line x1="118" y1="80" x2="266" y2="80" stroke="#4fa3e0" strokeWidth="1.4" className="etl-flow-arrow" />
-        <polygon points="262,76 270,80 262,84" fill="#4fa3e0" opacity="0.75" />
+        <line x1="118" y1="80" x2="266" y2="80" stroke="var(--accent-blue)" strokeWidth="1.4" className="etl-flow-arrow" />
+        <polygon points="262,76 270,80 262,84" fill="var(--accent-blue)" opacity="0.75" />
 
         {/* Bottom arrow */}
-        <line x1="118" y1="127" x2="266" y2="105" stroke="#4fa3e0" strokeWidth="1.4" className="etl-flow-arrow" />
-        <polygon points="262,99 270,103 264,108" fill="#4fa3e0" opacity="0.75" />
+        <line x1="118" y1="127" x2="266" y2="105" stroke="var(--accent-blue)" strokeWidth="1.4" className="etl-flow-arrow" />
+        <polygon points="262,99 270,103 264,108" fill="var(--accent-blue)" opacity="0.75" />
 
         {/* ── ETL Engine box ── */}
         <rect x="268" y="20" width="224" height="120" rx="8"
           fill="rgba(34,197,94,.07)" stroke="rgba(34,197,94,.4)" strokeWidth="1.5"
           className="etl-engine-pulse" />
-        <text x="380" y="36" textAnchor="middle" fill="#22c55e" fontSize="11" fontWeight="700" letterSpacing="1">ETL Engine</text>
+        <text x="380" y="36" textAnchor="middle" fill="var(--accent-green)" fontSize="11" fontWeight="700" letterSpacing="1">ETL Engine</text>
         {/* Pipeline steps inside box */}
         {['解析 (Parse)', '转换 (Transform)', '过滤 (Filter)', '富化 (Enrich)', '路由 (Route)'].map((label, i) => (
           <g key={label}>
@@ -365,10 +365,10 @@ function PipelineFlowDiagram() {
         maxWidth: 820, margin: '10px auto 0',
       }}>
         {[
-          { label: '今日处理事件', value: liveStats.events.toLocaleString(),   color: '#4fa3e0' },
-          { label: '规则匹配',     value: liveStats.matched.toLocaleString(),  color: '#22c55e' },
-          { label: '已丢弃',       value: liveStats.dropped.toLocaleString(),  color: '#f87171' },
-          { label: '平均延迟',     value: `${liveStats.latency}ms`,            color: '#14b8a6' },
+          { label: '今日处理事件', value: liveStats.events.toLocaleString(),   color: 'var(--accent-blue)' },
+          { label: '规则匹配',     value: liveStats.matched.toLocaleString(),  color: 'var(--accent-green)' },
+          { label: '已丢弃',       value: liveStats.dropped.toLocaleString(),  color: 'var(--critical)' },
+          { label: '平均延迟',     value: `${liveStats.latency}ms`,            color: 'var(--accent-green)' },
         ].map((stat, i) => (
           <div key={stat.label} style={{
             flex: 1, padding: '8px 14px', textAlign: 'center',
@@ -421,10 +421,10 @@ function TestModal({ rule, onClose }: TestModalProps) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        width: 580, background: 'var(--bg-card)', border: '1px solid var(--border)',
+        width: 580, background: 'var(--bg-modal)', border: '1px solid var(--border)',
         borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '90vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -504,8 +504,8 @@ function TestModal({ rule, onClose }: TestModalProps) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 14, overflowX: 'auto' }}>
                 {/* Input box */}
                 <div style={{
-                  padding: '7px 12px', borderRadius: 5, background: 'rgba(79,163,224,.1)',
-                  border: '1px solid rgba(79,163,224,.35)', fontSize: 11, color: '#4fa3e0',
+                  padding: '7px 12px', borderRadius: 5, background: 'rgba(63,160,224,.1)',
+                  border: '1px solid rgba(63,160,224,.35)', fontSize: 11, color: 'var(--accent-blue)',
                   fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap', flexShrink: 0,
                 }}>
                   Input
@@ -533,7 +533,7 @@ function TestModal({ rule, onClose }: TestModalProps) {
                     {/* Actions box */}
                     <div style={{
                       padding: '7px 12px', borderRadius: 5, background: 'rgba(167,139,250,.1)',
-                      border: '1px solid rgba(167,139,250,.35)', fontSize: 11, color: '#a78bfa',
+                      border: '1px solid rgba(167,139,250,.35)', fontSize: 11, color: 'var(--accent-blue)',
                       fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap', flexShrink: 0,
                     }}>
                       Actions
@@ -545,12 +545,12 @@ function TestModal({ rule, onClose }: TestModalProps) {
                     {/* Output box */}
                     <div style={{
                       padding: '7px 12px', borderRadius: 5, background: 'rgba(20,184,166,.1)',
-                      border: '1px solid rgba(20,184,166,.35)', fontSize: 11, color: '#14b8a6',
+                      border: '1px solid rgba(20,184,166,.35)', fontSize: 11, color: 'var(--accent-green)',
                       fontWeight: 600, textAlign: 'center', flexShrink: 0,
                     }}>
                       <div>Output</div>
                       {testResult.etl_ngx_index && (
-                        <div style={{ fontSize: 9.5, color: '#5eead4', fontFamily: 'monospace', marginTop: 2 }}>
+                        <div style={{ fontSize: 9.5, color: 'var(--accent-green)', fontFamily: 'monospace', marginTop: 2 }}>
                           {testResult.etl_ngx_index}
                         </div>
                       )}
@@ -567,7 +567,7 @@ function TestModal({ rule, onClose }: TestModalProps) {
                   borderRadius: 5, marginBottom: 10,
                 }}>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>输出索引</span>
-                  <span style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: '#14b8a6' }}>
+                  <span style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-green)' }}>
                     {testResult.etl_ngx_index}
                   </span>
                 </div>
@@ -748,10 +748,10 @@ function ImportModal({ onClose, onImported, showToast }: ImportModalProps) {
 
   return (
     <>
-      <div onClick={!progress ? onClose : undefined} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+      <div onClick={!progress ? onClose : undefined} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        width: 680, background: 'var(--bg-card)', border: '1px solid var(--border)',
+        width: 680, background: 'var(--bg-modal)', border: '1px solid var(--border)',
         borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '90vh', display: 'flex', flexDirection: 'column',
       }}>
         {/* Header */}
@@ -805,7 +805,7 @@ function ImportModal({ onClose, onImported, showToast }: ImportModalProps) {
                     padding: '32px 20px',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    background: dragOver ? 'rgba(79,163,224,.06)' : 'var(--bg-secondary)',
+                    background: dragOver ? 'rgba(63,160,224,.06)' : 'var(--bg-secondary)',
                     transition: 'border-color .15s, background .15s',
                     flex: 1,
                   }}
@@ -1164,7 +1164,7 @@ export default function ETLPipeline() {
     const key = r.output?.ngx_index || '(未设置)'
     indexCounts[key] = (indexCounts[key] ?? 0) + 1
   }
-  const INDEX_COLORS = ['#4fa3e0', '#a78bfa', '#14b8a6', '#f59e0b', '#f87171', '#34d399', '#60a5fa']
+  const INDEX_COLORS = ['var(--accent-blue)', 'var(--accent-blue)', 'var(--accent-green)', 'var(--medium)', 'var(--critical)', 'var(--accent-green)', 'var(--accent-blue)']
   const pieData = Object.entries(indexCounts).map(([name, value], i) => ({
     name,
     value,
@@ -1196,10 +1196,10 @@ export default function ETLPipeline() {
       <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
         {/* Stat tiles */}
         {[
-          { label: '总规则数',  value: statsTotal,    border: '#4fa3e0' },
-          { label: '启用规则',  value: statsEnabled,  border: '#22c55e' },
-          { label: '禁用规则',  value: statsDisabled, border: '#f97316' },
-          { label: '平均延迟',  value: '12ms',        border: '#14b8a6' },
+          { label: '总规则数',  value: statsTotal,    border: 'var(--accent-blue)' },
+          { label: '启用规则',  value: statsEnabled,  border: 'var(--accent-green)' },
+          { label: '禁用规则',  value: statsDisabled, border: 'var(--high)' },
+          { label: '平均延迟',  value: '12ms',        border: 'var(--accent-green)' },
         ].map(tile => (
           <div key={tile.label} style={{
             paddingLeft: 12, paddingRight: 16, paddingTop: 8, paddingBottom: 8,
@@ -1311,7 +1311,7 @@ export default function ETLPipeline() {
                             borderRadius: 2, color: 'var(--text-muted)', cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,163,224,.2)')}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(63,160,224,.2)')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,.06)')}
                         >↑</button>
                         <button
@@ -1323,7 +1323,7 @@ export default function ETLPipeline() {
                             borderRadius: 2, color: 'var(--text-muted)', cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,163,224,.2)')}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(63,160,224,.2)')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,.06)')}
                         >↓</button>
                       </div>
@@ -1449,8 +1449,8 @@ export default function ETLPipeline() {
 
         {/* Right detail panel */}
         {selected && (
-          <div style={{ width: 420, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+          <div style={{ width: 420, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{selected.name}</div>
                 <div style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>{selected.rule_id}</div>
@@ -1584,8 +1584,8 @@ export default function ETLPipeline() {
       {/* ── Create / Edit Modal ── */}
       {showModal && (
         <>
-          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 620, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
+          <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 620, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 18 }}>{editTarget ? '编辑 ETL 规则' : '新建 ETL 规则'}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
@@ -1738,8 +1738,8 @@ export default function ETLPipeline() {
       {/* ── Delete Confirm ── */}
       {deleteTarget && (
         <>
-          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
+          <div onClick={() => setDeleteTarget(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360, background: 'var(--bg-modal)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 500, padding: 24 }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>确认删除规则</div>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
               确定要删除规则 <strong style={{ color: 'var(--text-primary)' }}>「{deleteTarget.name}」</strong>？
@@ -1764,8 +1764,8 @@ export default function ETLPipeline() {
 
 function Tag({ children, color }: { children: React.ReactNode; color: 'blue' | 'purple' | 'orange' | 'gray' | 'red' }) {
   const MAP = {
-    blue:   { bg: 'rgba(79,163,224,.12)',   fg: '#4fa3e0',             border: 'rgba(79,163,224,.25)' },
-    purple: { bg: 'rgba(167,139,250,.12)',  fg: '#a78bfa',             border: 'rgba(167,139,250,.25)' },
+    blue:   { bg: 'rgba(63,160,224,.12)',   fg: 'var(--accent-blue)',             border: 'rgba(63,160,224,.25)' },
+    purple: { bg: 'rgba(167,139,250,.12)',  fg: 'var(--accent-blue)',             border: 'rgba(167,139,250,.25)' },
     orange: { bg: 'rgba(250,88,45,.1)',     fg: 'var(--accent-orange)', border: 'rgba(250,88,45,.2)' },
     gray:   { bg: 'rgba(120,120,140,.12)',  fg: 'var(--text-muted)',    border: 'rgba(120,120,140,.2)' },
     red:    { bg: 'rgba(239,68,68,.12)',    fg: 'var(--critical)',      border: 'rgba(239,68,68,.25)' },

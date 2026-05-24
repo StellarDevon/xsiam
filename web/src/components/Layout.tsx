@@ -196,7 +196,7 @@ function CommandPalette({ onClose, onNavigate }: { onClose: () => void; onNaviga
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 999,
-          background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(2px)',
+          background: 'var(--bg-overlay)', backdropFilter: 'blur(2px)',
         }}
       />
 

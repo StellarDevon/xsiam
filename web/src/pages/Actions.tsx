@@ -191,7 +191,7 @@ function getMockOutput(actionType: string, targetValue?: string): string {
       return [
         `[${ts}] Endpoint isolation initiated`,
         `  Host   : ${target}`,
-        `  Agent  : XDR Agent v4.2.1`,
+        `  Agent  : XSIAM Agent v4.2.1`,
         `  Mode   : Full Network Isolation`,
         `  Status : ISOLATED`,
         `  Allowed: XSIAM management traffic only (port 443)`,
@@ -317,7 +317,7 @@ function LiveTerminalTab() {
             if (line.type === 'system')  return <div key={i} style={{ color: 'var(--accent-green)' }}>{line.text}</div>
             if (line.type === 'muted')   return <div key={i} style={{ color: 'var(--text-muted)', marginBottom: 10 }}>{line.text}</div>
             if (line.type === 'success') return <div key={i} style={{ color: 'var(--accent-green)' }}>{line.text}</div>
-            if (line.type === 'warn')    return <div key={i} style={{ color: '#c8a030', margin: '4px 0' }}>{line.text}</div>
+            if (line.type === 'warn')    return <div key={i} style={{ color: 'var(--medium)', margin: '4px 0' }}>{line.text}</div>
             if (line.type === 'prompt')  return <div key={i} style={{ marginTop: 6 }}><span style={{ color: 'var(--accent-blue)' }}>{'PS C:\\Windows\\System32>'}</span> <span>{line.cmd}</span></div>
             if (line.type === 'output')  return (
               <div key={i} style={{ color: 'var(--text-secondary)' }}>
@@ -514,7 +514,7 @@ function ParamForm({ schema, values, onChange, kvPairs, onKvChange }: ParamFormP
 type ApprovalStatus = 'none' | 'pending' | 'in_review' | 'approved' | 'rejected'
 
 const APPROVAL_STATES: { id: ApprovalStatus; label: string; color: string }[] = [
-  { id: 'pending',   label: '待审批',  color: '#e8820c' },
+  { id: 'pending',   label: '待审批',  color: 'var(--high)' },
   { id: 'in_review', label: '审批中',  color: 'var(--accent-blue)' },
   { id: 'approved',  label: '已批准',  color: 'var(--accent-green)' },
   { id: 'rejected',  label: '已拒绝',  color: 'var(--critical)' },
@@ -658,17 +658,17 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
 
   return (
     <div style={{
-      width: 340, borderLeft: '1px solid var(--border)', background: 'var(--bg-card)',
+      width: 340, borderLeft: '1px solid var(--border)', background: 'var(--bg-drawer)',
       display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
     }}>
       {/* Header */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', minHeight: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 600 }}>Action Detail</span>
         <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={onClose}>&#x2715;</button>
       </div>
 
       {/* Sub-tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-primary)' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
         {tabs.map(t => (
           <button
             key={t.id}
@@ -738,8 +738,8 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
             {(approvalStatus === 'pending' || approvalStatus === 'in_review') && (
               <div style={{
                 padding: '10px 14px', borderRadius: 6,
-                background: 'rgba(232,130,12,.1)', border: '1px solid rgba(232,130,12,.3)',
-                color: '#e8820c', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8,
+                background: 'rgba(224,128,64,.10)', border: '1px solid rgba(224,128,64,.30)',
+                color: 'var(--high)', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8,
               }}>
                 <span>⏳</span>
                 <span>{approvalStatus === 'pending' ? '待审批 — 等待管理员审核' : '审批中 — 审核进行中'}</span>
@@ -854,7 +854,7 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', gap: 10, fontSize: 11.5 }}>
                     <span style={{ color: 'var(--text-muted)', width: 72, flexShrink: 0 }}>状态变更</span>
-                    <span style={{ color: approvalStatus === 'approved' ? 'var(--accent-green)' : approvalStatus === 'rejected' ? 'var(--critical)' : '#e8820c', fontWeight: 600 }}>
+                    <span style={{ color: approvalStatus === 'approved' ? 'var(--accent-green)' : approvalStatus === 'rejected' ? 'var(--critical)' : 'var(--high)', fontWeight: 600 }}>
                       {APPROVAL_STATES.find(s => s.id === approvalStatus)?.label ?? approvalStatus}
                     </span>
                   </div>
@@ -890,7 +890,7 @@ function DetailPanel({ selected, onClose, onExecute, onApprove: _onApprove, onRe
                 >
                   <div style={{
                     position: 'absolute', top: 3, left: requiresApprovalLocal ? 18 : 3,
-                    width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                    width: 14, height: 14, borderRadius: '50%', background: 'var(--bg-primary)',
                     transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,.4)',
                   }} />
                 </div>
@@ -1052,14 +1052,14 @@ function BatchExecutionModal({ actions, onClose, onRefresh }: BatchExecutionModa
     setDone(true)
   }
 
-  const barColor = cancelled ? 'var(--critical)' : done ? 'var(--accent-green)' : paused ? '#e8820c' : 'var(--accent-blue)'
+  const barColor = cancelled ? 'var(--critical)' : done ? 'var(--accent-green)' : paused ? 'var(--high)' : 'var(--accent-blue)'
 
   return (
     <>
-      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 400 }} />
+      <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        width: 'min(640px, 90vw)', maxHeight: '85vh', background: 'var(--bg-card)', border: '1px solid var(--border)',
+        width: 'min(640px, 90vw)', maxHeight: '85vh', background: 'var(--bg-modal)', border: '1px solid var(--border)',
         borderRadius: 10, zIndex: 500, display: 'flex', flexDirection: 'column', overflow: 'hidden',
         boxShadow: '0 16px 60px rgba(0,0,0,.65)',
       }}>
@@ -1200,10 +1200,10 @@ function BatchBar({ checkedKeys, items, onClear, onRefresh }: BatchBarProps) {
       {/* Confirm modal */}
       {showConfirm && (
         <>
-          <div onClick={() => setShowConfirm(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 400 }} />
+          <div onClick={() => setShowConfirm(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 380, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 380, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>批量执行确认</div>
@@ -1276,7 +1276,7 @@ function SOARDashboardTab() {
 
   const adapterStatusColor: Record<string, string> = {
     Online:   'var(--accent-green)',
-    Degraded: '#e8820c',
+    Degraded: 'var(--high)',
     Offline:  'var(--critical)',
   }
 
@@ -1798,10 +1798,10 @@ export default function Actions() {
       {/* Execute Confirmation Modal */}
       {execTarget && (
         <>
-          <div onClick={() => !executing && setExecTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 400 }} />
+          <div onClick={() => !executing && setExecTarget(null)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 460, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 460, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '80vh', overflowY: 'auto',
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>确认执行动作</div>
@@ -1834,7 +1834,7 @@ export default function Actions() {
               确认执行此动作？
             </div>
             {execTarget.requires_approval && (
-              <div style={{ fontSize: 12.5, color: '#e8820c', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 12.5, color: 'var(--high)', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span>⚠</span>
                 <span>此动作需要审批</span>
               </div>
@@ -1852,10 +1852,10 @@ export default function Actions() {
       {/* Execute Result Modal — enhanced with mock output */}
       {execResult && (
         <>
-          <div onClick={() => { setExecResult(null); setCopied(false) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 400 }} />
+          <div onClick={() => { setExecResult(null); setCopied(false) }} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 520, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 520, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24, maxHeight: '80vh', display: 'flex', flexDirection: 'column',
           }}>
             {/* Status header */}
@@ -1928,10 +1928,10 @@ export default function Actions() {
       {/* New Action Modal */}
       {showNew && (
         <>
-          <div onClick={() => setShowNew(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 400 }} />
+          <div onClick={() => setShowNew(false)} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', zIndex: 400 }} />
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 440, background: 'var(--bg-card)', border: '1px solid var(--border)',
+            width: 440, background: 'var(--bg-modal)', border: '1px solid var(--border)',
             borderRadius: 8, zIndex: 500, padding: 24,
           }}>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>New Action</div>

@@ -96,11 +96,11 @@ const INITIAL_BEHAVIOR_EVENTS: BehaviorEvent[] = [
 ]
 
 const BEHAVIOR_CATEGORIES = [
-  { name: '进程创建', count: 1234, color: '#3b9ede' },
-  { name: '网络连接', count: 567,  color: '#2fb07a' },
-  { name: '文件操作', count: 8901, color: '#4fa3e0' },
-  { name: '注册表操作', count: 234, color: '#f9a825' },
-  { name: '脚本执行', count: 45,  color: '#e53935' },
+  { name: '进程创建', count: 1234, color: 'var(--accent-blue)' },
+  { name: '网络连接', count: 567,  color: 'var(--accent-green)' },
+  { name: '文件操作', count: 8901, color: 'var(--accent-blue)' },
+  { name: '注册表操作', count: 234, color: 'var(--medium)' },
+  { name: '脚本执行', count: 45,  color: 'var(--critical)' },
 ]
 
 const MITRE_TECHNIQUES = [
@@ -152,9 +152,9 @@ const ISOLATION_TIMELINE = [
 
 // Health donut data
 const HEALTH_DATA = [
-  { name: '健康 (80-100)', value: 892, color: '#2fb07a' },
-  { name: '一般 (60-80)',  value: 234, color: '#f9a825' },
-  { name: '较差 (<60)',    value: 158, color: '#e53935' },
+  { name: '健康 (80-100)', value: 892, color: 'var(--accent-green)' },
+  { name: '一般 (60-80)',  value: 234, color: 'var(--medium)' },
+  { name: '较差 (<60)',    value: 158, color: 'var(--critical)' },
 ]
 
 // ─── Helper functions ─────────────────────────────────────────────────────────
@@ -170,37 +170,37 @@ function fmtDate(iso: string) {
 }
 
 function healthColor(score: number): string {
-  if (score >= 80) return '#2fb07a'
-  if (score >= 60) return '#f9a825'
-  return '#e53935'
+  if (score >= 80) return 'var(--accent-green)'
+  if (score >= 60) return 'var(--medium)'
+  return 'var(--critical)'
 }
 
 function statusColor(status: EndpointStatus): string {
   switch (status) {
-    case '正常': return '#2fb07a'
-    case '异常': return '#e53935'
-    case '隔离': return '#ff6f00'
-    case '离线': return '#546e7a'
+    case '正常': return 'var(--accent-green)'
+    case '异常': return 'var(--critical)'
+    case '隔离': return 'var(--high)'
+    case '离线': return 'var(--text-muted)'
   }
 }
 
 function severityColor(sev: string): string {
   switch (sev) {
-    case '严重': return '#e53935'
-    case '高危': return '#ff6f00'
-    case '中危': return '#f9a825'
-    case '低危': return '#2fb07a'
-    default: return '#546e7a'
+    case '严重': return 'var(--critical)'
+    case '高危': return 'var(--high)'
+    case '中危': return 'var(--medium)'
+    case '低危': return 'var(--accent-green)'
+    default: return 'var(--text-muted)'
   }
 }
 
 function detStatusColor(status: string): string {
   switch (status) {
-    case '待处置': return '#e53935'
-    case '处置中': return '#f9a825'
-    case '已关闭': return '#2fb07a'
-    case '误报':   return '#546e7a'
-    default: return '#546e7a'
+    case '待处置': return 'var(--critical)'
+    case '处置中': return 'var(--medium)'
+    case '已关闭': return 'var(--accent-green)'
+    case '误报':   return 'var(--text-muted)'
+    default: return 'var(--text-muted)'
   }
 }
 
@@ -279,10 +279,10 @@ function EndpointOverview() {
       {/* KPI row */}
       <div style={{ display: 'flex', gap: 10 }}>
         <KpiCard label="受保护终端" value="1,284" />
-        <KpiCard label="在线终端"   value="1,156" color="#2fb07a" />
-        <KpiCard label="异常终端"   value="23"    color="#e53935" />
-        <KpiCard label="隔离中"     value="5"     color="#ff6f00" />
-        <KpiCard label="未安装Agent" value="48"   color="#546e7a" />
+        <KpiCard label="在线终端"   value="1,156" color="var(--accent-green)" />
+        <KpiCard label="异常终端"   value="23"    color="var(--critical)" />
+        <KpiCard label="隔离中"     value="5"     color="var(--high)" />
+        <KpiCard label="未安装Agent" value="48"   color="var(--text-muted)" />
       </div>
 
       {/* Charts row */}
@@ -331,9 +331,9 @@ function EndpointOverview() {
           <div className="card-title">终端状态概览</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
             {[
-              { label: '在线率', value: 90, color: '#2fb07a' },
-              { label: '健康率 (≥80分)', value: 69, color: '#3b9ede' },
-              { label: 'Agent 最新版本覆盖率', value: 83, color: '#f9a825' },
+              { label: '在线率', value: 90, color: 'var(--accent-green)' },
+              { label: '健康率 (≥80分)', value: 69, color: 'var(--accent-blue)' },
+              { label: 'Agent 最新版本覆盖率', value: 83, color: 'var(--medium)' },
             ].map(item => (
               <div key={item.label}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 4 }}>
@@ -347,10 +347,10 @@ function EndpointOverview() {
             ))}
             <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { label: '平均健康评分', value: '82.4', color: '#2fb07a' },
-                { label: '今日新增告警',  value: '23',   color: '#e53935' },
-                { label: '待处置事件',   value: '7',    color: '#ff6f00' },
-                { label: '本周隔离操作', value: '12',   color: '#f9a825' },
+                { label: '平均健康评分', value: '82.4', color: 'var(--accent-green)' },
+                { label: '今日新增告警',  value: '23',   color: 'var(--critical)' },
+                { label: '待处置事件',   value: '7',    color: 'var(--high)' },
+                { label: '本周隔离操作', value: '12',   color: 'var(--medium)' },
               ].map(stat => (
                 <div key={stat.label} style={{ padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: 4 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>{stat.label}</div>
@@ -455,8 +455,8 @@ function EndpointOverview() {
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
                       <ActionBtn label="详情" />
-                      <ActionBtn label="隔离" color="#ff6f00" />
-                      <ActionBtn label="升级" color="#3b9ede" />
+                      <ActionBtn label="隔离" color="var(--high)" />
+                      <ActionBtn label="升级" color="var(--accent-blue)" />
                     </div>
                   </td>
                 </tr>
@@ -506,9 +506,9 @@ function BehaviorMonitoring() {
 
   const levelColor = (level: BehaviorEvent['level']) => {
     switch (level) {
-      case 'critical': return '#e53935'
-      case 'warning':  return '#f9a825'
-      case 'info':     return '#2fb07a'
+      case 'critical': return 'var(--critical)'
+      case 'warning':  return 'var(--medium)'
+      case 'info':     return 'var(--accent-green)'
     }
   }
 
@@ -521,8 +521,8 @@ function BehaviorMonitoring() {
           <div className="card-title">行为分类统计（今日）</div>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={BEHAVIOR_CATEGORIES} layout="vertical" margin={{ left: 10, right: 30, top: 4, bottom: 4 }}>
-              <XAxis type="number" tick={{ fontSize: 10, fill: '#546e7a' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#7a8aaa' }} axisLine={false} tickLine={false} width={68} />
+              <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={68} />
               <ReTooltip
                 contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)' }}
                 formatter={((value: unknown) => [Number(value ?? 0).toLocaleString() + ' 次', '事件数']) as any}
@@ -552,7 +552,7 @@ function BehaviorMonitoring() {
             <tbody>
               {MITRE_TECHNIQUES.map(t => (
                 <tr key={t.id}>
-                  <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', fontFamily: 'monospace', color: '#3b9ede', fontWeight: 600, fontSize: 11 }}>
+                  <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', fontFamily: 'monospace', color: 'var(--accent-blue)', fontWeight: 600, fontSize: 11 }}>
                     {t.id}
                   </td>
                   <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
@@ -579,10 +579,10 @@ function BehaviorMonitoring() {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5,
               padding: '2px 8px', borderRadius: 10,
-              background: 'rgba(47,176,122,.15)', color: '#2fb07a',
+              background: 'rgba(47,176,122,.15)', color: 'var(--accent-green)',
               border: '1px solid rgba(47,176,122,.3)',
             }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#2fb07a', animation: 'pulse-dot 1.5s infinite' }} />
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent-green)', animation: 'pulse-dot 1.5s infinite' }} />
               实时
             </span>
             <button
@@ -615,7 +615,7 @@ function BehaviorMonitoring() {
             >
               <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>[{ev.time}]</span>
               <span style={{ marginRight: 6 }}>{levelEmoji(ev.level)}</span>
-              <span style={{ color: '#3b9ede', marginRight: 6 }}>[{ev.endpoint}]</span>
+              <span style={{ color: 'var(--accent-blue)', marginRight: 6 }}>[{ev.endpoint}]</span>
               <span style={{ color: levelColor(ev.level) }}>{ev.message}</span>
             </div>
           ))}
@@ -667,7 +667,7 @@ function EndpointDetection() {
                       <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)' }}>{alert.time}</span>
                     </td>
                     <td>
-                      <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#3b9ede', fontWeight: 600 }}>{alert.endpoint}</span>
+                      <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--accent-blue)', fontWeight: 600 }}>{alert.endpoint}</span>
                     </td>
                     <td>
                       <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{alert.ruleName}</span>
@@ -697,8 +697,8 @@ function EndpointDetection() {
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <ActionBtn label="查看详情" />
-                        <ActionBtn label="隔离终端" color="#ff6f00" />
-                        <ActionBtn label="标记误报" color="#546e7a" />
+                        <ActionBtn label="隔离终端" color="var(--high)" />
+                        <ActionBtn label="标记误报" color="var(--text-muted)" />
                       </div>
                     </td>
                   </tr>
@@ -739,7 +739,7 @@ function EndpointDetection() {
                   onClick={() => toggleRule(rule.id)}
                   style={{
                     width: 36, height: 18, borderRadius: 9,
-                    background: rule.enabled ? '#2fb07a' : '#283044',
+                    background: rule.enabled ? 'var(--accent-green)' : 'var(--bg-card2)',
                     border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0,
                     position: 'relative', transition: 'background .2s',
                   }}
@@ -756,7 +756,7 @@ function EndpointDetection() {
                 <span style={{ flex: 1, fontSize: 12, color: rule.enabled ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                   {rule.name}
                 </span>
-                <span style={{ fontSize: 10.5, padding: '2px 6px', borderRadius: 3, background: 'rgba(59,158,222,.12)', color: '#3b9ede' }}>
+                <span style={{ fontSize: 10.5, padding: '2px 6px', borderRadius: 3, background: 'rgba(59,158,222,.12)', color: 'var(--accent-blue)' }}>
                   {rule.category}
                 </span>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace', width: 50, textAlign: 'right' }}>
@@ -783,16 +783,16 @@ function IsolationManagement() {
   }
 
   const isoStatusColor = (s: IsolatedEndpoint['status']) =>
-    s === '隔离中' ? '#ff6f00' : '#2fb07a'
+    s === '隔离中' ? 'var(--high)' : 'var(--accent-green)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '16px 20px', overflowY: 'auto', flex: 1 }}>
 
       {/* KPI cards */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <KpiCard label="当前隔离" value="5"    color="#ff6f00" note="台终端" />
-        <KpiCard label="本周隔离操作" value="12" color="#f9a825" note="次操作" />
-        <KpiCard label="平均隔离时长" value="4.2" color="#3b9ede" note="小时" />
+        <KpiCard label="当前隔离" value="5"    color="var(--high)" note="台终端" />
+        <KpiCard label="本周隔离操作" value="12" color="var(--medium)" note="次操作" />
+        <KpiCard label="平均隔离时长" value="4.2" color="var(--accent-blue)" note="小时" />
       </div>
 
       {/* Isolated endpoints table */}
@@ -829,8 +829,8 @@ function IsolationManagement() {
                     <td>
                       <span style={{
                         fontSize: 11.5, padding: '2px 8px', borderRadius: 3,
-                        background: 'rgba(229,57,53,.12)', color: '#ef5350',
-                        border: '1px solid rgba(229,57,53,.2)',
+                        background: 'rgba(224,80,80,.12)', color: 'var(--critical)',
+                        border: '1px solid rgba(224,80,80,.2)',
                       }}>
                         {ep.reason}
                       </span>
@@ -858,14 +858,14 @@ function IsolationManagement() {
                         {ep.status === '隔离中' && (
                           <button
                             className="btn-secondary"
-                            style={{ fontSize: 10.5, padding: '2px 8px', color: '#2fb07a', borderColor: 'rgba(47,176,122,.3)' }}
+                            style={{ fontSize: 10.5, padding: '2px 8px', color: 'var(--accent-green)', borderColor: 'rgba(47,176,122,.3)' }}
                             onClick={() => releaseEndpoint(ep.id)}
                           >
                             解除隔离
                           </button>
                         )}
                         <ActionBtn label="查看详情" />
-                        {ep.status === '隔离中' && <ActionBtn label="延长隔离" color="#f9a825" />}
+                        {ep.status === '隔离中' && <ActionBtn label="延长隔离" color="var(--medium)" />}
                       </div>
                     </td>
                   </tr>
@@ -890,8 +890,8 @@ function IsolationManagement() {
                     title={`${day.day}: 隔离操作`}
                     style={{
                       width: 10, height: 10, borderRadius: '50%',
-                      background: '#ff6f00',
-                      boxShadow: '0 0 6px rgba(255,111,0,.5)',
+                      background: 'var(--high)',
+                      boxShadow: '0 0 6px rgba(224,128,64,.5)',
                       cursor: 'pointer',
                       transition: 'transform .15s',
                     }}
@@ -905,7 +905,7 @@ function IsolationManagement() {
               </div>
               {/* Count badge */}
               {day.events > 0 && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#ff6f00' }}>{day.events}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--high)' }}>{day.events}</span>
               )}
               {/* Day label */}
               <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingTop: 2, borderTop: '1px solid var(--border)', width: '100%', textAlign: 'center' }}>
@@ -915,7 +915,7 @@ function IsolationManagement() {
           ))}
         </div>
         <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5, color: 'var(--text-muted)' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff6f00', display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--high)', display: 'inline-block', flexShrink: 0 }} />
           每个点代表一次隔离操作
         </div>
       </div>
@@ -946,19 +946,19 @@ export default function EndpointSecurity() {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5,
               padding: '3px 10px', borderRadius: 10,
-              background: 'rgba(47,176,122,.15)', color: '#2fb07a',
+              background: 'rgba(47,176,122,.15)', color: 'var(--accent-green)',
               border: '1px solid rgba(47,176,122,.3)',
             }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#2fb07a' }} />
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent-green)' }} />
               1,156 在线
             </span>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5,
               padding: '3px 10px', borderRadius: 10,
-              background: 'rgba(229,57,53,.15)', color: '#ef5350',
-              border: '1px solid rgba(229,57,53,.3)',
+              background: 'rgba(224,80,80,.15)', color: 'var(--critical)',
+              border: '1px solid rgba(224,80,80,.3)',
             }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef5350' }} />
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--critical)' }} />
               23 异常
             </span>
             <button className="btn-primary" style={{ fontSize: 11 }}>
