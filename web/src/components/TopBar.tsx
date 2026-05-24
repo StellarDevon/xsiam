@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '@/lib/theme'
-import { useLang } from '@/lib/i18n'
+import { useLang, useT } from '@/lib/i18n'
 import { clearAuth, getSecondsToExpiry, getUser } from '@/lib/auth'
 import api from '@/lib/api'
 
@@ -104,6 +104,7 @@ export default function TopBar() {
   const navigate = useNavigate()
   const { theme, toggle: toggleTheme } = useTheme()
   const { lang, setLang } = useLang()
+  const t = useT()
   const user = getUser()
 
   const [secsLeft, setSecsLeft]     = useState<number>(() => getSecondsToExpiry())
@@ -349,7 +350,7 @@ export default function TopBar() {
                 value={searchQuery}
                 onChange={e => { setSearchQuery(e.target.value); setSearchHighlight(-1) }}
                 onKeyDown={handleSearchKeyDown}
-                placeholder="搜索告警、事件、威胁..."
+                placeholder={t('search_placeholder')}
                 style={{
                   flex: 1, background: 'none', border: 'none', outline: 'none',
                   fontSize: 15, color: 'rgba(255,255,255,.90)',
@@ -367,7 +368,7 @@ export default function TopBar() {
                   fontFamily: 'monospace',
                 }}
               >
-                ESC 关闭
+                {t('esc_close')}
               </span>
             </div>
 
@@ -375,7 +376,7 @@ export default function TopBar() {
             {recentSearches.length > 0 && searchQuery.length < 2 && (
               <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(79,163,224,.10)' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(79,163,224,.50)', letterSpacing: 1, marginBottom: 7, textTransform: 'uppercase' }}>
-                  最近搜索
+                  {t('recent_search')}
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {recentSearches.map((s, i) => (
@@ -403,7 +404,7 @@ export default function TopBar() {
             {searchQuery.length < 2 && (
               <div style={{ padding: '10px 0', borderBottom: '1px solid rgba(79,163,224,.10)' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(79,163,224,.50)', letterSpacing: 1, marginBottom: 4, textTransform: 'uppercase', padding: '0 16px' }}>
-                  快捷导航
+                  {t('quick_nav')}
                 </div>
                 {QUICK_NAV.map((item, i) => (
                   <div
@@ -431,11 +432,11 @@ export default function TopBar() {
             {searchQuery.length >= 2 && (
               <div style={{ padding: '10px 0' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(79,163,224,.50)', letterSpacing: 1, marginBottom: 4, textTransform: 'uppercase', padding: '0 16px' }}>
-                  搜索结果 {searchResults.length > 0 ? `(${searchResults.length})` : ''}
+                  {t('search_results')} {searchResults.length > 0 ? `(${searchResults.length})` : ''}
                 </div>
                 {searchResults.length === 0 ? (
                   <div style={{ padding: '16px', textAlign: 'center', fontSize: 12, color: 'rgba(79,163,224,.40)' }}>
-                    未找到匹配的告警
+                    {t('no_results')}
                   </div>
                 ) : (
                   searchResults.map((r, i) => (
@@ -513,7 +514,7 @@ export default function TopBar() {
           <input
             readOnly
             onFocus={() => setShowSearch(true)}
-            placeholder="搜索告警、事件、资产…"
+            placeholder={t('search_placeholder')}
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
               fontSize: 12, color: 'rgba(255,255,255,.75)',
@@ -731,7 +732,7 @@ export default function TopBar() {
                   borderBottom: '1px solid #0a2a4a',
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#4fa3e0' }}>
-                    {newCount > 0 ? `${newCount} 条新通知` : '通知'}
+                    {newCount > 0 ? `${newCount} ${t('new_notifications')}` : t('notifications')}
                   </span>
                   <button
                     onClick={handleMarkAllRead}
@@ -744,7 +745,7 @@ export default function TopBar() {
                     onMouseEnter={e => { e.currentTarget.style.color = '#4fa3e0'; e.currentTarget.style.background = 'rgba(79,163,224,.10)' }}
                     onMouseLeave={e => { e.currentTarget.style.color = 'rgba(79,163,224,.70)'; e.currentTarget.style.background = 'none' }}
                   >
-                    全部已读
+                    {t('mark_all_read')}
                   </button>
                 </div>
 
@@ -765,7 +766,7 @@ export default function TopBar() {
                         transition: 'color .15s, border-color .15s',
                       }}
                     >
-                      {tab === 'alerts' ? '告警' : '系统'}
+                      {tab === 'alerts' ? t('alerts_tab') : t('system_tab')}
                     </button>
                   ))}
                 </div>
@@ -775,7 +776,7 @@ export default function TopBar() {
                   {notifTab === 'alerts' ? (
                     notifications.length === 0 ? (
                       <div style={{ padding: '24px 12px', textAlign: 'center', color: 'rgba(79,163,224,.45)', fontSize: 12 }}>
-                        暂无告警通知
+                        {t('no_alerts')}
                       </div>
                     ) : (
                       notifications.map((n, i) => {
@@ -862,7 +863,7 @@ export default function TopBar() {
                     onMouseEnter={e => { e.currentTarget.style.color = '#80c4f0'; e.currentTarget.style.background = 'rgba(79,163,224,.10)' }}
                     onMouseLeave={e => { e.currentTarget.style.color = '#4fa3e0'; e.currentTarget.style.background = 'none' }}
                   >
-                    查看全部告警 →
+                    {t('view_all_alerts')}
                   </button>
                 </div>
               </div>
@@ -965,7 +966,7 @@ export default function TopBar() {
                       <circle cx="12" cy="12" r="3"/>
                       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
                     </svg>
-                    <span>个人设置</span>
+                    <span>{t('settings')}</span>
                   </button>
 
                   {/* 切换主题 */}
@@ -988,7 +989,7 @@ export default function TopBar() {
                         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                       </svg>
                     )}
-                    <span>切换主题 ({theme === 'light' ? '暗色' : '亮色'})</span>
+                    <span>{t('switch_theme')} ({theme === 'light' ? t('dark') : t('light')})</span>
                   </button>
 
                   {/* Divider */}
@@ -1006,7 +1007,7 @@ export default function TopBar() {
                       <polyline points="16 17 21 12 16 7"/>
                       <line x1="21" y1="12" x2="9" y2="12"/>
                     </svg>
-                    <span>退出登录</span>
+                    <span>{t('logout')}</span>
                   </button>
                 </div>
               </div>

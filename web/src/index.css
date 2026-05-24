@@ -197,8 +197,8 @@ html.light .source-tag.email    { background: rgba(168,64,0,.09);  color: #a8400
 html.light .source-tag.syslog   { background: rgba(0,120,212,.06); color: #5a7a9a; }
 
 /* ── light: tab-bar / filter-bar */
-html.light .tab-bar    { background: #ffffff; border-bottom-color: #ccd9e8; }
-html.light .filter-bar { background: #f0f4f9; border-bottom-color: #ccd9e8; }
+html.light .tab-bar    { background: #ffffff; border-bottom-color: #ccd9e8; box-shadow: 0 1px 3px rgba(15,39,68,.06); }
+html.light .filter-bar { background: #e8f0f9; border-bottom-color: #ccd9e8; }
 
 /* ── light: smartscore badges */
 html.light .smartscore.critical { background: rgba(181,43,30,.14); color: #b52b1e; }
@@ -280,7 +280,7 @@ html, body, #root {
   display: flex; align-items: center;
   padding: 0 20px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-sidebar);
+  background: var(--bg-card);    /* 比侧边栏 --bg-sidebar 明显更亮，形成层次 */
   flex-shrink: 0;
 }
 .tab {
@@ -307,7 +307,7 @@ html, body, #root {
 .filter-bar {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 20px; border-bottom: 1px solid var(--border);
-  background: var(--bg-primary); flex-shrink: 0; flex-wrap: wrap;
+  background: var(--bg-secondary); flex-shrink: 0; flex-wrap: wrap;
 }
 .filter-input {
   background: var(--bg-card); border: 1px solid var(--border-light);
@@ -324,21 +324,24 @@ html, body, #root {
 
 /* ── Data table */
 .data-table-wrap { flex: 1; overflow-y: auto; }
-.data-table { width: 100%; border-collapse: collapse; }
+.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .data-table th {
   position: sticky; top: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-card2);   /* 比 tab-bar(--bg-card) 稍深，与内容区拉开层次 */
   padding: 8px 16px; text-align: left;
   font-size: 11px; font-weight: 500; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .4px;
   border-bottom: 1px solid var(--border);
   cursor: pointer; white-space: nowrap; user-select: none;
   transition: color .15s;
+  overflow: hidden; text-overflow: ellipsis;
 }
 .data-table th:hover { color: var(--text-primary); }
 .data-table td {
   padding: 10px 16px; border-bottom: 1px solid var(--border);
   font-size: 12.5px; color: var(--text-primary); vertical-align: middle;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 0;  /* 配合 table-layout:fixed 使 text-overflow 生效 */
 }
 .data-table tr:hover td { background: rgba(255,255,255,.025); cursor: pointer; }
 .data-table tr.selected td { background: rgba(59,158,222,.08); }

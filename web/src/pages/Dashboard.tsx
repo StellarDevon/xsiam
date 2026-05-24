@@ -708,7 +708,7 @@ export default function Dashboard() {
       {/* Title + Greeting */}
       <div style={{ padding: '10px 20px 0', flexShrink: 0 }}>
         <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: -.3 }}>
-          XSIAM 指挥中心 <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>▶</span>
+          指挥中心 <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>▶</span>
         </div>
         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2, fontStyle: 'italic' }}>
           {greeting}, {user?.display_name ?? 'Analyst'}

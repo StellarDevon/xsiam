@@ -107,7 +107,7 @@ const navItems: NavItem[] = [
   },
   {
     to: '/xsiam-cases',
-    label: 'XSIAM 案例',
+    label: '案例',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
   },
   { to: '__group_infra', label: '基础设施', icon: null },
@@ -342,34 +342,13 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         })}
       </div>
 
-      {/* Bottom: settings + avatar + collapse button */}
+      {/* Bottom: avatar + collapse button (settings removed — accessible via TopBar user menu) */}
       <div style={{
         width: 200, display: 'flex', flexDirection: 'column',
         padding: '8px 4px 12px', gap: 4,
         borderTop: `1px solid ${isDark ? 'var(--border)' : 'rgba(255,255,255,.12)'}`,
         flexShrink: 0,
       }}>
-        <NavLink
-          to="/settings"
-          title={!open ? '系统设置' : undefined}
-          style={({ isActive }) => ({
-            position: 'relative', width: 192, height: 36,
-            display: 'flex', alignItems: 'center', padding: '0 10px 0 8px', gap: 10,
-            borderRadius: 8, textDecoration: 'none',
-            color: sidebarNavColor(isActive, isDark),
-            background: isActive ? 'var(--nav-active-bg)' : 'none',
-            borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
-            transition: 'background .15s, color .15s, border-color .15s',
-            whiteSpace: 'nowrap', overflow: 'hidden',
-          })}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-          </svg>
-          <span style={{ fontSize: 12.5, opacity: open ? 1 : 0, transition: 'opacity .15s .05s' }}>系统设置</span>
-        </NavLink>
-
         {/* Avatar row */}
         <div
           title={!open ? `${user?.display_name ?? ''} — 点击退出` : undefined}

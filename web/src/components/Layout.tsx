@@ -150,7 +150,7 @@ const CMD_ITEMS: CmdItem[] = [
   { label: '威胁情报', route: '/threat-intel', hint: '' },
   { label: 'IOC 管理', route: '/iocs', hint: '' },
   { label: 'Agentix', route: '/agentix', hint: '' },
-  { label: 'XSIAM 案例', route: '/xsiam-cases', hint: '' },
+  { label: '案例', route: '/xsiam-cases', hint: '' },
   { label: '设备', route: '/devices', hint: '' },
   { label: 'Agent 中心', route: '/agents-hub', hint: '' },
   { label: '检测规则', route: '/detection-rules', hint: '' },
