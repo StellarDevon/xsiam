@@ -1,218 +1,19 @@
-/* ===== XSIAM Design System ===== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ══════════════════════════════════════════════════════════════
-   DARK THEME (default)
-   Palette: deep space navy/charcoal + electric blue accents
-   ══════════════════════════════════════════════════════════════ */
-:root {
-  --bg-primary:    #0b0d12;    /* deepest background */
-  --bg-secondary:  #10131a;    /* slightly raised — table header, toolbar */
-  --bg-card:       #161b26;    /* card surface */
-  --bg-card2:      #1c2233;    /* slightly lighter card variant */
-  --bg-sidebar:    #0e1118;    /* sidebar / panel headers */
-  --border:        #1e2535;    /* subtle dividers */
-  --border-light:  #283044;    /* slightly more visible border */
-  --text-primary:  #dce4f0;    /* near-white with cool blue tint */
-  --text-secondary:#7a8aaa;    /* secondary label */
-  --text-muted:    #3f4e6a;    /* placeholder / disabled */
-  --accent-blue:   #3b9ede;    /* primary brand blue */
-  --accent-blue2:  #1f6fad;    /* darker blue — hover states */
-  --accent-green:  #2fb07a;    /* positive / active indicator */
-  --accent-orange: #d06b2a;    /* kept for legacy orange ref — rarely used now */
-  --critical:      #d94040;    /* severity critical */
-  --high:          #d07030;    /* severity high */
-  --medium:        #c09020;    /* severity medium */
-  --low:           #2a9060;    /* severity low */
-  --sidebar-w:     48px;
-  --header-h:      44px;
-  --nav-active-bg: rgba(59,158,222,.14);
-  --nav-hover-bg:  rgba(255,255,255,.05);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   LIGHT THEME — Microsoft Sentinel / Defender XDR aesthetic
-   ──────────────────────────────────────────────────────────────
-   Design language:
-     Canvas     : #f0f4f9  cool blue-tinted white — airy, not warm
-     Sidebar    : #0f2744  deep navy — strong anchor, Sentinel-style
-     Cards      : #ffffff / #f7fafd — crisp white, faint blue tint
-     Accent     : #0078d4 Fluent brand blue — all interactive states
-     Text       : #1a2a3a near-black with blue undertone
-     Severity   : desaturated, professional (no neon)
-   ══════════════════════════════════════════════════════════════ */
-html.light {
-  /* ── surface layers ── */
-  --bg-primary:    #f0f4f9;    /* canvas */
-  --bg-secondary:  #e3ecf5;    /* table header / sunken / toolbar */
-  --bg-card:       #ffffff;    /* card face */
-  --bg-card2:      #f4f8fc;    /* inner card tint */
-  --bg-sidebar:    #0f2744;    /* dark navy sidebar — stays dark in light mode */
-
-  /* ── borders ── */
-  --border:        #ccd9e8;    /* primary divider */
-  --border-light:  #b8ccdf;    /* stronger outline */
-
-  /* ── text ── */
-  --text-primary:  #1a2a3a;    /* near-black, blue undertone */
-  --text-secondary:#4d637d;    /* slate-blue secondary */
-  --text-muted:    #8ba0b8;    /* muted blue-grey */
-
-  /* ── sidebar text (always on dark navy) ── */
-  --sidebar-text:        rgba(255,255,255,.72);
-  --sidebar-text-active: #ffffff;
-  --sidebar-text-muted:  rgba(255,255,255,.36);
-
-  /* ── brand & accents ── */
-  --accent-blue:   #0078d4;    /* Fluent primary */
-  --accent-blue2:  #005ba1;    /* hover / pressed */
-  --accent-green:  #0d7a3e;    /* positive */
-  --accent-orange: #b84c00;    /* reserved — rarely shown */
-
-  /* ── severity (professional, accessible) ── */
-  --critical:      #b52b1e;    /* deep red */
-  --high:          #a84000;    /* burnt orange — no neon */
-  --medium:        #7a5500;    /* dark amber — readable on white */
-  --low:           #0a6b35;    /* forest green */
-
-  /* ── nav interaction ── */
-  --nav-active-bg: rgba(255,255,255,.15);
-  --nav-hover-bg:  rgba(255,255,255,.08);
-}
-
-/* ── light: body */
-html.light body, html.light #root {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-/* ── light: scrollbar */
-html.light ::-webkit-scrollbar-track { background: transparent; }
-html.light ::-webkit-scrollbar-thumb { background: #b8ccdf; border-radius: 3px; }
-html.light ::-webkit-scrollbar-thumb:hover { background: #8faac4; }
-
-/* ── light: sidebar — stays dark navy */
-html.light .icon-sidebar {
-  background: var(--bg-sidebar) !important;
-  border-right-color: rgba(255,255,255,.07) !important;
-}
-html.light .icon-sidebar .sidebar-logo-text { color: #ffffff !important; }
-html.light .icon-sidebar .sidebar-divider   { background: rgba(255,255,255,.09) !important; }
-
-/* ── light: buttons */
-html.light .btn-primary {
-  background: #0078d4;
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0,120,212,.28);
-}
-html.light .btn-primary:hover { background: #005ba1; opacity: 1; }
-
-html.light .btn-secondary {
-  background: #ffffff;
-  color: #1a2a3a;
-  border-color: #b8ccdf;
-  box-shadow: 0 1px 2px rgba(15,39,68,.05);
-}
-html.light .btn-secondary:hover {
-  background: #eef4fb;
-  border-color: #0078d4;
-  color: #0078d4;
-}
-
-/* ── light: tabs */
-html.light .tab { color: #4d637d; }
-html.light .tab.active { color: #0078d4; border-bottom-color: #0078d4; }
-html.light .tab:hover  { color: #1a2a3a; background: rgba(0,120,212,.04); }
-html.light .tab-count { background: #e3ecf5; border-color: #b8ccdf; color: #8ba0b8; }
-html.light .tab.active .tab-count {
-  background: rgba(0,120,212,.10);
-  color: #0078d4;
-  border-color: rgba(0,120,212,.25);
-}
-
-/* ── light: inputs */
-html.light input, html.light textarea {
-  background: #ffffff; border-color: #b8ccdf; color: #1a2a3a;
-}
-html.light input:focus, html.light textarea:focus {
-  border-color: #0078d4;
-  box-shadow: 0 0 0 2px rgba(0,120,212,.16);
-  outline: none;
-}
-html.light .filter-input  { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
-html.light .filter-input:focus { border-color: #0078d4; box-shadow: 0 0 0 2px rgba(0,120,212,.16); }
-html.light .filter-select { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
-html.light select          { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
-
-/* ── light: table */
-html.light .data-table th {
-  background: #e3ecf5; color: #5a7a9a; border-bottom-color: #b8ccdf;
-}
-html.light .data-table th:hover { color: #1a2a3a; }
-html.light .data-table td { color: #1a2a3a; border-bottom-color: #e8eff7; }
-html.light .data-table tr:hover td { background: rgba(0,120,212,.04); }
-html.light .data-table tr.selected td { background: rgba(0,120,212,.08); }
-html.light .data-table tr.row-critical td { background: rgba(181,43,30,.03); }
-html.light .data-table tr.row-critical:hover td { background: rgba(181,43,30,.07); }
-
-/* ── light: pagination */
-html.light .page-btn { background: #ffffff; border-color: #b8ccdf; color: #4d637d; }
-html.light .page-btn.active { background: #0078d4; border-color: #0078d4; color: white; }
-html.light .page-btn:hover:not(.active):not(:disabled) { border-color: #0078d4; color: #0078d4; background: #eef4fb; }
-
-/* ── light: cards */
-html.light .card {
-  background: #ffffff; border-color: #ccd9e8;
-  box-shadow: 0 1px 4px rgba(15,39,68,.07), 0 0 1px rgba(15,39,68,.04);
-}
-html.light .card-title { color: #5a7a9a; }
-html.light .kpi-card {
-  background: #ffffff; border-color: #ccd9e8;
-  box-shadow: 0 1px 4px rgba(15,39,68,.07), 0 0 1px rgba(15,39,68,.04);
-}
-html.light .kpi-label { color: #8ba0b8; }
-html.light .kpi-value { color: #1a2a3a; }
-html.light .kpi-card-flat { background: #e3ecf5; border-color: #ccd9e8; }
-html.light .kpi-card-flat .kpi-label { color: #8ba0b8; }
-html.light .kpi-card-flat .kpi-value { color: #1a2a3a; }
-html.light .kpi-card-flat .kpi-note  { color: #8ba0b8; }
-
-/* ── light: ioc chips */
-html.light .ioc-type-chip { border-color: #b8ccdf; color: #4d637d; background: #ffffff; }
-html.light .ioc-type-chip:hover { border-color: #0078d4; color: #0078d4; background: #eef4fb; }
-html.light .ioc-type-chip.active { background: rgba(0,120,212,.09); border-color: #0078d4; color: #0078d4; }
-
-/* ── light: severity badges */
-html.light .sev-badge.critical { background: rgba(181,43,30,.10);  color: #b52b1e; }
-html.light .sev-badge.high     { background: rgba(168,64,0,.10);   color: #a84000; }
-html.light .sev-badge.medium   { background: rgba(122,85,0,.10);   color: #7a5500; }
-html.light .sev-badge.low      { background: rgba(10,107,53,.09);  color: #0a6b35; }
-
-/* ── light: source tags */
-html.light .source-tag.endpoint { background: rgba(0,120,212,.09); color: #005ba1; }
-html.light .source-tag.network  { background: rgba(0,74,143,.09);  color: #004a8f; }
-html.light .source-tag.cloud    { background: rgba(0,120,212,.07); color: #1a5c9a; }
-html.light .source-tag.identity { background: rgba(80,50,140,.09); color: #50328c; }
-html.light .source-tag.email    { background: rgba(168,64,0,.09);  color: #a84000; }
-html.light .source-tag.syslog   { background: rgba(0,120,212,.06); color: #5a7a9a; }
-
-/* ── light: tab-bar / filter-bar */
-html.light .tab-bar    { background: #ffffff; border-bottom-color: #ccd9e8; box-shadow: 0 1px 3px rgba(15,39,68,.06); }
-html.light .filter-bar { background: #e8f0f9; border-bottom-color: #ccd9e8; }
-
-/* ── light: smartscore badges */
-html.light .smartscore.critical { background: rgba(181,43,30,.14); color: #b52b1e; }
-html.light .smartscore.high     { background: rgba(168,64,0,.14);  color: #a84000; }
-html.light .smartscore.medium   { background: rgba(122,85,0,.12);  color: #7a5500; }
-html.light .smartscore.low      { background: rgba(10,107,53,.12); color: #0a6b35; }
-
-/* ── light: detail panel overrides (replaces hardcoded dark backgrounds) */
-html.light [data-panel] { background: var(--bg-card) !important; }
+/* ===== XSIAM Design System — index.css =====
+   Imports theme tokens first, then shared base styles.
+   Edit colours in:  theme-dark.css  (dark / default)
+                     theme-light.css (html.light)
+   ================================================= */
+@import './theme-dark.css';
+@import './theme-light.css';
 
 /* ─────────────────────────────────────────────────────────────
-   BASE STYLES — shared dark + light
+   RESET
    ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ─────────────────────────────────────────────────────────────
+   BASE — applies to both themes
+   ───────────────────────────────────────────────────────────── */
 html, body, #root {
   height: 100%; overflow: hidden;
   background: var(--bg-primary); color: var(--text-primary);
@@ -220,12 +21,7 @@ html, body, #root {
   font-size: 13px; line-height: 1.5;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a3348; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #374260; }
-
-/* ── Buttons (dark default) */
+/* ── Buttons ── */
 .btn-primary {
   background: var(--accent-blue); color: white; border: none;
   padding: 5px 14px; border-radius: 4px; font-size: 12px;
@@ -241,46 +37,44 @@ html, body, #root {
 }
 .btn-secondary:hover { color: var(--text-primary); }
 
-/* ── Severity badges */
+/* ── Severity badges ── */
 .sev-badge {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px; border-radius: 3px;
   font-size: 10.5px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .3px;
 }
-.sev-badge.critical { background: rgba(217,64,64,.18);  color: #e05555; }
-.sev-badge.high     { background: rgba(208,112,48,.16); color: #dd7a30; }
-.sev-badge.medium   { background: rgba(192,144,32,.14); color: #d4aa28; }
-.sev-badge.low      { background: rgba(42,144,96,.15);  color: #3ab07a; }
+.sev-badge.critical { background: rgba(224,80,80,.18);  color: var(--critical); }
+.sev-badge.high     { background: rgba(224,128,64,.16); color: var(--high); }
+.sev-badge.medium   { background: rgba(200,160,48,.14); color: var(--medium); }
+.sev-badge.low      { background: rgba(56,184,128,.15); color: var(--low); }
 .sev-badge.info     { background: rgba(80,100,130,.15); color: #6a8aaa; }
 
-/* ── SmartScore */
+/* ── SmartScore ── */
 .smartscore {
   display: inline-flex; align-items: center; justify-content: center;
   width: 34px; height: 20px; border-radius: 3px;
   font-size: 11px; font-weight: 700;
 }
-.smartscore.critical { background: rgba(217,64,64,.20);  color: #e05555; }
-.smartscore.high     { background: rgba(208,112,48,.18); color: #dd7a30; }
-.smartscore.medium   { background: rgba(192,144,32,.16); color: #d4aa28; }
-.smartscore.low      { background: rgba(42,144,96,.15);  color: #3ab07a; }
+.smartscore.critical { background: rgba(224,80,80,.20);  color: var(--critical); }
+.smartscore.high     { background: rgba(224,128,64,.18); color: var(--high); }
+.smartscore.medium   { background: rgba(200,160,48,.16); color: var(--medium); }
+.smartscore.low      { background: rgba(56,184,128,.15); color: var(--low); }
 
-/* ── Status dot */
-.status-dot {
-  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-}
+/* ── Status dot ── */
+.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; }
 .status-dot.active      { background: var(--accent-green); box-shadow: 0 0 4px var(--accent-green); }
 .status-dot.new         { background: var(--critical); }
 .status-dot.in_progress { background: var(--accent-blue); }
 .status-dot.resolved    { background: var(--text-muted); }
 .status-dot.closed      { background: var(--text-muted); }
 
-/* ── Tab bar */
+/* ── Tab bar ── */
 .tab-bar {
   display: flex; align-items: center;
   padding: 0 20px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-card);    /* 比侧边栏 --bg-sidebar 明显更亮，形成层次 */
+  background: var(--bg-card);    /* visibly lighter than sidebar */
   flex-shrink: 0;
 }
 .tab {
@@ -294,16 +88,16 @@ html, body, #root {
 .tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
 .tab:hover  { color: var(--text-primary); }
 .tab-count {
-  background: var(--bg-card); border: 1px solid var(--border-light);
+  background: var(--bg-card2); border: 1px solid var(--border-light);
   border-radius: 10px; font-size: 10px; padding: 1px 6px;
   margin-left: 5px; color: var(--text-muted);
 }
 .tab.active .tab-count {
-  background: rgba(59,158,222,.15); color: var(--accent-blue);
-  border-color: rgba(59,158,222,.30);
+  background: rgba(63,160,224,.15); color: var(--accent-blue);
+  border-color: rgba(63,160,224,.30);
 }
 
-/* ── Filter bar */
+/* ── Filter bar ── */
 .filter-bar {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 20px; border-bottom: 1px solid var(--border);
@@ -322,16 +116,16 @@ html, body, #root {
   border-radius: 4px; font-size: 12px; cursor: pointer; outline: none;
 }
 
-/* ── Data table */
+/* ── Data table ── */
 .data-table-wrap { flex: 1; overflow-y: auto; }
 .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .data-table th {
   position: sticky; top: 0;
-  background: var(--bg-card2);   /* 比 tab-bar(--bg-card) 稍深，与内容区拉开层次 */
+  background: var(--bg-card2);
   padding: 8px 16px; text-align: left;
-  font-size: 11px; font-weight: 500; color: var(--text-muted);
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .4px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
   cursor: pointer; white-space: nowrap; user-select: none;
   transition: color .15s;
   overflow: hidden; text-overflow: ellipsis;
@@ -341,14 +135,14 @@ html, body, #root {
   padding: 10px 16px; border-bottom: 1px solid var(--border);
   font-size: 12.5px; color: var(--text-primary); vertical-align: middle;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 0;  /* 配合 table-layout:fixed 使 text-overflow 生效 */
+  max-width: 0;
 }
-.data-table tr:hover td { background: rgba(255,255,255,.025); cursor: pointer; }
-.data-table tr.selected td { background: rgba(59,158,222,.08); }
-.data-table tr.row-critical td { background: rgba(217,64,64,.04); }
-.data-table tr.row-critical:hover td { background: rgba(217,64,64,.08); }
+.data-table tr:hover td { background: rgba(255,255,255,.028); cursor: pointer; }
+.data-table tr.selected td { background: rgba(63,160,224,.10); }
+.data-table tr.row-critical td { background: rgba(224,80,80,.04); }
+.data-table tr.row-critical:hover td { background: rgba(224,80,80,.08); }
 
-/* ── Pagination */
+/* ── Pagination ── */
 .pagination {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 16px; border-top: 1px solid var(--border);
@@ -362,7 +156,7 @@ html, body, #root {
 .page-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
 .page-btn:disabled { opacity: .4; cursor: default; }
 
-/* ── Cards */
+/* ── Cards ── */
 .kpi-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 6px; padding: 14px 16px;
@@ -382,32 +176,32 @@ html, body, #root {
   margin-bottom: 12px; text-transform: uppercase; letter-spacing: .4px;
 }
 
-/* ── KPI flat row */
+/* ── KPI flat row ── */
 .kpi-row {
   display: grid; gap: 1px;
   background: var(--border); border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-.kpi-card-flat { padding: 10px 16px; background: var(--bg-sidebar); }
+.kpi-card-flat { padding: 10px 16px; background: var(--bg-card); }
 .kpi-card-flat .kpi-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
 .kpi-card-flat .kpi-value { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1; }
 .kpi-card-flat .kpi-note  { font-size: 10.5px; color: var(--text-muted); margin-top: 3px; }
 
-/* ── Asset score badge */
+/* ── Asset score badge ── */
 .asset-score-badge {
   display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 20px; border-radius: 4px;
   font-size: 11px; font-weight: 700;
 }
 
-/* ── Verdict badges */
+/* ── Verdict badges ── */
 .verdict-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10.5px; font-weight: 700; }
-.verdict-malicious  { background: rgba(217,64,64,.18);  color: #e05555; }
-.verdict-suspicious { background: rgba(208,112,48,.16); color: #dd8830; }
-.verdict-benign     { background: rgba(42,144,96,.15);  color: #3ab07a; }
+.verdict-malicious  { background: rgba(224,80,80,.18);  color: var(--critical); }
+.verdict-suspicious { background: rgba(224,128,64,.16); color: var(--high); }
+.verdict-benign     { background: rgba(56,184,128,.15); color: var(--low); }
 .verdict-unknown    { background: rgba(80,100,130,.15); color: #7a9aaa; }
 
-/* ── IOC type chips */
+/* ── IOC type chips ── */
 .ioc-type-chip {
   padding: 3px 12px; border-radius: 20px; font-size: 11px; cursor: pointer;
   border: 1px solid var(--border); color: var(--text-secondary);
@@ -415,23 +209,23 @@ html, body, #root {
 }
 .ioc-type-chip:hover { border-color: var(--border-light); color: var(--text-primary); }
 .ioc-type-chip.active {
-  background: rgba(59,158,222,.12); border-color: var(--accent-blue); color: var(--accent-blue);
+  background: rgba(63,160,224,.12); border-color: var(--accent-blue); color: var(--accent-blue);
 }
 
-/* ── Source tags (dark base) */
+/* ── Source tags ── */
 .source-tag {
   display: inline-block; padding: 2px 7px; border-radius: 3px;
   font-size: 10.5px; font-weight: 500; margin: 1px;
 }
-.source-tag.endpoint { background: rgba(59,158,222,.14);  color: #5aace0; }
+.source-tag.endpoint { background: rgba(63,160,224,.14);  color: #5aace0; }
 .source-tag.network  { background: rgba(40,90,180,.14);   color: #608ad8; }
 .source-tag.cloud    { background: rgba(30,160,120,.12);  color: #28b088; }
 .source-tag.identity { background: rgba(140,100,220,.14); color: #a080d8; }
-.source-tag.email    { background: rgba(208,112,48,.12);  color: #d07848; }
-.source-tag.syslog   { background: rgba(59,158,222,.10);  color: #6aace0; }
+.source-tag.email    { background: rgba(224,112,48,.12);  color: var(--high); }
+.source-tag.syslog   { background: rgba(63,160,224,.10);  color: #6aace0; }
 
-/* ── Pulsing dot (blue, not green) */
+/* ── Pulsing dot ── */
 @keyframes pulse-dot {
-  0%,100% { opacity:1; box-shadow:0 0 6px #3b9ede; }
-  50%      { opacity:.6; box-shadow:0 0 12px #3b9ede; }
+  0%,100% { opacity:1; box-shadow:0 0 6px var(--accent-blue); }
+  50%      { opacity:.6; box-shadow:0 0 12px var(--accent-blue); }
 }

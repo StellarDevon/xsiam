@@ -1,0 +1,55 @@
+/* ══════════════════════════════════════════════════════════════
+   DARK THEME — XSIAM Design System
+   ──────────────────────────────────────────────────────────────
+   Reference palette: "案例" (XSIAMCases) page style guide
+   Depth stack (dark to light):
+     #080b10  absolute floor
+     #0b0e14  --bg-primary    page body
+     #0f1520  --bg-secondary  filter-bar / toolbar
+     #151c2a  --bg-card       cards / tab-bar
+     #1c2538  --bg-card2      table-header / inner panels
+     #232d45  --bg-sidebar    sidebar background
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Surface layers ── */
+  --bg-primary:    #0b0e14;    /* page body — near-black with cool blue tint */
+  --bg-secondary:  #0f1520;    /* filter-bar / toolbar — one step up */
+  --bg-card:       #151c2a;    /* card / tab-bar — clearly visible against bg */
+  --bg-card2:      #1c2538;    /* table-header / inner panels */
+  --bg-sidebar:    #0d1119;    /* sidebar — darkest, strongest anchor */
+
+  /* ── Borders ── */
+  --border:        #1e2b3f;    /* subtle dividers */
+  --border-light:  #28384f;    /* slightly more visible outline */
+
+  /* ── Text ── */
+  --text-primary:  #dce4f0;    /* near-white with cool blue tint */
+  --text-secondary:#6a80a0;    /* secondary label */
+  --text-muted:    #38506e;    /* placeholder / disabled */
+
+  /* ── Brand & accents ── */
+  --accent-blue:   #3fa0e0;    /* primary brand blue (slightly brighter than before) */
+  --accent-blue2:  #2278b8;    /* hover / pressed */
+  --accent-green:  #2fb07a;    /* positive / active indicator */
+  --accent-orange: #e07030;    /* XSIAMCases uses this for P1/P2 tier highlights */
+
+  /* ── Severity — matches XSIAMCases tier colors ── */
+  --critical:      #e05050;    /* P1 critical — bright, readable */
+  --high:          #e08040;    /* P2 high — warm orange */
+  --medium:        #c8a030;    /* P3 medium — amber */
+  --low:           #38b880;    /* P4 low — teal green */
+
+  /* ── Layout ── */
+  --sidebar-w:     48px;
+  --header-h:      48px;
+
+  /* ── Nav interaction ── */
+  --nav-active-bg: rgba(63,160,224,.16);
+  --nav-hover-bg:  rgba(255,255,255,.05);
+}
+
+/* Dark scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #283048; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #374060; }

@@ -1171,7 +1171,7 @@ export default function QueryCenter() {
       <div style={{
         display: 'flex', alignItems: 'center',
         borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-sidebar)', flexShrink: 0,
+        background: 'var(--bg-card)', flexShrink: 0,
         padding: '0 8px',
       }}>
         {tabs.map(t => (
@@ -1220,7 +1220,7 @@ export default function QueryCenter() {
         <div style={{
           width: 180, flexShrink: 0, borderRight: '1px solid var(--border)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          background: 'var(--bg-sidebar)',
+          background: 'var(--bg-secondary)',
         }}>
 
           {/* ── 我的查询 (保存的查询) section ── */}

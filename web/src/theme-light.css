@@ -1,0 +1,156 @@
+/* ══════════════════════════════════════════════════════════════
+   LIGHT THEME — Microsoft Sentinel / Defender XDR aesthetic
+   ──────────────────────────────────────────────────────────────
+   Design language:
+     Canvas     : #f0f4f9  cool blue-tinted white — airy, not warm
+     Sidebar    : #0f2744  deep navy — strong anchor, Sentinel-style
+     Cards      : #ffffff / #f7fafd — crisp white, faint blue tint
+     Accent     : #0078d4 Fluent brand blue — all interactive states
+     Text       : #1a2a3a near-black with blue undertone
+     Severity   : desaturated, professional (no neon)
+   ══════════════════════════════════════════════════════════════ */
+html.light {
+  /* ── Surface layers ── */
+  --bg-primary:    #f0f4f9;    /* canvas */
+  --bg-secondary:  #e3ecf5;    /* table header / sunken / toolbar */
+  --bg-card:       #ffffff;    /* card face */
+  --bg-card2:      #f4f8fc;    /* inner card tint */
+  --bg-sidebar:    #0f2744;    /* dark navy sidebar — stays dark in light mode */
+
+  /* ── Borders ── */
+  --border:        #ccd9e8;    /* primary divider */
+  --border-light:  #b8ccdf;    /* stronger outline */
+
+  /* ── Text ── */
+  --text-primary:  #1a2a3a;    /* near-black, blue undertone */
+  --text-secondary:#4d637d;    /* slate-blue secondary */
+  --text-muted:    #8ba0b8;    /* muted blue-grey */
+
+  /* ── Sidebar text (always on dark navy) ── */
+  --sidebar-text:        rgba(255,255,255,.72);
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-muted:  rgba(255,255,255,.36);
+
+  /* ── Brand & accents ── */
+  --accent-blue:   #0078d4;    /* Fluent primary */
+  --accent-blue2:  #005ba1;    /* hover / pressed */
+  --accent-green:  #0d7a3e;    /* positive */
+  --accent-orange: #c45000;    /* warm orange, matches tier highlight style */
+
+  /* ── Severity (professional, accessible) ── */
+  --critical:      #b52b1e;    /* deep red */
+  --high:          #a84000;    /* burnt orange — no neon */
+  --medium:        #7a5500;    /* dark amber — readable on white */
+  --low:           #0a6b35;    /* forest green */
+
+  /* ── Nav interaction ── */
+  --nav-active-bg: rgba(255,255,255,.15);
+  --nav-hover-bg:  rgba(255,255,255,.08);
+}
+
+/* Light: body */
+html.light body, html.light #root {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Light: scrollbar */
+html.light ::-webkit-scrollbar-track { background: transparent; }
+html.light ::-webkit-scrollbar-thumb { background: #b8ccdf; border-radius: 3px; }
+html.light ::-webkit-scrollbar-thumb:hover { background: #8faac4; }
+
+/* Light: sidebar — stays dark navy */
+html.light .icon-sidebar {
+  background: var(--bg-sidebar) !important;
+  border-right-color: rgba(255,255,255,.07) !important;
+}
+html.light .icon-sidebar .sidebar-logo-text { color: #ffffff !important; }
+html.light .icon-sidebar .sidebar-divider   { background: rgba(255,255,255,.09) !important; }
+
+/* Light: buttons */
+html.light .btn-primary {
+  background: #0078d4; color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,120,212,.28);
+}
+html.light .btn-primary:hover { background: #005ba1; opacity: 1; }
+html.light .btn-secondary {
+  background: #ffffff; color: #1a2a3a; border-color: #b8ccdf;
+  box-shadow: 0 1px 2px rgba(15,39,68,.05);
+}
+html.light .btn-secondary:hover { background: #eef4fb; border-color: #0078d4; color: #0078d4; }
+
+/* Light: tabs */
+html.light .tab { color: #4d637d; }
+html.light .tab.active { color: #0078d4; border-bottom-color: #0078d4; }
+html.light .tab:hover  { color: #1a2a3a; background: rgba(0,120,212,.04); }
+html.light .tab-count { background: #e3ecf5; border-color: #b8ccdf; color: #8ba0b8; }
+html.light .tab.active .tab-count {
+  background: rgba(0,120,212,.10); color: #0078d4; border-color: rgba(0,120,212,.25);
+}
+
+/* Light: inputs */
+html.light input, html.light textarea { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
+html.light input:focus, html.light textarea:focus {
+  border-color: #0078d4; box-shadow: 0 0 0 2px rgba(0,120,212,.16); outline: none;
+}
+html.light .filter-input  { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
+html.light .filter-input:focus { border-color: #0078d4; box-shadow: 0 0 0 2px rgba(0,120,212,.16); }
+html.light .filter-select { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
+html.light select          { background: #ffffff; border-color: #b8ccdf; color: #1a2a3a; }
+
+/* Light: table */
+html.light .data-table th { background: #e3ecf5; color: #5a7a9a; border-bottom-color: #b8ccdf; }
+html.light .data-table th:hover { color: #1a2a3a; }
+html.light .data-table td { color: #1a2a3a; border-bottom-color: #e8eff7; }
+html.light .data-table tr:hover td { background: rgba(0,120,212,.04); }
+html.light .data-table tr.selected td { background: rgba(0,120,212,.08); }
+html.light .data-table tr.row-critical td { background: rgba(181,43,30,.03); }
+html.light .data-table tr.row-critical:hover td { background: rgba(181,43,30,.07); }
+
+/* Light: pagination */
+html.light .page-btn { background: #ffffff; border-color: #b8ccdf; color: #4d637d; }
+html.light .page-btn.active { background: #0078d4; border-color: #0078d4; color: white; }
+html.light .page-btn:hover:not(.active):not(:disabled) { border-color: #0078d4; color: #0078d4; background: #eef4fb; }
+
+/* Light: cards */
+html.light .card { background: #ffffff; border-color: #ccd9e8; box-shadow: 0 1px 4px rgba(15,39,68,.07), 0 0 1px rgba(15,39,68,.04); }
+html.light .card-title { color: #5a7a9a; }
+html.light .kpi-card { background: #ffffff; border-color: #ccd9e8; box-shadow: 0 1px 4px rgba(15,39,68,.07), 0 0 1px rgba(15,39,68,.04); }
+html.light .kpi-label { color: #8ba0b8; }
+html.light .kpi-value { color: #1a2a3a; }
+html.light .kpi-card-flat { background: #e3ecf5; border-color: #ccd9e8; }
+html.light .kpi-card-flat .kpi-label { color: #8ba0b8; }
+html.light .kpi-card-flat .kpi-value { color: #1a2a3a; }
+html.light .kpi-card-flat .kpi-note  { color: #8ba0b8; }
+
+/* Light: ioc chips */
+html.light .ioc-type-chip { border-color: #b8ccdf; color: #4d637d; background: #ffffff; }
+html.light .ioc-type-chip:hover { border-color: #0078d4; color: #0078d4; background: #eef4fb; }
+html.light .ioc-type-chip.active { background: rgba(0,120,212,.09); border-color: #0078d4; color: #0078d4; }
+
+/* Light: severity badges */
+html.light .sev-badge.critical { background: rgba(181,43,30,.10);  color: #b52b1e; }
+html.light .sev-badge.high     { background: rgba(168,64,0,.10);   color: #a84000; }
+html.light .sev-badge.medium   { background: rgba(122,85,0,.10);   color: #7a5500; }
+html.light .sev-badge.low      { background: rgba(10,107,53,.09);  color: #0a6b35; }
+
+/* Light: source tags */
+html.light .source-tag.endpoint { background: rgba(0,120,212,.09); color: #005ba1; }
+html.light .source-tag.network  { background: rgba(0,74,143,.09);  color: #004a8f; }
+html.light .source-tag.cloud    { background: rgba(0,120,212,.07); color: #1a5c9a; }
+html.light .source-tag.identity { background: rgba(80,50,140,.09); color: #50328c; }
+html.light .source-tag.email    { background: rgba(168,64,0,.09);  color: #a84000; }
+html.light .source-tag.syslog   { background: rgba(0,120,212,.06); color: #5a7a9a; }
+
+/* Light: tab-bar / filter-bar */
+html.light .tab-bar    { background: #ffffff; border-bottom-color: #ccd9e8; box-shadow: 0 1px 3px rgba(15,39,68,.06); }
+html.light .filter-bar { background: #e8f0f9; border-bottom-color: #ccd9e8; }
+
+/* Light: smartscore badges */
+html.light .smartscore.critical { background: rgba(181,43,30,.14); color: #b52b1e; }
+html.light .smartscore.high     { background: rgba(168,64,0,.14);  color: #a84000; }
+html.light .smartscore.medium   { background: rgba(122,85,0,.12);  color: #7a5500; }
+html.light .smartscore.low      { background: rgba(10,107,53,.12); color: #0a6b35; }
+
+/* Light: detail panel overrides */
+html.light [data-panel] { background: var(--bg-card) !important; }

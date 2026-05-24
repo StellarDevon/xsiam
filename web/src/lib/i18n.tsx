@@ -3,13 +3,13 @@ import { createContext, useContext, useState } from 'react'
 export type Lang = 'en' | 'zh'
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
-  lang: 'en',
+  lang: 'zh',
   setLang: () => {},
 })
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
-    return (localStorage.getItem('xsiam-lang') as Lang) ?? 'en'
+    return (localStorage.getItem('xsiam-lang') as Lang) ?? 'zh'
   })
 
   function setLang(l: Lang) {
@@ -24,9 +24,10 @@ export function useLang() {
   return useContext(LangContext)
 }
 
-// ── 通用 UI 字典（仅用于 TopBar 和全局级别的可见标签）
-const dict: Record<string, Record<string, string>> = {
+// ── Full UI dictionary — TopBar, Sidebar nav, page titles, common labels ──────
+const dict: Record<Lang, Record<string, string>> = {
   zh: {
+    // TopBar
     search_placeholder: '搜索告警、事件、资产…',
     notifications: '通知',
     mark_all_read: '全部已读',
@@ -48,8 +49,54 @@ const dict: Record<string, Record<string, string>> = {
     dark: '暗色',
     light: '亮色',
     new_notifications: '条新通知',
+    // Sidebar nav items
+    nav_overview: '概览',
+    nav_incidents: '事件',
+    nav_alerts: '告警',
+    nav_causality: '溯源图',
+    nav_query: '查询中心',
+    nav_actions: '动作中心',
+    nav_playbooks: '剧本',
+    nav_assets: '资产',
+    nav_identity_risks: '身份风险',
+    nav_vulnerabilities: '漏洞',
+    nav_exposure: '暴露面管理',
+    nav_threat_intel: '威胁情报',
+    nav_iocs: 'IOC 管理',
+    nav_agentix: 'Agentix',
+    nav_cases: '案例',
+    nav_devices: '设备',
+    nav_agents_hub: 'Agent 中心',
+    nav_detection_rules: '检测规则',
+    nav_etl: 'ETL 流水线',
+    nav_network: '网络安全',
+    nav_endpoint: '终端安全',
+    nav_tenant: '租户管理',
+    nav_reports: '报表',
+    // Group labels
+    grp_response: '响应',
+    grp_assets: '资产与风险',
+    grp_threat: '威胁情报',
+    grp_aiops: 'AI & 案例',
+    grp_infra: '基础设施',
+    grp_platform: '平台管理',
+    // Common page labels
+    loading: '加载中…',
+    no_data: '暂无数据',
+    save: '保存',
+    cancel: '取消',
+    delete: '删除',
+    edit: '编辑',
+    create: '新建',
+    search: '搜索',
+    filter: '筛选',
+    export: '导出',
+    refresh: '刷新',
+    confirm: '确认',
+    close: '关闭',
   },
   en: {
+    // TopBar
     search_placeholder: 'Search alerts, incidents, assets…',
     notifications: 'Notifications',
     mark_all_read: 'Mark all read',
@@ -71,10 +118,56 @@ const dict: Record<string, Record<string, string>> = {
     dark: 'Dark',
     light: 'Light',
     new_notifications: 'new notifications',
+    // Sidebar nav items
+    nav_overview: 'Overview',
+    nav_incidents: 'Incidents',
+    nav_alerts: 'Alerts',
+    nav_causality: 'Causality Graph',
+    nav_query: 'Query Center',
+    nav_actions: 'Actions',
+    nav_playbooks: 'Playbooks',
+    nav_assets: 'Assets',
+    nav_identity_risks: 'Identity Risks',
+    nav_vulnerabilities: 'Vulnerabilities',
+    nav_exposure: 'Exposure Mgmt',
+    nav_threat_intel: 'Threat Intel',
+    nav_iocs: 'IOC Management',
+    nav_agentix: 'Agentix',
+    nav_cases: 'Cases',
+    nav_devices: 'Devices',
+    nav_agents_hub: 'Agent Hub',
+    nav_detection_rules: 'Detection Rules',
+    nav_etl: 'ETL Pipeline',
+    nav_network: 'Network Security',
+    nav_endpoint: 'Endpoint Security',
+    nav_tenant: 'Tenant Admin',
+    nav_reports: 'Reports',
+    // Group labels
+    grp_response: 'Response',
+    grp_assets: 'Assets & Risk',
+    grp_threat: 'Threat Intel',
+    grp_aiops: 'AI & Cases',
+    grp_infra: 'Infrastructure',
+    grp_platform: 'Platform',
+    // Common page labels
+    loading: 'Loading…',
+    no_data: 'No data',
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    edit: 'Edit',
+    create: 'New',
+    search: 'Search',
+    filter: 'Filter',
+    export: 'Export',
+    refresh: 'Refresh',
+    confirm: 'Confirm',
+    close: 'Close',
   },
 }
 
 export function useT() {
   const { lang } = useLang()
-  return (key: string) => dict[lang]?.[key] ?? dict['zh'][key] ?? key
+  // Returns a stable-enough translator — re-created each render when lang changes
+  return (key: string): string => dict[lang]?.[key] ?? dict['zh'][key] ?? key
 }
