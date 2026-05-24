@@ -488,49 +488,11 @@ export default function TopBar() {
         height: 48,
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '0 20px',
-        background: 'linear-gradient(90deg,#001e3c 0%,#00132a 100%)',
-        borderBottom: '1px solid #0a2a4a',
+        background: 'var(--bg-sidebar)',
+        borderBottom: '1px solid var(--border)',
         flexShrink: 0, zIndex: 100,
         position: 'relative',
       }}>
-        {/* ── Search box (left side) ── */}
-        <div
-          onClick={() => setShowSearch(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            width: 280, height: 32,
-            background: 'rgba(255,255,255,.08)',
-            border: '1px solid rgba(79,163,224,.25)',
-            borderRadius: 6,
-            padding: '0 10px',
-            cursor: 'text',
-            marginLeft: 16,
-            flexShrink: 0,
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(79,163,224,.70)" strokeWidth="2" style={{ flexShrink: 0 }}>
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input
-            readOnly
-            onFocus={() => setShowSearch(true)}
-            placeholder={t('search_placeholder')}
-            style={{
-              flex: 1, background: 'none', border: 'none', outline: 'none',
-              fontSize: 12, color: 'rgba(255,255,255,.75)',
-              cursor: 'text',
-              pointerEvents: 'none',
-            }}
-          />
-          <span style={{
-            fontSize: 9, fontFamily: 'monospace', color: 'rgba(79,163,224,.55)',
-            background: 'rgba(0,0,0,.25)', padding: '1px 5px', borderRadius: 3,
-            border: '1px solid rgba(79,163,224,.20)',
-            flexShrink: 0, userSelect: 'none',
-          }}>
-            Ctrl+K
-          </span>
-        </div>
 
         {/* ── Right-side controls ── */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
