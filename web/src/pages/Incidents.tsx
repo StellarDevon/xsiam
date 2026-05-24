@@ -1714,7 +1714,6 @@ export default function Incidents() {
       {/* ── Header ──────────────────────────────────────────── */}
       <PageHeader
         title="事件管理"
-        subtitle={meta.total > 0 ? `共 ${meta.total} 条` : undefined}
         actions={<>
           <button className="btn-secondary" style={{ fontSize: 11 }} onClick={exportCSV}>
             ↓ 导出 CSV

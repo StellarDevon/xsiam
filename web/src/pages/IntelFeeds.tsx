@@ -470,7 +470,6 @@ export default function IntelFeeds() {
       <style>{cssStyles}</style>
       <PageHeader
         title="Intel Feeds"
-        subtitle={`· ${meta.total} feeds`}
         actions={
           activeTab === 'feeds' ? (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

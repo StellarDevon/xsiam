@@ -1644,7 +1644,6 @@ export default function Devices() {
   const hostnameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [upgradingIds, setUpgradingIds] = useState<Record<string, boolean>>({})
   const [liveness, setLiveness] = useState<LivenessMap>({})
-  const [livenessLoading, setLivenessLoading] = useState(false)
   const livenessTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const mountedRef = useRef(false)
 
@@ -1669,15 +1668,12 @@ export default function Devices() {
       agentIDs.forEach(id => { if (next[id] === undefined) next[id] = null })
       return next
     })
-    setLivenessLoading(true)
-
     api.post('/devices/liveness', { agent_ids: agentIDs })
       .then(r => {
         const onlineMap: Record<string, boolean> = r.data.data?.online ?? {}
         setLiveness(prev => ({ ...prev, ...onlineMap }))
       })
       .catch(() => {})
-      .finally(() => setLivenessLoading(false))
   }
 
   function load(p = page) {
@@ -1860,7 +1856,6 @@ export default function Devices() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="终端管理"
-        subtitle={`· ${meta.total} 台设备${livenessLoading ? ' · 刷新在线状态…' : ''}`}
         actions={<>
           <button className="btn-secondary" style={{ fontSize: 12 }} disabled={tokenLoading} onClick={generateToken}>
             {tokenLoading ? '生成中...' : '🔑 注册令牌'}

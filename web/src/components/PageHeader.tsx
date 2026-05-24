@@ -23,7 +23,7 @@ export default function PageHeader({ title, subtitle, actions }: Props) {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 20px',
-      background: 'var(--bg-sidebar)',
+      background: 'var(--bg-card)',
       borderBottom: '1px solid var(--border)',
       gap: 12,
     }}>

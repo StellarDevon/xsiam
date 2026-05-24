@@ -1997,7 +1997,6 @@ export default function IdentityRisks() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="Identity Risks"
-        subtitle={`· ${meta.total} users tracked`}
       />
 
       <div className="tab-bar">

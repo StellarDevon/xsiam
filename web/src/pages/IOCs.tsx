@@ -639,19 +639,6 @@ export default function IOCs() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="IOC 管理"
-        subtitle={
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'var(--text-muted)' }}>·</span>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center',
-              background: 'rgba(79,163,224,.15)', color: 'var(--accent-blue)',
-              fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
-              border: '1px solid rgba(79,163,224,.3)',
-            }}>
-              共 {meta.total.toLocaleString()} 个 IOC
-            </span>
-          </span>
-        }
         actions={<>
           <button className="btn-secondary" onClick={exportPageCSV}>导出</button>
           <button className="btn-secondary" onClick={() => { /* hunt UI not yet implemented */ }}>

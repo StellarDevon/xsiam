@@ -2057,7 +2057,6 @@ export default function ExposureScores() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="暴露面管理"
-        subtitle={`· ${meta.total} 条`}
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {recalcToast && (

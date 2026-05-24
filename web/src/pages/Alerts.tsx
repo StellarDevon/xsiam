@@ -1960,7 +1960,6 @@ export default function Alerts() {
       {/* ── Header ──────────────────────────────────────── */}
       <PageHeader
         title="告警管理"
-        subtitle={meta.total > 0 ? `共 ${meta.total} 条` : undefined}
         actions={<>
           <button className="btn-secondary" style={{ fontSize: 11 }} onClick={exportCSV}>↓ 导出 CSV</button>
           <button className="btn-primary" style={{ fontSize: 11 }} onClick={() => navigate('/detection-rules?new=1')}>

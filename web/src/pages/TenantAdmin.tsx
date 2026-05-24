@@ -914,13 +914,11 @@ export default function TenantAdmin() {
       .catch(() => { /* use mock data */ })
   }, [])
 
-  const activeCount = tenants.filter(t => t.status === 'active').length
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="多租户管理控制台"
-        subtitle={`${tenants.length} 个租户 · ${activeCount} 活跃`}
         actions={
           <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 12, background: 'rgba(217,64,64,.12)', color: 'var(--critical)', fontWeight: 700, border: '1px solid rgba(217,64,64,.25)' }}>
             SUPERADMIN

@@ -714,7 +714,6 @@ export default function Reports() {
 
       <PageHeader
         title="报表中心"
-        subtitle={`· ${meta.total} reports${hasGenerating ? '' : ''}`}
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {hasGenerating && (

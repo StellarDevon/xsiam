@@ -1175,7 +1175,6 @@ export default function ETLPipeline() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="ETL 流水线"
-        subtitle={`· ${meta.total} 条规则  ·  优先级越小越先匹配`}
         actions={
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn-secondary" style={{ fontSize: 11 }} onClick={exportRules}>

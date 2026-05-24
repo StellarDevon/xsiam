@@ -727,7 +727,6 @@ export default function ThreatIntel() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="Threat Intel Management"
-        subtitle={`· ${iocMeta.total.toLocaleString()} indicators active`}
         actions={<div style={{ display: 'flex', gap: 8 }}>{headerBtn()}</div>}
       />
 

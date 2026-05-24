@@ -1447,7 +1447,6 @@ export default function DetectionRules() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="检测规则"
-        subtitle={`· ${meta.total} rules`}
         actions={<>
           <button className="btn-secondary" onClick={() => api.get('/detection_rules/mitre_coverage').then(r => setMitreModal(r.data.data ?? {})).catch(() => setMitreModal({}))}>MITRE覆盖率</button>
           <button className="btn-primary" onClick={() => setShowWizard(true)}>+ 新建规则</button>

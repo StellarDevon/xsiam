@@ -1581,7 +1581,6 @@ export default function Actions() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         title="动作中心"
-        subtitle={`· ${meta.total} actions`}
         actions={<button className="btn-primary" onClick={() => setShowNew(true)}>+ New Action</button>}
       />
 

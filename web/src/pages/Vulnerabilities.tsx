@@ -1266,7 +1266,6 @@ export default function Vulnerabilities() {
 
       <PageHeader
         title="漏洞管理"
-        subtitle={`${meta.total.toLocaleString()} 条 · ${(stats?.critical ?? 0)} 个严重 · ${(stats?.patched ?? 0)} 已修复`}
         actions={<>
           <button className="btn-secondary" onClick={() => {
             const rows = [['CVE ID', 'Title', '严重程度', 'CVSS', '状态', '受影响资产'].join(',')]

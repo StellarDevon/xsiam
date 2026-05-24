@@ -2110,7 +2110,6 @@ export default function Playbooks() {
 
       <PageHeader
         title="Playbooks"
-        subtitle={`· ${meta.total} 条`}
         actions={<button className="btn-primary" onClick={openCreate}>+ 新建剧本</button>}
       />
 
