@@ -497,25 +497,6 @@ export default function TopBar() {
         {/* ── Right-side controls ── */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
 
-          {/* Pulse dot + XSIAM Agentic Assistant status */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 4 }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: '50%',
-              background: 'var(--accent-blue)', boxShadow: '0 0 5px #0078d4',
-              display: 'inline-block', animation: 'pulse-dot 2s ease-in-out infinite',
-              flexShrink: 0,
-            }} />
-            <span style={{
-              fontSize: 10.5, fontWeight: 700, letterSpacing: 1.6,
-              color: 'var(--accent-blue)', textTransform: 'uppercase', userSelect: 'none',
-            }}>
-              XSIAM Agentic Assistant
-            </span>
-            <span style={{ fontSize: 10, color: 'var(--accent-blue)', letterSpacing: 0 }}>
-              Active · 3 automated responses running
-            </span>
-          </div>
-
           {/* Session expiry indicator */}
           {showIndicator && (
             <div style={{ position: 'relative' }}>
